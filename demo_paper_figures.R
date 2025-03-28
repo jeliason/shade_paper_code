@@ -1,8 +1,7 @@
 library(tidyverse)
-devtools::load_all()
 library(latex2exp)
 library(spatstat)
-source("scripts/util_sims_no_alpha.R")
+library(SHADE)
 
 theme_set(theme_bw(base_size=14, base_family='Helvetica')+
             theme(panel.grid.major = element_blank(),
@@ -11,7 +10,7 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=5, width=8, units="in")
 }
-figures_folder <- "./scripts/demo_plots/"
+figures_folder <- "./figures/demo_plots/"
 x_seq <- seq(0,100,0.1)
 weights <- c(0.8,-0.4,0.3)
 rbfs <- make_rbfs(n_basis_functions = 3, max_dist = 75, basis_function_sigma = 15)

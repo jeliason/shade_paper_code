@@ -1,6 +1,34 @@
-.Rproj.user
+# R specific files
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
 .DS_Store
-figures
+
+# Output directories that should not be version controlled
+*/figures/*
+*/data/*/*
+archive/
+CLAUDE.md
+*.pdf
+*.indd
+*.png
+*.json
+*.rds
+
+# Temporary files
+*.log
+*.out
+*.aux
+*.bak
+*.tmp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
