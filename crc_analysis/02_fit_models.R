@@ -3,35 +3,29 @@ library(spatstat)
 library(Matrix)
 library(SHADE)
 
-# CRC dataset needs to be loaded here
-# Example:
-# df_raw <- read_csv("path/to/CRC_data.csv")
-cat("NOTE: CRC dataset needs to be loaded here. Replace this with the actual data loading code.\n")
 
-df_raw %>%
-  count(Spot,type) %>%
-  group_by(type) %>%
-  summarise(mn = median(n)) %>%
-  filter(mn > 30) %>%
-  pull(type) %>%
-  as.character() -> types_keep
+path <- "./crc_analysis/data/"
+n_cores <- 2
+type_idx <- 1
 
-# set environment
-SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
-if(SYSTEM_ENV == "laptop") {
-  path <- "./crc_analysis/data/"
-  n_cores <- 2
-  type_idx <- 1
-} else {
-  path <- "./crc_analysis/data/"
-  n_cores <- 16
-  args <- commandArgs(trailingOnly=TRUE)
-  type_idx <- as.numeric(args[1])
-}
+targets <- c(
+  "CTLs",
+  "memory CD4+ T",
+  "granulocytes"
+)
+
+sources <- c(
+  "TAMs",
+  "CAFs",
+  "vasculature",
+  "hybrid E/M",
+  "tumor cells"
+)
+
+type <- targets[type_idx]
 
 sample_or_var <- "var"
 draws <- 1e3
-type <- types_keep[type_idx]
 
 # Load the model with run_SHADE_model from SHADE package
 print("model loaded")
@@ -67,5 +61,6 @@ if(sample_or_var == "sample") {
 }
 
 fit$save_object(file_fit)
+
 
 

@@ -9,7 +9,7 @@ library(SHADE)
 
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
-if(SYSTEM_ENV == "laptop") {
+if(SYSTEM_ENV != "HPC") {
   path <- "./sim_dummy_points/data/"
   grid <- expand.grid(ratio=c(0.5,1,2,5,10),
                       num_points_per_type=c(20,80,150,300,500),
@@ -31,7 +31,7 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname,height=5,width=8) {
   ggsave(paste0(figures_folder,fname,".pdf"),device = cairo_pdf, height=height, width=width, units="in")
 }
-figures_folder <- "./sim_dummy_points/figures/"
+figures_folder <- "./sim_dummy_points/sim_dummy_points_figures/"
 
 out <- readRDS(paste0(path,"analysis_results.rds"))
 rmse_tb <- out$rmse_tb
@@ -42,7 +42,8 @@ rmse_tb <- rmse_tb %>%
                                   "cohort level"="beta_global",
                                   "subject level"="beta_indiv",
                                   "image level"="beta_local")) %>%
-  mutate(num_points_per_type = paste0("Count: ",num_points_per_type))
+  mutate(num_points_per_type = paste0("Count: ",num_points_per_type)) %>%
+  mutate(num_points_per_type = factor(num_points_per_type,levels = paste0("Count: ",sort(unique(grid$num_points_per_type)))))
 
 sic_tb <- sic_tb %>%
   mutate(Curve = ifelse(Curve == "Post. Mean","Posterior Mean",Curve)) %>%
@@ -83,8 +84,8 @@ rmse_tb %>%
   ggplot(aes(ratio,ydist=rmse,color=scale,fill=scale)) +
   stat_halfeye() +
   facet_grid(coefficient~num_points_per_type,labeller = label_wrap_gen(width = 20)) +
-  labs(x="Ratio of dummy points to real points",y="Average RMSE") +
-  scale_y_continuous(trans="log10") +
+  labs(x="Ratio of dummy points to real points",y="Average RMSE",color="Scale",fill="Scale") +
+  scale_y_continuous(trans="log10",  labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   scale_x_continuous(trans="log10") +
   guides(y="axis_logticks",x="axis_logticks") +
   theme(legend.position = "top")
