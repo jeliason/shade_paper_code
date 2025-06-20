@@ -299,18 +299,19 @@ run_gcross_analysis <- function(patterns, structure) {
     if(i %% 10 == 0) {
       print(i)
     }
+
     tryCatch({
+
       pat <- patterns[[i]]$pattern
       true_group <- patterns[[i]]$group
-      # plot(pat)
+      plot(pat)
       # Check cell counts
       n_t <- sum(pat$marks == "1")
       n_tumor <- sum(pat$marks == "3")
       
-      if(n_t < 5 || n_tumor < 5) {
-        return(FALSE)
+      if(n_t < 3 || n_tumor < 3) {
+        stop("not enough cells!")
       }
-      
       num_env <- 10
       # maybe do this a bunch of times?
       detects <- lapply(1:num_env,\(j) {
@@ -346,11 +347,11 @@ run_gcross_analysis <- function(patterns, structure) {
       gx <- Gcross(pat,i = "1",j = "3")
       target_indices <- sapply(target_r, function(rval) which.min(abs(gx$r - rval)))
       
-      list(mean_detect=mean_detect,gx=gx$km[target_indices])
+      out <- list(mean_detect=mean_detect,gx=gx$km[target_indices])
     }, error = function(e) {
-      return(FALSE)
+      out <- list(mean_detect=NA,gx=NA)
     })
-    
+    return(out)
   })
   
   return(image_results)
@@ -364,7 +365,7 @@ run_gcross_analysis <- function(patterns, structure) {
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
   path <- "./sim_shade_gcross/data/"
-  sim_idx <- 1
+  sim_idx <- 339
 } else {
   path <- "./sim_shade_gcross/data/"
   args <- commandArgs(trailingOnly=TRUE)
@@ -373,6 +374,11 @@ if(SYSTEM_ENV != "HPC") {
 }
 
 file_out <- paste0(path,"sim_",sim_idx,".rds")
+
+if (file.exists(file_out)) {
+  cat("Simulation", sim_idx, "already completed. Skipping.\n")
+  quit(save="no")
+}
 
 # Simulation grid: 12 conditions × 100 replications = 1200 total
 grid <- expand.grid(
