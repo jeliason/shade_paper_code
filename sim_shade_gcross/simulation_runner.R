@@ -10,14 +10,14 @@ start <- Sys.time()
 # ============================================================================
 
 #' Create patient metadata with proper indexing
-create_patient_structure <- function(num_pts_per_group, seed = 2024) {
+create_patient_structure <- function(num_pts_per_group, num_images, seed = 2024) {
   set.seed(seed)
   
   # Generate images per patient based on imbalance level
   total_patients <- num_pts_per_group * 2
   
   # if(imbalance_level == "balanced") {
-  images_per_patient <- rep(3, total_patients)
+  images_per_patient <- rep(num_images, total_patients)
   # } else if(imbalance_level == "moderate") {
   #   images_per_patient <- sample(c(1,2,3,4,5), total_patients, replace = TRUE,
   #                                prob = c(0.2, 0.15, 0.3, 0.15, 0.2))
@@ -364,7 +364,7 @@ run_gcross_analysis <- function(patterns, structure) {
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
   path <- "./sim_shade_gcross/data/"
-  sim_idx <- 3
+  sim_idx <- 1
 } else {
   path <- "./sim_shade_gcross/data/"
   args <- commandArgs(trailingOnly=TRUE)
@@ -379,18 +379,20 @@ grid <- expand.grid(
   # imbalance_level = c("balanced", "moderate", "severe"),
   t_density = c("high", "low"), 
   tumor_density = c("high", "low"),
-  sim_rep = 1:50
+  num_images = c(1,2,3),
+  sim_rep = 1:30
 )
 
 # Extract current condition parameters
 condition <- list(
   # imbalance_level = as.character(grid$imbalance_level[sim_idx]),
+  num_images = as.character(grid$num_images[sim_idx]),
   t_density = as.character(grid$t_density[sim_idx]),
   tumor_density = as.character(grid$tumor_density[sim_idx]),
   sim_rep = grid$sim_rep[sim_idx]
 )
 
-cat("Condition:", condition$t_density, condition$tumor_density, 
+cat("Condition:", condition$t_density, condition$tumor_density, condition$num_images,
     "Rep:", condition$sim_rep, "\n")
 
 # Fixed parameters
@@ -412,6 +414,7 @@ density_params <- list(
 cat("Creating patient structure...\n")
 structure <- create_patient_structure(
   num_pts_per_group = num_pts_per_group,
+  num_images = grid$num_images[sim_idx],
   # imbalance_level = condition$imbalance_level,
   seed = 2024 + sim_idx
 )
