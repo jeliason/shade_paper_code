@@ -300,7 +300,7 @@ run_gcross_analysis <- function(patterns, structure) {
       print(i)
     }
 
-    tryCatch({
+    out <- tryCatch({
 
       pat <- patterns[[i]]$pattern
       true_group <- patterns[[i]]$group
@@ -365,7 +365,7 @@ run_gcross_analysis <- function(patterns, structure) {
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
   path <- "./sim_shade_gcross/data/"
-  sim_idx <- 339
+  sim_idx <- 1
 } else {
   path <- "./sim_shade_gcross/data/"
   args <- commandArgs(trailingOnly=TRUE)
@@ -375,12 +375,12 @@ if(SYSTEM_ENV != "HPC") {
 
 file_out <- paste0(path,"sim_",sim_idx,".rds")
 
-if (file.exists(file_out)) {
+
+if (file.exists(file_out) & SYSTEM_ENV == "HPC") {
   cat("Simulation", sim_idx, "already completed. Skipping.\n")
   quit(save="no")
 }
 
-# Simulation grid: 12 conditions × 100 replications = 1200 total
 grid <- expand.grid(
   # imbalance_level = c("balanced", "moderate", "severe"),
   t_density = c("high", "low"), 
@@ -688,3 +688,153 @@ end - start
 #          patient_id=structure$images_df$patient_id,
 #          group = structure$images_df$group)
 
+#### extra plots
+theme_set(theme_bw(base_size=14, base_family='Helvetica')+
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank()))
+
+fsave <- \(fname,height=5,width=8) {
+  ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=height, width=width, units="in")
+}
+figures_folder <- "./sim_shade_gcross/gx_figures/"
+i <- 1
+pat <- patterns[[i]]$pattern
+marks(pat) <- fct_recode(marks(pat),"Tumor cells"="1","B cells"="2","T cells"="3")
+plot(pat)
+
+p1 <- pat %>%
+  as.data.frame() %>%
+  rename(Type=marks) %>%
+  mutate(Type = fct_recode(Type,"Tumor cells"="1","B cells"="2","T cells"="3")) %>%
+  filter(Type != "B cells") %>%
+  # mutate(is_B = Type != "B cells") %>%
+  ggplot(aes(x,y,color=Type,shape=Type)) +
+  geom_point(size=1.5) +
+  coord_fixed() +
+  labs(x="X (microns)",y="Y (microns)")
+p1
+fsave("pat_example")
+
+pat <- patterns[[i]]$pattern
+marks(pat) <- fct_recode(marks(pat),"Tumor"="1","B"="2","T"="3")
+env <- envelope(pat, Gcross, i = "Tumor", j = "T", nsim = 39, 
+                correction = "border", verbose = FALSE)
+plot(env)
+
+p2 <- env %>%
+  as.data.frame() %>%
+  filter(r < 80) %>%
+  ggplot(aes(x=r)) +
+  geom_line(aes(y=obs)) +
+  geom_line(aes(y=theo),color="red",linetype="dashed") +
+  geom_ribbon(aes(ymin=lo,ymax=hi),color="gray50",alpha=0.2,linetype=0) +
+  labs(x="Distance (microns)",y="Gcross")
+p2
+fsave("gx_example")
+
+# Get image-level coefficients for all 3 potentials
+beta <- as.vector(shade_draws$beta_local[i,2:4])
+beta_true <- coefficients$image_effects[i,]
+
+# coefficients$individual_effects[22,]
+
+x_seq <- seq(0,80,1)
+x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
+
+lp <- as.vector(x_des %*% beta)
+lp_true <- as.vector(x_des %*% beta_true)
+
+alpha <- 0.05  # for 95% simultaneous bands
+
+# Step 1: Extract mean and SD per x
+lp %>%
+  as.matrix() %>%
+  as.data.frame()  %>%
+  mutate(x = x_seq) %>%
+  mutate(
+    mn = as.vector(E(V1)),
+    sd = as.vector(sd(V1))
+  ) -> df_summary
+
+# Step 5: Construct simultaneous lower and upper bands
+df_summ <- df_summary %>%
+  mutate(
+    lo_pw = as.vector(quantile(V1,probs=alpha/2)),
+    hi_pw = as.vector(quantile(V1,probs=1-(alpha/2))),
+    lp_true = lp_true
+  )
+
+pat <- patterns[[i]]$pattern
+results <- simple_shade(pat)
+simple_shade_draws <- as_draws_rvars(results$fit$draws())
+
+beta_simple <- as.vector(simple_shade_draws$beta[1:3])
+
+lp_simple <- as.vector(x_des %*% beta_simple)
+
+lp %>%
+  as.matrix() %>%
+  as.data.frame()  %>%
+  mutate(x = x_seq) %>%
+  mutate(
+    mn = as.vector(E(V1)),
+    sd = as.vector(sd(V1))
+  ) -> df_summary
+
+
+df_summ <- df_summ %>%
+  mutate(
+    mn_simple = as.vector(E(lp_simple)),
+    lo_simple = as.vector(quantile(lp_simple,probs=alpha/2)),
+    hi_simple = as.vector(quantile(lp_simple,probs=1-(alpha/2))),
+  )
+
+# Create a long-format data frame for the lines
+df_lines <- df_summ %>%
+  select(x, mn, mn_simple, lp_true) %>%
+  pivot_longer(cols = c(mn, mn_simple, lp_true), names_to = "type", values_to = "value")
+
+# Create a long-format data frame for the ribbons
+df_ribbons <- df_summ %>%
+  transmute(x,
+            type = "mn",
+            ymin = lo_pw,
+            ymax = hi_pw) %>%
+  bind_rows(
+    df_summ %>%
+      transmute(x,
+                type = "mn_simple",
+                ymin = lo_simple,
+                ymax = hi_simple)
+  )
+
+# Plot
+p3 <- ggplot() +
+  # Ribbons
+  geom_ribbon(data = df_ribbons, aes(x = x, ymin = ymin, ymax = ymax, fill = type), alpha = 0.2) +
+  # Lines
+  geom_line(data = df_lines, aes(x = x, y = value, color = type), size = 1) +
+  geom_hline(yintercept=0,color="black",linetype="dashed") +
+  scale_color_manual(values = c(
+    mn = "#e6194b",
+    mn_simple = "#3cb44b",
+    lp_true = "#4363d8"
+  ),
+  labels = c(
+    mn = "SHADE",
+    mn_simple = "Flat",
+    lp_true = "True"
+  )) +
+  scale_fill_manual(values = c(
+    mn = "#e6194b",
+    mn_simple = "#3cb44b"
+  )) +
+  guides(fill="none") +
+  labs(x = "Distance (microns)", y = "Estimated SIC", color = "Method")
+p3
+fsave("sic_comparison")
+
+library(patchwork)
+
+(p1 + p2) / (p3 + plot_spacer()) + plot_annotation(tag_levels='a')
+fsave("three_plots")
