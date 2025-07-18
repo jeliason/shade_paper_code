@@ -6,7 +6,7 @@ source("utils.R")
 fsave <- \(fname,height=5,width=5,...) {
   ggsave(paste0(figures_folder,fname), height=height, width=width, units="in",...)
 }
-figures_folder <- "figures/summary_figures/"
+figures_folder <- "summary_figures/"
 
 seed <- 2026
 set.seed(seed)

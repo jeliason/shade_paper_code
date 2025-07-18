@@ -8,35 +8,20 @@ The number of point patterns (e.g., tissue images) available for analysis can si
 
 1. Evaluates how parameter recovery changes with increasing sample sizes
 2. Quantifies uncertainty reduction as more data becomes available
-3. Determines minimum sample sizes needed for reliable inference
-4. Assesses computational scaling with increased sample sizes
 
 ## Workflow
 
-1. **01_generate_data.R**: 
-   - Generates synthetic point patterns with known spatial interaction parameters
-   - Creates datasets with varying numbers of point patterns (small to large sample sizes)
-   - Uses consistent generation parameters to isolate sample size effects
-   - Saves the data with ground truth parameters for later comparison
+1. **01_generate_data.R**  
+   Simulates point patterns with fixed interaction parameters across varying sample sizes. Saves datasets with ground truth for comparison.
 
-2. **02_fit_models.R**: 
-   - Fits SHADE models to datasets of different sample sizes
-   - Uses `run_SHADE_model()` with consistent settings across sample sizes
-   - Implements both MCMC sampling and variational inference methods
-   - Applies appropriate adaptation for different sample sizes
-   - Saves model fits as RDS files
+2. **02_fit_models.R**  
+   Fits SHADE models using MCMC and variational inference across sample sizes, with consistent settings. Saves model outputs as `.rds` files.
 
-3. **03_analyze_results.R**: 
-   - Quantifies parameter recovery accuracy across sample sizes
-   - Measures posterior uncertainty (credible interval width) as a function of sample size
-   - Evaluates computational requirements for different sample sizes
-   - Creates summary statistics for figures
+3. **03_analyze_results.R**  
+   Assesses parameter recovery, uncertainty, and computation time across sample sizes. Summarizes results for plotting.
 
-4. **04_create_figures.R**: 
-   - Creates figures showing parameter recovery vs. sample size
-   - Generates uncertainty quantification visualizations
-   - Plots convergence metrics across sample sizes
-   - Creates publication-quality figures demonstrating sample size effects
+4. **04_create_figures.R**  
+   Generates figures showing effects of sample size on accuracy, uncertainty, and convergence.
 
 ## Usage
 
@@ -54,6 +39,7 @@ source("04_create_figures.R")
 
 For HPC execution:
 ```bash
+SYSTEM_ENV="HPC"
 # Submit jobs to SLURM
 sbatch 01_generate_data.slurm
 sbatch 02_fit_models.slurm
@@ -63,4 +49,4 @@ sbatch 03_analyze_results.slurm
 ## Output
 
 - **./data/**: Contains generated point patterns of varying sample sizes
-- **./figures/**: Contains visualizations showing the effect of sample size on model performance
+- **./sim_sample_size_figures/**: Contains visualizations showing the effect of sample size on model performance

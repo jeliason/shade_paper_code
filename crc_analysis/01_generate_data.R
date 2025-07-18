@@ -91,7 +91,7 @@ prep <- prepare_spatial_model_data(
   x = coords$x,
   y = coords$y,
   cell_type = coords$type,
-  image_id = coords$image_id,
+  image_id = factor(coords$image_id),
   patient_metadata = pt_data,
   type_idx = which(types_keep == type),
   n_dummy = n_dummy,

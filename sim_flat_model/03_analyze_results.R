@@ -9,7 +9,7 @@ library(SHADE)
 
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
-if(SYSTEM_ENV == "laptop") {
+if(SYSTEM_ENV != "HPC") {
   path <- "./sim_flat_model/data/"
   sim_indices <- c(1,2,3)
 } else {
@@ -28,7 +28,7 @@ grid <- grid[sim_indices,]
 # RMSE
 rmse_tb <- pmap(grid,\(sim) {
   file_fit_hier <- paste0(path,"fit_sim",sim,"_hier.rds")
-  file_fit_no_hier <- paste0(path,"fit_sim",sim,"_no_hier.rds")
+  file_fit_no_hier <- paste0(path,"fit_sim",sim,"_flat.rds")
   file_ground_truth <- paste0(path,"ground_truth_sim",sim,".rds")
   # print(file_fit)
   fit_hier <- readRDS(file_fit_hier)
@@ -72,7 +72,7 @@ sic_tb <- grid %>%
   filter(sim %in% 1:6) %>%
   pmap(\(sim) {
     file_fit_hier <- paste0(path,"fit_sim",sim,"_hier.rds")
-    file_fit_no_hier <- paste0(path,"fit_sim",sim,"_no_hier.rds")
+    file_fit_no_hier <- paste0(path,"fit_sim",sim,"_flat.rds")
     file_ground_truth <- paste0(path,"ground_truth_sim",sim,".rds")
     # print(file_fit)
     fit_hier <- readRDS(file_fit_hier)

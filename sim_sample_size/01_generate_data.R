@@ -5,9 +5,9 @@ library(SHADE)
 
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
-if(SYSTEM_ENV == "laptop") {
+if(SYSTEM_ENV != "HPC") {
   path <- "./sim_sample_size/data/"
-  sim_idx <- 7
+  sim_idx <- 50
 } else {
   path <- "./sim_sample_size/data/"
   args <- commandArgs(trailingOnly=TRUE)
@@ -174,13 +174,13 @@ prep <- prepare_spatial_model_data(
   x = coords$x,
   y = coords$y,
   cell_type = coords$type,
-  image_id = coords$image_id,
+  image_id = factor(coords$image_id),
   patient_metadata = patient_metadata,
   type_idx = num_types,
   n_dummy = n_dummy,
   n_basis_functions = num_pot
 )
 print("writing json...")
-write_json_chunked(prep$data_stan,file_data_stan,chunk_size = 1e6)
+write_json_chunked(prep$stan_data,file_data_stan,chunk_size = 1e6)
 print("json written.")
 saveRDS(params,file_ground_truth)

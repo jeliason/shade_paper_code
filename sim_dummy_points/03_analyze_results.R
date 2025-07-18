@@ -9,12 +9,12 @@ library(SHADE)
 
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
-if(SYSTEM_ENV == "laptop") {
+if(SYSTEM_ENV != "HPC") {
   path <- "./sim_dummy_points/data/"
   ratio <- 10
   num_points_per_type <- 500
   sim <- 5
-  sim_indices <- c(1,38,125)
+  sim_indices <- c(1,5)
 } else {
   path <- "./sim_dummy_points/data/"
   sim_indices <- 1:125

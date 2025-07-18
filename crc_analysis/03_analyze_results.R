@@ -16,9 +16,6 @@ pt_data <- read_csv("crc_analysis/data/CRC_pt_metadata.csv")
 # pt_data <- readxl::read_excel("crc_analysis/data/CRC_patients.xlsx",sheet=2) %>%
 #   select(Patient,Group,`TMA spot`,contains("LA"),contains("Diffuse")) %>%
 #   mutate(Group = factor(ifelse(Group == 1,"CRC","DII")))
-# 
-# pt_data <- convert_tma_metadata_final(pt_data)
-cat("NOTE: CRC dataset needs to be loaded here. Replace this with the actual data loading code.\n")
 
 df_raw <- df_raw %>%
   rename(Spot = spots) %>%
@@ -73,404 +70,290 @@ for (i in 1:length(potentials)) {
 # Reshape data for ggplot
 d <- tidyr::pivot_longer(d, cols = starts_with("RBF"), names_to = "rbf", values_to = "y")
 
-# Plot
+# Supplementary Figure S9
 ggplot2::ggplot(d, ggplot2::aes(x = x, y = y, color = rbf)) +
   ggplot2::geom_line(linewidth=1) +
   labs(x="Distance (microns)",y="Log-intensity",color="Basis")
 fsave("pots")
 
+# below code is long-running.
+sic_out <- lapply(targets,\(type) {
 
-# sic_out <- lapply(targets,\(type) {
-# 
-#   file_fit <- paste0(path,"fit_CRC_type_",make.names(type),".rds")
-#   file_metadata <- paste0(path,"metadata_CRC_type_",make.names(type),".rds")
-#   metadata <- readRDS(file_metadata)
-# 
-# 
-#   spots <- metadata$spots
-#   types <- metadata$types
-#   potentials <- metadata$potentials
-#   coef_names <- metadata$coef_names
-#   ix_b0 <- grep("beta0",coef_names,value = FALSE)
-#   combo_names <- coef_names[-ix_b0]
-# 
-#   pt_data %>%
-#     filter(Spot %in% spots) -> pt_df
-# 
-#   num_pot <- length(potentials)
-#   num_types <- length(types)
-#   num_samples <- length(spots)
-#   num_combos <- num_types - 1
-#   num_indiv <- length(unique(pt_df$Patient))
-# 
-# 
-#   fit <- readRDS(file_fit)
-#   draws <- as_draws_rvars(fit$draws())
-# 
-#   beta_global <- draws$beta_global
-#   # beta_category <- draws$beta_category
-#   beta_indiv <- draws$beta_indiv
-#   beta_local <- t(draws$beta_local)
-#   rownames(beta_global) <- coef_names
-#   rownames(beta_indiv) <- coef_names
-#   rownames(beta_local) <- coef_names
-#   # rownames(beta_category) <- coef_names
-# 
-#   # global-indiv SICs
-#   get_SIC_df <- function(Target,Source,exponentiate=FALSE) {
-#     x_seq <- seq(0,100,1)
-#     x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
-#     ix <- grep(paste0("_",Target,"_",Source),rownames(beta_global),fixed = TRUE)
-#     b_g <- as.matrix(beta_global)[ix,]
-# 
-#     lp_g <- x_des %*% b_g
-#     lp <- lapply(1:num_indiv,\(s) {
-#       as.vector(x_des %*% as.vector(beta_indiv[ix,s]))
-#     }) %>%
-#       do.call(cbind,.)
-# 
-#     lp <- cbind(lp,lp_g)
-#     if(exponentiate) {
-#       lp <- exp(lp)
-#     }
-# 
-#     lev_g <- levels(factor(pt_df$Group))
-#     colnames(lp) <- c(paste0("Patient: ",unique(pt_df$Patient)),paste0("Global: ",lev_g))
-#     
-#     
-#     alpha <- 0.2  # for 80% simultaneous bands
-#     
-#     # Assume lp is an rvar data.frame where each column (except x) is an rvar
-#     
-#     # Step 1: Extract mean and SD per x
-#     df_summary <- lp %>%
-#       as.data.frame() %>%
-#       mutate(x = x_seq) %>%
-#       mutate(
-#         across(
-#           -x,
-#           list(
-#             mn = ~as.vector(E(.)),
-#             sd = ~as.vector(sd(.))
-#           )
-#         ),
-#         .keep = "unused"  # <- put .keep here, after across() closes
-#       )
-#     
-#     # Step 2: Standardize residuals across samples
-#     lp_std <- lp %>%
-#       as.data.frame() %>%
-#       # mutate(x = x_seq) %>%
-#       mutate(across(
-#         everything(),
-#         # -x,
-#         ~ as_rvar((. - mean(.)) / sd(.))
-#       ))
-#     
-#     # Step 3: Find maximum deviation across x for each posterior sample
-#     max_dev <- lp_std %>%
-#       mutate(across(
-#         everything(),
-#         # -x,
-#         ~ max(abs(.))
-#       ))
-#     
-#     # Step 4: Find critical value (z_score_band) for simultaneous coverage
-#     z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
-#     
-#     # Step 5: Construct simultaneous lower and upper bands
-#     df_summ <- df_summary %>%
-#       mutate(
-#         across(
-#           ends_with("_mn"),
-#           list(
-#             lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
-#             hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
-#           )
-#         ),
-#       ) %>%
-#       select(-ends_with("sd"))
-#     
-#     # Step 6: Pivot to long format
-#     df_summ %>%
-#       pivot_longer(
-#         cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"), 
-#         names_to = c("lp", "transformation"),
-#         names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
-#       ) %>%
-#       mutate(lp = gsub("_mn","",lp)) %>%
-#       pivot_wider(names_from = transformation,values_from=value) %>%
-#       mutate(is_global = ifelse(str_detect(lp,"Global"),"Global","Individual")) %>%
-#       separate(lp,c("level","ID"),sep = ": ",remove = FALSE) %>%
-#       mutate(Patient = ifelse(level == "Patient",ID,NA)) %>%
-#       mutate(global_level = ifelse(level == "Patient",NA,ID)) %>%
-#       mutate(Patient = as.numeric(Patient)) %>%
-#       left_join(pt_df %>% distinct(Patient,Group),by="Patient") %>%
-#       mutate(Group = ifelse(is.na(Group),global_level,Group)) %>%
-#       mutate(Target=Target,Source=Source)
-#   }
-# 
-#   sic_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
-#     pmap(\(Target,Source) {
-#       cat(Target,", ", Source, "\n")
-#       # print(Target)
-#       get_SIC_df(Target,Source,exponentiate = FALSE)
-#     }) %>% bind_rows()
-# 
-#   # indiv-local SICs
-#   get_local_SIC_df <- function(Target,Source,exponentiate=FALSE) {
-#     x_seq <- seq(0,100,1)
-#     x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
-#     ix <- grep(paste0("_",Target,"_",Source),rownames(beta_global),fixed = TRUE)
-# 
-#     lp_indiv <- lapply(1:num_indiv,\(s) {
-#       as.vector(x_des %*% as.vector(beta_indiv[ix,s]))
-#     }) %>%
-#       do.call(cbind,.)
-# 
-#     lp_local <- lapply(1:num_samples,\(s) {
-#       as.vector(x_des %*% as.vector(beta_local[ix,s]))
-#     }) %>%
-#       do.call(cbind,.)
-# 
-#     lp <- cbind(lp_indiv,lp_local)
-# 
-#     if(exponentiate) {
-#       lp <- exp(lp)
-#     }
-#     lp <- as.data.frame(lp)
-#     colnames(lp) <- c(paste0("Patient: ",unique(pt_df$Patient)),paste0("Spot: ",pt_data$Spot))
-# 
-#     alpha <- 0.2  # for 80% simultaneous bands
-#     
-#     # Assume lp is an rvar data.frame where each column (except x) is an rvar
-#     
-#     # Step 1: Extract mean and SD per x
-#     df_summary <- lp %>%
-#       as.data.frame() %>%
-#       mutate(x = x_seq) %>%
-#       mutate(
-#         across(
-#           -x,
-#           list(
-#             mn = ~as.vector(E(.)),
-#             sd = ~as.vector(sd(.))
-#           )
-#         ),
-#         .keep = "unused"  # <- put .keep here, after across() closes
-#       )
-#     
-#     # Step 2: Standardize residuals across samples
-#     lp_std <- lp %>%
-#       as.data.frame() %>%
-#       # mutate(x = x_seq) %>%
-#       mutate(across(
-#         everything(),
-#         # -x,
-#         ~ as_rvar((. - mean(.)) / sd(.))
-#       ))
-#     
-#     # Step 3: Find maximum deviation across x for each posterior sample
-#     max_dev <- lp_std %>%
-#       mutate(across(
-#         everything(),
-#         # -x,
-#         ~ max(abs(.))
-#       ))
-#     
-#     # Step 4: Find critical value (z_score_band) for simultaneous coverage
-#     z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
-#     
-#     # Step 5: Construct simultaneous lower and upper bands
-#     df_summ <- df_summary %>%
-#       mutate(
-#         across(
-#           ends_with("_mn"),
-#           list(
-#             lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
-#             hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
-#           )
-#         ),
-#       ) %>%
-#       select(-ends_with("sd"))
-#     
-#     # Step 6: Pivot to long format
-#     lp_df <- df_summ %>%
-#       pivot_longer(
-#         cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"), 
-#         names_to = c("lp", "transformation"),
-#         names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
-#       ) %>%
-#       mutate(lp = gsub("_mn","",lp)) %>%
-#       pivot_wider(names_from = transformation,values_from=value) %>%
-#       mutate(is_indiv = ifelse(str_detect(lp,"Patient"),"Individual","Image")) %>%
-#       separate(lp,c("level","ID"),sep = ": ",remove = FALSE)
-# 
-#     lp_df %>%
-#       mutate(Patient = ifelse(level == "Patient",ID,NA)) %>%
-#       mutate(indiv_level = ifelse(level == "Patient",NA,ID)) %>%
-#       left_join(pt_data %>% distinct(Patient,Spot) %>% rename(pt = Patient),by=c("indiv_level"="Spot")) %>%
-#       mutate(Patient = ifelse(is.na(Patient),pt,Patient)) %>%
-#       mutate(Target=Target,Source=Source) %>%
-#       select(-c(indiv_level,pt))
-#   }
-# 
-#   local_sic_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
-#     pmap(\(Target,Source) {
-#       cat(Target,", ", Source, "\n")
-#       # print(Target)
-#       get_local_SIC_df(Target,Source,exponentiate = FALSE)
-#     }) %>% bind_rows()
-#   
-#   # category-local SICs
-#   # num_categories <- ncol(beta_category)
-#   get_category_SIC_df <- function(Target,Source,exponentiate=FALSE) {
-#     x_seq <- seq(0,100,1)
-#     x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
-#     ix <- grep(paste0("_",Target,"_",Source),rownames(beta_global),fixed = TRUE)
-#     
-#     lp_category <- lapply(1:num_categories,\(s) {
-#       as.vector(x_des %*% as.vector(beta_category[ix,s]))
-#     }) %>%
-#       do.call(cbind,.)
-#     
-#     lp_local <- lapply(1:num_samples,\(s) {
-#       as.vector(x_des %*% as.vector(beta_local[ix,s]))
-#     }) %>%
-#       do.call(cbind,.)
-#     
-#     lp <- cbind(lp_category,lp_local)
-#     
-#     if(exponentiate) {
-#       lp <- exp(lp)
-#     }
-#     lp <- as.data.frame(lp)
-#     lev_c <- levels(factor(pt_df$Category))
-#     colnames(lp) <- c(paste0("Category: ",lev_c),paste0("Spot: ",pt_data$Spot))
-#     
-#     alpha <- 0.2  # for 80% simultaneous bands
-#     
-#     # Assume lp is an rvar data.frame where each column (except x) is an rvar
-#     
-#     # Step 1: Extract mean and SD per x
-#     df_summary <- lp %>%
-#       as.data.frame() %>%
-#       mutate(x = x_seq) %>%
-#       mutate(
-#         across(
-#           -x,
-#           list(
-#             mn = ~as.vector(E(.)),
-#             sd = ~as.vector(sd(.))
-#           )
-#         ),
-#         .keep = "unused"  # <- put .keep here, after across() closes
-#       )
-#     
-#     # Step 2: Standardize residuals across samples
-#     lp_std <- lp %>%
-#       as.data.frame() %>%
-#       # mutate(x = x_seq) %>%
-#       mutate(across(
-#         everything(),
-#         # -x,
-#         ~ as_rvar((. - mean(.)) / sd(.))
-#       ))
-#     
-#     # Step 3: Find maximum deviation across x for each posterior sample
-#     max_dev <- lp_std %>%
-#       mutate(across(
-#         everything(),
-#         # -x,
-#         ~ max(abs(.))
-#       ))
-#     
-#     # Step 4: Find critical value (z_score_band) for simultaneous coverage
-#     z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
-#     
-#     # Step 5: Construct simultaneous lower and upper bands
-#     df_summ <- df_summary %>%
-#       mutate(
-#         across(
-#           ends_with("_mn"),
-#           list(
-#             lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
-#             hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
-#           )
-#         ),
-#       ) %>%
-#       select(-ends_with("sd"))
-#     
-#     # Step 6: Pivot to long format
-#     lp_df <- df_summ %>%
-#       pivot_longer(
-#         cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"), 
-#         names_to = c("lp", "transformation"),
-#         names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
-#       ) %>%
-#       mutate(lp = gsub("_mn","",lp)) %>%
-#       pivot_wider(names_from = transformation,values_from=value) %>%
-#       mutate(is_cat = ifelse(str_detect(lp,"Category"),"Category","Image")) %>%
-#       separate(lp,c("level","ID"),sep = ": ",remove = FALSE)
-#     
-#     lp_df %>%
-#       mutate(Category = ifelse(level == "Category",ID,NA)) %>%
-#       mutate(cat_level = ifelse(level == "Category",NA,ID)) %>%
-#       left_join(pt_data %>% distinct(Category,Spot) %>% rename(cat = Category),by=c("cat_level"="Spot")) %>%
-#       mutate(Target=Target,Source=Source) %>%
-#       mutate(Category = ifelse(is.na(Category),cat,Category)) %>%
-#       select(-c(cat_level,cat))
-#   }
-#   
-#   # category_sic_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
-#   #   pmap(\(Target,Source) {
-#   #     cat(Target,", ", Source, "\n")
-#   #     # print(Target)
-#   #     get_category_SIC_df(Target,Source,exponentiate = FALSE)
-#   #   }) %>% bind_rows()
-# 
-#   list(sic_df=sic_df,local_sic_df=local_sic_df)
-# })
-# 
-# sic_df <- lapply(sic_out,\(o) o$sic_df) %>% bind_rows()
-# local_sic_df <- lapply(sic_out,\(o) o$local_sic_df) %>% bind_rows()
-# # category_sic_df <- lapply(sic_out,\(o) o$category_sic_df) %>% bind_rows()
-# 
-# 
-# saveRDS(sic_df,paste0(path,"sic_df.rds"))
-# saveRDS(local_sic_df,paste0(path,"local_sic_df.rds"))
-# saveRDS(category_sic_df,paste0(path,"category_sic_df.rds"))
+  file_fit <- paste0(path,"fit_CRC_type_",make.names(type),".rds")
+  file_metadata <- paste0(path,"metadata_CRC_type_",make.names(type),".rds")
+  metadata <- readRDS(file_metadata)
 
+
+  spots <- metadata$spots
+  types <- metadata$types
+  potentials <- metadata$potentials
+  coef_names <- metadata$coef_names
+  ix_b0 <- grep("beta0",coef_names,value = FALSE)
+  combo_names <- coef_names[-ix_b0]
+
+  pt_data %>%
+    filter(Spot %in% spots) -> pt_df
+
+  num_pot <- length(potentials)
+  num_types <- length(types)
+  num_samples <- length(spots)
+  num_combos <- num_types - 1
+  num_indiv <- length(unique(pt_df$Patient))
+
+
+  fit <- readRDS(file_fit)
+  draws <- as_draws_rvars(fit$draws())
+
+  beta_global <- draws$beta_global
+  # beta_category <- draws$beta_category
+  beta_indiv <- draws$beta_indiv
+  beta_local <- t(draws$beta_local)
+  rownames(beta_global) <- coef_names
+  rownames(beta_indiv) <- coef_names
+  rownames(beta_local) <- coef_names
+  # rownames(beta_category) <- coef_names
+
+  # global-indiv SICs
+  get_SIC_df <- function(Target,Source,exponentiate=FALSE) {
+    x_seq <- seq(0,100,1)
+    x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
+    ix <- grep(paste0("_",Target,"_",Source),rownames(beta_global),fixed = TRUE)
+    b_g <- as.matrix(beta_global)[ix,]
+
+    lp_g <- x_des %*% b_g
+    lp <- lapply(1:num_indiv,\(s) {
+      as.vector(x_des %*% as.vector(beta_indiv[ix,s]))
+    }) %>%
+      do.call(cbind,.)
+
+    lp <- cbind(lp,lp_g)
+    if(exponentiate) {
+      lp <- exp(lp)
+    }
+
+    lev_g <- levels(factor(pt_df$Group))
+    colnames(lp) <- c(paste0("Patient: ",unique(pt_df$Patient)),paste0("Global: ",lev_g))
+
+
+    alpha <- 0.2  # for 80% simultaneous bands
+
+    # Assume lp is an rvar data.frame where each column (except x) is an rvar
+
+    # Step 1: Extract mean and SD per x
+    df_summary <- lp %>%
+      as.data.frame() %>%
+      mutate(x = x_seq) %>%
+      mutate(
+        across(
+          -x,
+          list(
+            mn = ~as.vector(E(.)),
+            sd = ~as.vector(sd(.))
+          )
+        ),
+        .keep = "unused"  # <- put .keep here, after across() closes
+      )
+
+    # Step 2: Standardize residuals across samples
+    lp_std <- lp %>%
+      as.data.frame() %>%
+      # mutate(x = x_seq) %>%
+      mutate(across(
+        everything(),
+        # -x,
+        ~ as_rvar((. - mean(.)) / sd(.))
+      ))
+
+    # Step 3: Find maximum deviation across x for each posterior sample
+    max_dev <- lp_std %>%
+      mutate(across(
+        everything(),
+        # -x,
+        ~ max(abs(.))
+      ))
+
+    # Step 4: Find critical value (z_score_band) for simultaneous coverage
+    z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
+
+    # Step 5: Construct simultaneous lower and upper bands
+    df_summ <- df_summary %>%
+      mutate(
+        across(
+          ends_with("_mn"),
+          list(
+            lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
+            hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
+          )
+        ),
+      ) %>%
+      select(-ends_with("sd"))
+
+    # Step 6: Pivot to long format
+    df_summ %>%
+      pivot_longer(
+        cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"),
+        names_to = c("lp", "transformation"),
+        names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
+      ) %>%
+      mutate(lp = gsub("_mn","",lp)) %>%
+      pivot_wider(names_from = transformation,values_from=value) %>%
+      mutate(is_global = ifelse(str_detect(lp,"Global"),"Global","Individual")) %>%
+      separate(lp,c("level","ID"),sep = ": ",remove = FALSE) %>%
+      mutate(Patient = ifelse(level == "Patient",ID,NA)) %>%
+      mutate(global_level = ifelse(level == "Patient",NA,ID)) %>%
+      mutate(Patient = as.numeric(Patient)) %>%
+      left_join(pt_df %>% distinct(Patient,Group),by="Patient") %>%
+      mutate(Group = ifelse(is.na(Group),global_level,Group)) %>%
+      mutate(Target=Target,Source=Source)
+  }
+
+  sic_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
+    pmap(\(Target,Source) {
+      cat(Target,", ", Source, "\n")
+      # print(Target)
+      get_SIC_df(Target,Source,exponentiate = FALSE)
+    }) %>% bind_rows()
+
+  # indiv-local SICs
+  get_local_SIC_df <- function(Target,Source,exponentiate=FALSE) {
+    x_seq <- seq(0,100,1)
+    x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
+    ix <- grep(paste0("_",Target,"_",Source),rownames(beta_global),fixed = TRUE)
+
+    lp_indiv <- lapply(1:num_indiv,\(s) {
+      as.vector(x_des %*% as.vector(beta_indiv[ix,s]))
+    }) %>%
+      do.call(cbind,.)
+
+    lp_local <- lapply(1:num_samples,\(s) {
+      as.vector(x_des %*% as.vector(beta_local[ix,s]))
+    }) %>%
+      do.call(cbind,.)
+
+    lp <- cbind(lp_indiv,lp_local)
+
+    if(exponentiate) {
+      lp <- exp(lp)
+    }
+    lp <- as.data.frame(lp)
+    colnames(lp) <- c(paste0("Patient: ",unique(pt_df$Patient)),paste0("Spot: ",pt_data$Spot))
+
+    alpha <- 0.2  # for 80% simultaneous bands
+
+    # Assume lp is an rvar data.frame where each column (except x) is an rvar
+
+    # Step 1: Extract mean and SD per x
+    df_summary <- lp %>%
+      as.data.frame() %>%
+      mutate(x = x_seq) %>%
+      mutate(
+        across(
+          -x,
+          list(
+            mn = ~as.vector(E(.)),
+            sd = ~as.vector(sd(.))
+          )
+        ),
+        .keep = "unused"  # <- put .keep here, after across() closes
+      )
+
+    # Step 2: Standardize residuals across samples
+    lp_std <- lp %>%
+      as.data.frame() %>%
+      # mutate(x = x_seq) %>%
+      mutate(across(
+        everything(),
+        # -x,
+        ~ as_rvar((. - mean(.)) / sd(.))
+      ))
+
+    # Step 3: Find maximum deviation across x for each posterior sample
+    max_dev <- lp_std %>%
+      mutate(across(
+        everything(),
+        # -x,
+        ~ max(abs(.))
+      ))
+
+    # Step 4: Find critical value (z_score_band) for simultaneous coverage
+    z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
+
+    # Step 5: Construct simultaneous lower and upper bands
+    df_summ <- df_summary %>%
+      mutate(
+        across(
+          ends_with("_mn"),
+          list(
+            lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
+            hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
+          )
+        ),
+      ) %>%
+      select(-ends_with("sd"))
+
+    # Step 6: Pivot to long format
+    lp_df <- df_summ %>%
+      pivot_longer(
+        cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"),
+        names_to = c("lp", "transformation"),
+        names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
+      ) %>%
+      mutate(lp = gsub("_mn","",lp)) %>%
+      pivot_wider(names_from = transformation,values_from=value) %>%
+      mutate(is_indiv = ifelse(str_detect(lp,"Patient"),"Individual","Image")) %>%
+      separate(lp,c("level","ID"),sep = ": ",remove = FALSE)
+
+    lp_df %>%
+      mutate(Patient = ifelse(level == "Patient",ID,NA)) %>%
+      mutate(indiv_level = ifelse(level == "Patient",NA,ID)) %>%
+      left_join(pt_data %>% distinct(Patient,Spot) %>% rename(pt = Patient),by=c("indiv_level"="Spot")) %>%
+      mutate(Patient = ifelse(is.na(Patient),pt,Patient)) %>%
+      mutate(Target=Target,Source=Source) %>%
+      select(-c(indiv_level,pt))
+  }
+
+  local_sic_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
+    pmap(\(Target,Source) {
+      cat(Target,", ", Source, "\n")
+      # print(Target)
+      get_local_SIC_df(Target,Source,exponentiate = FALSE)
+    }) %>% bind_rows()
+
+  list(sic_df=sic_df,local_sic_df=local_sic_df)
+})
+
+sic_df <- lapply(sic_out,\(o) o$sic_df) %>% bind_rows()
+local_sic_df <- lapply(sic_out,\(o) o$local_sic_df) %>% bind_rows()
+
+
+saveRDS(sic_df,paste0(path,"sic_df.rds"))
+saveRDS(local_sic_df,paste0(path,"local_sic_df.rds"))
 
 local_sic_df <- readRDS(paste0(path,"local_sic_df.rds")) %>%
   rename(lo=lo_simul,
          hi=hi_simul)
-# category_sic_df <- readRDS(paste0(path,"category_sic_df.rds")) %>%
-#   rename(lo=lo_simul,
-#          hi=hi_simul)
+
 sic_df <- readRDS(paste0(path,"sic_df.rds")) %>%
   rename(lo=lo_simul,
          hi=hi_simul)
 
 local_sic_df$Patient <- factor(local_sic_df$Patient,levels=1:35)
   
+# Figure 6
 sic_df %>%
   filter(Target == "CTLs" & Source == "CAFs") %>%
   mutate(is_global = ifelse(is_global == "Global","Cohort",is_global)) %>%
 ggplot(aes(x)) +
   geom_line(aes(y=mn,color=Group,group=lp,linetype=is_global,linewidth=is_global,alpha=is_global)) +
-  # geom_ribbon(aes(ymin=lo,ymax=hi,fill=is_global,alpha=is_global)) +
   geom_hline(yintercept=0,linetype="dotted") +
   labs(x="Distance (microns)",y="Log-intensity",linetype="") +
   scale_linetype_manual(values=c("solid","dashed")) +
   scale_alpha_manual(values=c(1,0.3)) +
   scale_linewidth_manual(values=c(2,1)) +
-  # facet_grid(type1~Source,switch="y") +
-  # scale_color_manual(values = as.vector(pals::glasbey())) +
-  # scale_fill_manual(values = as.vector(pals::glasbey())) +
   guides(alpha="none",group="none",fill="none",linewidth="none")
 fsave("sic_CRC")
   
+# Figure S10
 sic_df %>%
   filter(is_global == "Global") %>%
   mutate(Target = paste0("Target:\n", Target)) %>%
@@ -540,41 +423,11 @@ var_within_patient <- var_within_patient_x %>%
   group_by(Target, Source) %>%
   summarise(var_within_patient = median(var_within_patient, na.rm = TRUE), .groups = "drop")
 
-# Step 1: compute patient mean per x / cell type pair
-# category_means <- category_sic_df %>%
-#   filter(level == "Category") %>%
-#   group_by(x, Category, Target, Source) %>%
-#   summarise(mn_cat = median(mn, na.rm = TRUE), .groups = "drop")
-# 
-# # Step 2: merge with image-level data
-# image_merged <- category_sic_df %>%
-#   filter(level != "Category") %>%
-#   left_join(category_means, by = c("x", "Category", "Target", "Source"))
-# 
-# # Step 3: compute variance of image deviation from patient mean, per x
-# var_within_category_x <- image_merged %>%
-#   group_by(x, Target, Source) %>%
-#   summarise(
-#     var_within_category = mad(mn - mn_cat, na.rm = TRUE),
-#     .groups = "drop"
-#   )
-# 
-# # Step 4: average across x
-# var_within_category <- var_within_category_x %>%
-#   group_by(Target, Source) %>%
-#   summarise(var_within_category = median(var_within_category, na.rm = TRUE), .groups = "drop")
-
 # Combine both for plotting
 var_combined <- var_within_cohort %>%
   left_join(var_within_patient, by = c("Target", "Source")) %>%
-  # left_join(var_within_category, by = c("Target", "Source")) %>%
   pivot_longer(cols = starts_with("var_"), names_to = "level", values_to = "variance")
 
-# Clean up labels for plotting
-# var_combined <- var_combined %>%
-#   mutate(level = recode(level,
-#                         var_within_cohort = "Between-patient (within cohort)",
-#                         var_within_patient = "Between-image (within patient)"))
 
 # Plot heatmaps
 p1 <- var_combined %>%
@@ -607,24 +460,10 @@ p2 <- var_combined %>%
         axis.text.y=element_blank(),
         axis.title.y=element_blank(),axis.ticks.y = element_blank())
 
-# p3 <- var_combined %>%
-#   filter(level == "var_within_category") %>%
-#   ggplot(aes(x = Target, y = Source, fill = variance)) +
-#   geom_tile() +
-#   # facet_wrap(~level, ncol = 1) +
-#   scale_fill_viridis_c(option = "plasma", name = "Within-category average MAD",n.breaks=4) +
-#   theme(
-#     axis.text.x = element_text(angle = 45, hjust = 1)) +
-#   labs(
-#     x = "Target cell type",
-#     y = "Source cell type",
-#   ) +
-#   theme(legend.position="top",
-#         axis.text.y=element_blank(),
-#         axis.title.y=element_blank(),axis.ticks.y = element_blank())
-
+# Figure 7
 p1 + p2
 fsave("sic_mad",width=10)
+
 
 d1 <- local_sic_df %>%
   filter(Patient %in% c(2,19,30)) %>%
@@ -748,143 +587,143 @@ spots_ix <- 1:length(spots)
 
 n_dummy <- 30
 
-# lapply(targets,\(type) {
-#   print(type)
-#   types_keep <- c(type,sources)
-#   
-#   dats <- df_raw %>%
-#     dplyr::filter(Spot %in% spots[spots_ix]) %>%
-#     group_by(Spot) %>%
-#     group_map(~{
-#       .x <- .x %>%
-#         filter(type %in% types_keep) %>%
-#         droplevels()
-#     })
-#   
-#   pats <- lapply(1:length(dats),\(i) {
-#     df <- dats[[i]]
-#     tryCatch({
-#       pat <- make_pat(df$X,df$Y,factor(df$type,levels=types_keep))
-#       sq_W <- owin(xrange = c(min(df$X),max(df$X)),yrange=c(min(df$Y),max(df$Y)))
-#       Window(pat) <- sq_W
-#       pat
-#     },error=\(e) {
-#       print(i)
-#       stop(e)
-#     })
-#   })
-#   
-#   Qs <- lapply(pats,\(pat) make_quadrature(pat,n_dummy = n_dummy,dist = "grid"))
-# 
-#   lapply(Qs,\(Q) {
-#     log(intensity(Q$dummy)) %>%
-#       enframe() %>%
-#       right_join(tibble(name=marks(Q)),by="name") %>%
-#       filter(name == type) %>%
-#       pull(value)
-#   }) %>% unlist() -> offset
-#   
-#   data_lists <- lapply(1:length(Qs),\(i) {
-#     data_list <- make_data(Qs[[i]],potentials,type,verbose=FALSE)
-#     # print(i)
-#     data_list
-#   })
-#   saveRDS(data_lists,paste0(path,"data_lists_auc_grid_type",make.names(type),".rds"))
-#   
-#   data_lists <- readRDS(paste0(path,"data_lists_auc_grid_type",make.names(type),".rds"))
-#   
-#   x_cells <- do.call(rbind,lapply(data_lists,\(data_list) data_list$data))
-#   nms <- colnames(x_cells)
-#   # Define columns to set to zero
-# 
-#   # Create a diagonal matrix with ones, except zeros at specified indices
-#   D <- Matrix::Diagonal(length(nms))
-#   x_cells <- x_cells %*% D
-#   is_cell <- unlist(lapply(data_lists,\(data_list) data_list$response))
-#   keep_ix <- which(is_cell == 0)
-#   
-#   # we need to restrict this to cell types not equal to the target cell type
-#   # otherwise we have data leakage
-#   
-#   x_cells <- x_cells[keep_ix,]
-#   
-#   sample_id <- lapply(1:length(data_lists),\(i) {
-#     rep(i,length(data_lists[[i]]$response))
-#   }) %>% unlist()
-#   
-#   sample_id <- sample_id[keep_ix]
-#   
-#   y_start_stop<- lapply(1:length(data_lists),\(i) {
-#     idx <- sort(which(sample_id == i))
-#     c(idx[1],idx[length(idx)])
-#   }) %>% do.call(rbind,.)
-#   
-#   offset <- offset[keep_ix]
-#   
-#   grid_size <- n_dummy^2 + 4
-#   
-#   num_indiv <- 35
-#   
-#   n_samples <- length(spots_ix)
-#   
-#   
-#   
-#   data_gq <- list(
-#     num_indiv = num_indiv,
-#     num_types = length(sources) + 1,
-#     num_pot = length(potentials),
-#     num_pt_groups = 2,
-#     n_cells = nrow(x_cells),
-#     d_cells = ncol(x_cells),
-#     grid_size = grid_size,
-#     oset = -offset,
-#     n_samples = n_samples,
-#     y_start_stop = y_start_stop,
-#     x_cells = as.matrix(x_cells)
-#   )
-# 
-#   file_fit <- paste0(path,"fit_CRC_type_",make.names(type),".rds")
-#   fit <- readRDS(file_fit)
-# 
-#   draws_fit <- fit$draws()
-#   # draws_fit <- draws_fit[1:100,]
-#   draws_fit <- as_draws_matrix(t(as.matrix(apply(draws_fit,2,mean))))
-#   fit_gq <- run_SHADE_gq(data_gq, draws_fit, seed=123)
-#   
-#   
-#   draws_gq <- as_draws_rvars(fit_gq$draws())
-#   p_pred <- E(draws_gq$p_pred)
-#   
-#   dim(p_pred)
-# 
-#   print(type)
-#   # spot_ix <- which(spots == "22_A")
-#   spdf <- lapply(1:length(Qs),\(i) {
-#     Qs[[i]]$dummy %>% 
-#       as.data.frame() %>%
-#       filter(marks == type) %>%
-#       mutate(spot=spots[i]) %>%
-#       mutate(log_pred=p_pred[i,])
-#     }) %>%
-#     bind_rows()
-# 
-#   spdf %>%
-#     group_by(spot,x) %>%
-#     mutate(count_x=n()) %>%
-#     ungroup() %>%
-#     filter(count_x == n_dummy) %>%
-#     group_by(spot,y) %>%
-#     mutate(count_y=n()) %>%
-#     ungroup() %>%
-#     filter(count_y == n_dummy) %>%
-#     select(-c(count_x,count_y)) -> spdf
-#   
-#   spdf
-#   
-# }) %>%
-#   bind_rows() -> spdf
-# 
-# saveRDS(spdf,paste0(path,"spdf.rds"))
+lapply(targets,\(type) {
+  print(type)
+  types_keep <- c(type,sources)
+
+  dats <- df_raw %>%
+    dplyr::filter(Spot %in% spots[spots_ix]) %>%
+    group_by(Spot) %>%
+    group_map(~{
+      .x <- .x %>%
+        filter(type %in% types_keep) %>%
+        droplevels()
+    })
+
+  pats <- lapply(1:length(dats),\(i) {
+    df <- dats[[i]]
+    tryCatch({
+      pat <- make_pat(df$X,df$Y,factor(df$type,levels=types_keep))
+      sq_W <- owin(xrange = c(min(df$X),max(df$X)),yrange=c(min(df$Y),max(df$Y)))
+      Window(pat) <- sq_W
+      pat
+    },error=\(e) {
+      print(i)
+      stop(e)
+    })
+  })
+
+  Qs <- lapply(pats,\(pat) make_quadrature(pat,n_dummy = n_dummy,dist = "grid"))
+
+  lapply(Qs,\(Q) {
+    log(intensity(Q$dummy)) %>%
+      enframe() %>%
+      right_join(tibble(name=marks(Q)),by="name") %>%
+      filter(name == type) %>%
+      pull(value)
+  }) %>% unlist() -> offset
+
+  data_lists <- lapply(1:length(Qs),\(i) {
+    data_list <- make_data(Qs[[i]],potentials,type,verbose=FALSE)
+    # print(i)
+    data_list
+  })
+  saveRDS(data_lists,paste0(path,"data_lists_auc_grid_type",make.names(type),".rds"))
+
+  data_lists <- readRDS(paste0(path,"data_lists_auc_grid_type",make.names(type),".rds"))
+
+  x_cells <- do.call(rbind,lapply(data_lists,\(data_list) data_list$data))
+  nms <- colnames(x_cells)
+  # Define columns to set to zero
+
+  # Create a diagonal matrix with ones, except zeros at specified indices
+  D <- Matrix::Diagonal(length(nms))
+  x_cells <- x_cells %*% D
+  is_cell <- unlist(lapply(data_lists,\(data_list) data_list$response))
+  keep_ix <- which(is_cell == 0)
+
+  # we need to restrict this to cell types not equal to the target cell type
+  # otherwise we have data leakage
+
+  x_cells <- x_cells[keep_ix,]
+
+  sample_id <- lapply(1:length(data_lists),\(i) {
+    rep(i,length(data_lists[[i]]$response))
+  }) %>% unlist()
+
+  sample_id <- sample_id[keep_ix]
+
+  y_start_stop<- lapply(1:length(data_lists),\(i) {
+    idx <- sort(which(sample_id == i))
+    c(idx[1],idx[length(idx)])
+  }) %>% do.call(rbind,.)
+
+  offset <- offset[keep_ix]
+
+  grid_size <- n_dummy^2 + 4
+
+  num_indiv <- 35
+
+  n_samples <- length(spots_ix)
+
+
+
+  data_gq <- list(
+    num_indiv = num_indiv,
+    num_types = length(sources) + 1,
+    num_pot = length(potentials),
+    num_pt_groups = 2,
+    n_cells = nrow(x_cells),
+    d_cells = ncol(x_cells),
+    grid_size = grid_size,
+    oset = -offset,
+    n_samples = n_samples,
+    y_start_stop = y_start_stop,
+    x_cells = as.matrix(x_cells)
+  )
+
+  file_fit <- paste0(path,"fit_CRC_type_",make.names(type),".rds")
+  fit <- readRDS(file_fit)
+
+  draws_fit <- fit$draws()
+  # draws_fit <- draws_fit[1:100,]
+  draws_fit <- as_draws_matrix(t(as.matrix(apply(draws_fit,2,mean))))
+  fit_gq <- run_SHADE_gq(data_gq, draws_fit, seed=123)
+
+
+  draws_gq <- as_draws_rvars(fit_gq$draws())
+  p_pred <- E(draws_gq$p_pred)
+
+  dim(p_pred)
+
+  print(type)
+  # spot_ix <- which(spots == "22_A")
+  spdf <- lapply(1:length(Qs),\(i) {
+    Qs[[i]]$dummy %>%
+      as.data.frame() %>%
+      filter(marks == type) %>%
+      mutate(spot=spots[i]) %>%
+      mutate(log_pred=p_pred[i,])
+    }) %>%
+    bind_rows()
+
+  spdf %>%
+    group_by(spot,x) %>%
+    mutate(count_x=n()) %>%
+    ungroup() %>%
+    filter(count_x == n_dummy) %>%
+    group_by(spot,y) %>%
+    mutate(count_y=n()) %>%
+    ungroup() %>%
+    filter(count_y == n_dummy) %>%
+    select(-c(count_x,count_y)) -> spdf
+
+  spdf
+
+}) %>%
+  bind_rows() -> spdf
+
+saveRDS(spdf,paste0(path,"spdf.rds"))
 spdf <- readRDS(paste0(path,"spdf.rds"))
 
 dats <- df_raw %>%
@@ -971,6 +810,3 @@ aucs_df %>%
   facet_wrap(~name) +
   labs(y="AUC")
 fsave("auc_boxplot_groups")
-
-
-

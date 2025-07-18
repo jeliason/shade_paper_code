@@ -5,9 +5,9 @@ library(SHADE)
 
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
-if(SYSTEM_ENV == "laptop") {
+if(SYSTEM_ENV != "HPC") {
   path <- "./sim_dummy_points/data/"
-  sim_idx <- 125
+  sim_idx <- 1
   sample_or_var <- "var"
 } else {
   path <- "./sim_dummy_points/data/"

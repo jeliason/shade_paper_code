@@ -1,71 +1,44 @@
 # Colorectal Cancer (CRC) Analysis
 
-This directory contains code for analyzing real colorectal cancer tissue data using the SHADE model. The analysis examines spatial interactions between different cell types in tumor microenvironments to understand their ecological relationships.
+This directory contains code for analyzing real CRC tissue data using the SHADE model.
 
 ## Purpose
 
-Spatial organization of immune and tumor cells within the tumor microenvironment can provide insights into cancer biology and patient outcomes. This analysis:
+The goal is to uncover how immune and tumor cells are spatially organized in the tumor microenvironment and what this reveals about cancer biology and patient outcomes. Specifically, the analysis:
 
-1. Models directional/asymmetric spatial interactions between key cell types in CRC tissue
-2. Identifies hierarchical patterns across patients and cohorts
-3. Characterizes spatial interaction curves (SICs) at different biological scales
-4. Relates spatial patterns to biological mechanisms in colorectal cancer
+-   Models directional spatial interactions between key cell types\
+-   Identifies hierarchical spatial patterns across images, patients, and cohorts\
+-   Characterizes spatial interaction curves (SICs) at multiple scales\
+-   Links spatial patterns to biological mechanisms in CRC
 
 ## Workflow
 
-1. **01_generate_data.R**: 
-   - Prepares CRC point pattern data for analysis
-   - Creates appropriate quadrature approximation using dummy points
-   - Organizes data into hierarchical structures (images nested within patients)
-   - Performs data quality checks and preprocessing
+The analysis is structured into three scripts:
 
-2. **02_fit_models.R**: 
-   - Fits SHADE models to the CRC data using radial basis functions
-   - Implements hierarchical models to capture patient-level and image-level variation
-   - Uses `run_SHADE_model()` with MCMC sampling for full posterior inference
-   - Handles computational demands using high-performance computing
-   - Saves model fits as RDS files
+1.  **01_generate_data.R**\
+    Prepares point pattern data, creates quadrature approximations, organizes it hierarchically, and performs quality checks.
 
-3. **03_analyze_results.R**: 
-   - Extracts posterior distributions from fitted models
-   - Characterizes cell-type interaction patterns and their biological implications
-   - Quantifies uncertainty in spatial relationships
-   - Creates biologically interpretable summaries of the results
-   - Prepares data for visualization and further analysis
+2.  **02_fit_models.R**\
+    Fits SHADE models using MCMC or variational inference, accounting for patient- and image-level variation. Outputs model fits as `.rds` files.
+
+3.  **03_analyze_results.R**\
+    Extracts and interprets spatial interaction patterns, quantifies uncertainty, and generates summaries and visualizations.
+    
+3.  **04_gcross_comparison.R**\
+    Compares results from SHADE with those from a G-cross point pattern analysis.
 
 ## Usage
 
-For local execution (with subsampled data):
-```r
-# Set environment to local
-Sys.setenv(SYSTEM_ENV="laptop")
+To run locally:
 
-# Run scripts in sequence
+``` r
 source("01_generate_data.R")
 source("02_fit_models.R")
 source("03_analyze_results.R")
-```
-
-For HPC execution:
-```bash
-# Submit jobs to SLURM
-sbatch 01_generate_data.slurm
-sbatch 02_fit_models.slurm
-sbatch 03_analyze_results.slurm
-```
-
-To retrieve results from compute cluster:
-```bash
-./get_fit_back.sh
+source("04_gcross_comparison.R")
 ```
 
 ## Output
 
-- **./data/**: Contains processed CRC point pattern data
-- **./figures/**: Contains visualizations of spatial interaction patterns in CRC tissue
-
-## References
-
-- Original CRC dataset references
-- SHADE methodology paper
-- Related literature on spatial analysis in tumor microenvironments
+-   **./data/**: Contains processed CRC point pattern data
+-   **./CRC_analysis_paper/**: Contains visualizations of spatial interaction patterns in CRC tissue

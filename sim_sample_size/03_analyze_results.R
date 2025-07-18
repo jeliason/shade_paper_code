@@ -10,10 +10,10 @@ library(SHADE)
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
-  path <- "./sim_control_confounding/data/"
+  path <- "./sim_sample_size/data/"
   sim_indices <- c(1,38,50)
 } else {
-  path <- "./sim_control_confounding/data/"
+  path <- "./sim_sample_size/data/"
   sim_indices <- 1:135
 }
 num_types <- 3

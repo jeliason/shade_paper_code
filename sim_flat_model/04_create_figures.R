@@ -17,7 +17,7 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=5, width=8, units="in")
 }
-figures_folder <- "./sim_flat_model/figures/"
+figures_folder <- "./sim_flat_model/sim_flat_model_figures/"
 
 out <- readRDS(paste0(path,"analysis_results.rds"))
 rmse_tb <- out$rmse_tb

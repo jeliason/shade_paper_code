@@ -12,27 +12,17 @@ Dummy points in this context are used to approximate quadrature for estimating c
 
 ## Workflow
 
-1. **01_generate_data.R**: 
-   - Generates synthetic point patterns with specific spatial interaction parameters
-   - Creates dummy points with varying densities relative to real points
-   - Saves the data with ground truth parameters for later comparison
+1. **01_generate_data.R**  
+   Simulates spatial point patterns with known parameters, adds dummy points with varying densities, and saves ground truth for comparison.
 
-2. **02_fit_models.R**: 
-   - Fits SHADE models to the generated data using radial basis functions
-   - Uses `run_SHADE_model()` with MCMC sampling for full posterior inference
-   - Evaluates models with different dummy point ratios
-   - Saves model fits as RDS files
+2. **02_fit_models.R**  
+   Fits SHADE models using MCMC or variational inference, tests different dummy point ratios, and saves results as `.rds` files.
 
-3. **03_analyze_results.R**: 
-   - Loads fitted models and ground truth
-   - Computes parameter recovery metrics (RMSE, coverage)
-   - Compares performance across different dummy point densities
-   - Creates summary statistics for figures
+3. **03_analyze_results.R**  
+   Loads model fits and ground truth, computes recovery metrics (e.g. RMSE, coverage), and summarizes performance across conditions.
 
-4. **04_create_figures.R**: 
-   - Generates publication-quality figures showing parameter recovery
-   - Creates visualizations of spatial interaction curves
-   - Compares true vs. estimated parameters across different quadrature densities
+4. **04_create_figures.R**  
+   Generates figures of parameter recovery and interaction curves, comparing estimated vs. true parameters.
 
 ## Usage
 
@@ -51,6 +41,8 @@ source("04_create_figures.R")
 For HPC execution:
 ```bash
 # Submit jobs to SLURM
+SYSTEM_ENV="HPC"
+
 sbatch 01_generate_data.slurm
 sbatch 02_fit_models.slurm
 sbatch 03_analyze_results.slurm
@@ -59,4 +51,4 @@ sbatch 03_analyze_results.slurm
 ## Output
 
 - **./data/**: Contains generated point patterns, dummy point ratios, and true parameters
-- **./figures/**: Contains visualizations of results showing parameter recovery across different quadrature approximation settings
+- **./sim_dummy_points_figures/**: Contains visualizations of results showing parameter recovery across different quadrature approximation settings
