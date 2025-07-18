@@ -13,12 +13,8 @@ source("crc_analysis/utils.R")
 # Example:
 df_raw <- read_csv("crc_analysis/data/CRC_cleaned.csv")
 pt_data <- read_csv("crc_analysis/data/CRC_pt_metadata.csv")
-# pt_data <- readxl::read_excel("crc_analysis/data/CRC_patients.xlsx",sheet=2) %>%
-#   select(Patient,Group,`TMA spot`,contains("LA"),contains("Diffuse")) %>%
-#   mutate(Group = factor(ifelse(Group == 1,"CRC","DII")))
 
 df_raw <- df_raw %>%
-  rename(Spot = spots) %>%
   dplyr::mutate(type = as.factor(type)) %>%
   mutate(type = fct_recode(type,"CAFs"="smooth muscle","hybrid E/M"="stroma","TAMs"="CD163+ macros","CTLs"="CD8+ T cells"))
 
@@ -802,7 +798,7 @@ aucs_df %>%
   arrange(desc(mn))
 
 aucs_df %>%
-  left_join(pt_data %>% select(Spot,Patient,Group)) %>%
+  left_join(pt_data) %>%
   pivot_longer(-c(Spot,Patient,Group)) %>%
   ggplot(aes(x=Group,y=value)) +
   geom_boxplot() +

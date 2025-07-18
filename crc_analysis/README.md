@@ -13,7 +13,10 @@ The goal is to uncover how immune and tumor cells are spatially organized in the
 
 ## Workflow
 
-The analysis is structured into three scripts:
+The analysis is structured into four scripts:
+
+0. **00_preprocess_data.R**\
+    Downloads and preprocesses single-cell CRC data as well as clinical patient annotations.
 
 1.  **01_generate_data.R**\
     Prepares point pattern data, creates quadrature approximations, organizes it hierarchically, and performs quality checks.
@@ -32,6 +35,7 @@ The analysis is structured into three scripts:
 To run locally:
 
 ``` r
+source("00_preprocess_data.R")
 source("01_generate_data.R")
 source("02_fit_models.R")
 source("03_analyze_results.R")
