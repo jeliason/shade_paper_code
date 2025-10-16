@@ -38,6 +38,9 @@ CLAUDE.md
 responses.tex
 journal_club.tex
 cover_letter.tex
+responses.pdf
+journal_club.pdf
+cover_letter.pdf
 
 # Temporary files
 *.log

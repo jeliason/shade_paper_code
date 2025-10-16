@@ -1,0 +1,158 @@
+\documentclass[final]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{luainputenc}
+\usepackage{lmodern}
+\usepackage[size=custom, width=122,height=91, scale=1.2]{beamerposter}
+\usetheme{gemini}
+\usecolortheme{msu}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.14}
+\usepackage{anyfontsize}
+
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.025\paperwidth}
+\setlength{\colwidth}{0.3\paperwidth}
+
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+\title{Multilevel Modeling of Asymmetric Spatial Interactions in \\
+Multiplexed Imaging Data}
+\author{Joel Eliason}
+\institute{University of Michigan}
+
+\footercontent{
+  \href{mailto:joelne@umich.edu}{joelne@umich.edu} \hfill
+  MCBIOS 2025 \hfill
+  \href{https://github.com/jeliason/SHADE}{github.com/jeliason/SHADE}}
+
+\logoright{\includegraphics[height=5cm]{logos/blockM.png}}
+
+\begin{document}
+
+\begin{frame}[t]
+\begin{columns}[t]
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{alertblock}{Overview of SHADE Framework}
+    SHADE (Spatial Hierarchical Asymmetry via Directional Estimation) is a Bayesian hierarchical model for directional cell-cell interactions in spatial imaging data. It models the conditional intensity of a target cell type given spatial context of other cell types and estimates smooth Spatial Interaction Curves (SICs) across cohorts, patients, and images in a multilevel fashion.
+    \begin{figure}
+      \includegraphics[width=\textwidth]{images/summary_figures/summary_figure.pdf}
+      \caption{Overview of SHADE model pipeline.}
+    \end{figure}
+  \end{alertblock}
+
+\begin{exampleblock}{Model Formulation}
+  \textbf{Poisson likelihood of points of $X_B$ given points of $X_A$:}
+  \begin{equation}
+    \label{eq:lik}
+    L(X_B \mid X_A) = \left[\prod_{v \in X_B} \lambda_B(v \mid X_A)\right] \exp\left(- \int_W \lambda_B(v \mid X_A) \, dv \right)
+  \end{equation}
+
+  \textbf{Conditional intensity function:}
+  \begin{equation}
+    \lambda_B(v \mid X_A) = \exp(\eta_B(v) + X_{\text{SIF}}(v; A, B))
+  \end{equation}
+
+  \textbf{Spatial interaction curve (SIC):}
+  \begin{equation}
+    X_{\text{SIC}}(s; A, B) = \sum_p \beta^{(p)}_{A,B} \phi_p(s)
+    \label{eq:sic}
+  \end{equation}
+
+  where $\phi_p(s)$ are radial basis functions over distance.
+\end{exampleblock}
+
+  \begin{block}{Simulation: Hierarchical Benefits}
+Hierarchical modeling improves SIC estimation. Table shows RMSE (95\% CI).
+    \begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    \textbf{Hierarchical} & \textbf{All} & \textbf{Small} & \textbf{Medium} & \textbf{Large} \\
+    \midrule
+    No & 0.142 (0.097, 0.196) & 0.355 (0.230, 0.509) & 0.022 (0.016, 0.031) & 0.048 (0.034, 0.066) \\
+    Yes & \textbf{0.039} (0.027, 0.043) & \textbf{0.072} (0.043, 0.084) & \textbf{0.017} (0.013, 0.020) & \textbf{0.028} (0.021, 0.036) \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+    % \vspace{1em}
+    % Figure below shows example SICs estimated from the same image using models with and without hierarchical structure. Hierarchical modeling reduces both variance and bias.
+    
+    % \begin{figure}
+    %   \centering
+    %   \includegraphics[width=0.85\textwidth]{images/simulated_no_hier/estimated_SIC.pdf}
+    %   \caption{Examples of image-level SICs with (blue) and without (orange) hierarchical modeling.}
+    % \end{figure}
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Multiscale Variability in CRC}
+    SHADE was applied to CRC images with nested structure (images in patients, patients in cohorts). SIC variability across levels was quantified:
+    \begin{figure}
+      \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_mad.pdf}
+      \caption{MAD-based variability across patients and images.}
+      \label{fig:sic_mad_examples}
+    \end{figure}
+  \end{block}
+
+  \begin{block}{Group Differences in CRC Spatial Interactions}
+    \begin{figure}    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_CRC_diff.pdf}
+      \caption{SIC differences between CLR (``hot'' tumor) and DII (``cold'' tumor) groups. Positive values = stronger clustering in CLR.}
+      \label{fig:sic_CRC_diff}
+    \end{figure}
+Hybrid E/M cells clustered around granulocytes and TAMs in DII tumors, suggesting a pro-tumor niche, while in CLR tumors, hybrid E/M and tumor cells clustered near CD8+ and memory CD4+ T cells, indicating active immune response.
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Image-Level Heterogeneity Within Patients}
+    SHADE estimates SICs at multiple levels. The variability across images highlights intra-patient heterogeneity in spatial interactions.
+
+    \begin{figure}
+      \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_local_example.pdf}
+      \caption{Patient- and image-level SICs showing within-patient spatial heterogeneity.}
+      \label{fig:sic_mad_examples}
+    \end{figure}
+  \end{block}
+
+  \begin{block}{Predicting Spatial Organization}
+    SHADE predicts spatial intensity of cell types from others.
+    \begin{figure}
+      \includegraphics[width=\textwidth]{images/CRC_analysis_paper/example_pred.pdf}
+      \caption{Predicted spatial distribution of cell types from SHADE model.}
+      \label{fig:example_pred}
+    \end{figure}
+  \end{block}
+
+  \begin{block}{Conclusion}
+    SHADE enables interpretable modeling of asymmetric, multiscale spatial dependencies in tissue. Future work will extend to functional covariates (e.g., marker expression, functional states).
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+\end{columns}
+\end{frame}
+
+\end{document}
+
