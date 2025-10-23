@@ -125,7 +125,8 @@ shade_draws <- as_draws_rvars(shade_results$fit$draws())
 shade_false_positives <- sapply(1:structure$total_images, function(i) {
   beta <- as.vector(shade_draws$beta_local[i,2:4])
 
-  x_seq <- seq(0,80,1)
+  # Use same distance range as global envelopes
+  x_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, 1)
   x_des <- lapply(potentials, \(pot) pot(x_seq)) %>% do.call(cbind,.)
   lp <- as.vector(x_des %*% beta)
 
@@ -138,13 +139,8 @@ shade_false_positives <- sapply(1:structure$total_images, function(i) {
     alpha = 0.05
   )
 
-  # Check if simultaneous band excludes zero ANYWHERE in the relevant distance range
-  # Range: 10-75 μm (covers all three RBF basis functions, excludes very short distances)
-  relevant_distances <- df_summ$x >= 10 & df_summ$x <= 75
-
   # Band excludes zero if lower > 0 OR upper < 0 anywhere in range
-  excludes_zero <- any(df_summ$lower[relevant_distances] > 0) |
-                   any(df_summ$upper[relevant_distances] < 0)
+  excludes_zero <- any(df_summ$lower > 0) | any(df_summ$upper < 0)
 
   return(as.numeric(excludes_zero))
 })
@@ -157,7 +153,8 @@ simple_shade_false_positives <- sapply(1:structure$total_images, function(i) {
   shade_draws <- as_draws_rvars(results$fit$draws())
   beta <- as.vector(shade_draws$beta[1:3])
 
-  x_seq <- seq(0,80,1)
+  # Use same distance range as global envelopes
+  x_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, 1)
   x_des <- lapply(potentials, \(pot) pot(x_seq)) %>% do.call(cbind,.)
   lp <- as.vector(x_des %*% beta)
 
@@ -170,13 +167,8 @@ simple_shade_false_positives <- sapply(1:structure$total_images, function(i) {
     alpha = 0.05
   )
 
-  # Check if simultaneous band excludes zero ANYWHERE in the relevant distance range
-  # Range: 10-75 μm (covers all three RBF basis functions, excludes very short distances)
-  relevant_distances <- df_summ$x >= 10 & df_summ$x <= 75
-
   # Band excludes zero if lower > 0 OR upper < 0 anywhere in range
-  excludes_zero <- any(df_summ$lower[relevant_distances] > 0) |
-                   any(df_summ$upper[relevant_distances] < 0)
+  excludes_zero <- any(df_summ$lower > 0) | any(df_summ$upper < 0)
 
   return(as.numeric(excludes_zero))
 })

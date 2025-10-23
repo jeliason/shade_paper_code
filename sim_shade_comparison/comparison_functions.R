@@ -1,6 +1,19 @@
 # Shared functions for SHADE comparison simulations
 # Used by both simulation_runner.R and null_calibration.R
 
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+# Distance range for all analyses (10-75 μm)
+# Covers all three RBF basis functions, excludes very short distances
+DISTANCE_RANGE_MIN <- 10
+DISTANCE_RANGE_MAX <- 75
+
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
 #' Create patient metadata with proper indexing
 create_patient_structure <- function(num_pts_per_group, num_images, seed = 2024) {
   set.seed(seed)
@@ -305,8 +318,8 @@ run_gcross_analysis <- function(patterns, structure) {
 
       # Calculate G-cross with global (simultaneous) envelope
       # For global envelope at α=0.05, use nsim=199 minimum
-      # Restrict to relevant distance range (10-75 μm) for proper calibration
-      r_seq <- seq(10, 75, by = 1)
+      # Restrict to relevant distance range for proper calibration
+      r_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, by = 1)
       env <- envelope(pat, Gcross, i = "1", j = "3", nsim = 199,
                       correction = "km", verbose = FALSE,
                       global = TRUE, r = r_seq)
@@ -359,8 +372,8 @@ run_kcross_analysis <- function(patterns, structure) {
 
       # Calculate K-cross with global (simultaneous) envelope
       # For global envelope at α=0.05, use nsim=199 minimum
-      # Restrict to relevant distance range (10-75 μm) for proper calibration
-      r_seq <- seq(10, 75, by = 1)
+      # Restrict to relevant distance range for proper calibration
+      r_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, by = 1)
       env <- envelope(pat, Kcross, i = "1", j = "3", nsim = 199,
                       correction = "iso", verbose = FALSE,
                       global = TRUE, r = r_seq)

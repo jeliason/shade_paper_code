@@ -132,8 +132,8 @@ simple_shade_image_results <- sapply(1:structure$total_images, function(i) {
     beta <- as.vector(shade_draws$beta[1:3])
     beta_true <- coefficients$image_effects[i,]
 
-    # Compute SIC
-    x_seq <- seq(0,80,1)
+    # Compute SIC using same distance range as global envelopes
+    x_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, 1)
     x_des <- lapply(potentials, \(pot) pot(x_seq)) %>% do.call(cbind,.)
 
     lp <- as.vector(x_des %*% beta)
@@ -187,7 +187,8 @@ shade_image_results <- sapply(1:structure$total_images, function(i) {
   beta <- as.vector(shade_draws$beta_local[i,2:4])
   beta_true <- coefficients$image_effects[i,]
 
-  x_seq <- seq(0,80,1)
+  # Compute SIC using same distance range as global envelopes
+  x_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, 1)
   x_des <- lapply(potentials,\(pot) pot(x_seq)) %>% do.call(cbind,.)
 
   lp <- as.vector(x_des %*% beta)
