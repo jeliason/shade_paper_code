@@ -5,9 +5,10 @@
 # CONSTANTS
 # ============================================================================
 
-# Distance range for all analyses (10-75 μm)
-# Covers all three RBF basis functions, excludes very short distances
-DISTANCE_RANGE_MIN <- 10
+# Distance range for all analyses (0-75 μm)
+# Covers all three RBF basis functions
+# Note: envelope() in spatstat requires r to start at 0
+DISTANCE_RANGE_MIN <- 0
 DISTANCE_RANGE_MAX <- 75
 
 # ============================================================================
@@ -259,8 +260,8 @@ simple_shade <- function(pattern, potentials) {
       offset_new = offset_new
     )
 
-    mod <- cmdstan_model("sim_shade_comparison/simple_shade.stan")
-    fit <- mod$variational(data_stan, draws = 1e3, refresh = 100)
+    mod <- cmdstan_model("sim_shade_comparison/simple_shade.stan", quiet=TRUE)
+    fit <- mod$variational(data_stan, draws = 1e3, refresh = 0, show_messages=FALSE)
 
     list(fit = fit, data_stan = data_stan)
   }, error = function(e) {
@@ -317,10 +318,10 @@ run_gcross_analysis <- function(patterns, structure) {
       }
 
       # Calculate G-cross with global (simultaneous) envelope
-      # For global envelope at α=0.05, use nsim=199 minimum
-      # Restrict to relevant distance range for proper calibration
+      # For exact α=0.05: nrank/(1+nsim) = 10/200 = 0.05
+      # Higher nsim gives more stable envelopes
       r_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, by = 1)
-      env <- envelope(pat, Gcross, i = "1", j = "3", nsim = 199,
+      env <- envelope(pat, Gcross, i = "1", j = "3", nsim = 199, nrank = 10,
                       correction = "km", verbose = FALSE,
                       global = TRUE, r = r_seq)
 
@@ -371,10 +372,10 @@ run_kcross_analysis <- function(patterns, structure) {
       }
 
       # Calculate K-cross with global (simultaneous) envelope
-      # For global envelope at α=0.05, use nsim=199 minimum
-      # Restrict to relevant distance range for proper calibration
+      # For exact α=0.05: nrank/(1+nsim) = 10/200 = 0.05
+      # Higher nsim gives more stable envelopes
       r_seq <- seq(DISTANCE_RANGE_MIN, DISTANCE_RANGE_MAX, by = 1)
-      env <- envelope(pat, Kcross, i = "1", j = "3", nsim = 199,
+      env <- envelope(pat, Kcross, i = "1", j = "3", nsim = 199, nrank = 10,
                       correction = "iso", verbose = FALSE,
                       global = TRUE, r = r_seq)
 

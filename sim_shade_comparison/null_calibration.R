@@ -23,12 +23,13 @@ start <- Sys.time()
 # CONFIGURATION
 # ============================================================================
 
-set.seed(2024)
+set.seed(2025)
 
 # Simulation parameters
-n_reps <- 100  # Number of null replications
-num_pts_per_group <- 20
-num_images_per_patient <- 2
+# Total images = num_pts_per_group × 2 groups × num_images_per_patient
+# = 50 × 2 × 4 = 400 images for stable type I error estimation
+num_pts_per_group <- 50
+num_images_per_patient <- 4
 size_im <- 1500
 W <- owin(c(0, size_im), c(0, size_im))
 area <- size_im^2
@@ -113,12 +114,26 @@ if(file.exists(simple_shade_file)) {
 }
 
 cat("\n=== Running G-cross analysis ===\n")
-# Note: run_gcross_analysis and run_kcross_analysis now use r = seq(10, 75, by = 1)
-# to restrict envelope calculation to the relevant distance range
-gcross_results <- run_gcross_analysis(patterns, structure)
+gcross_file <- "sim_shade_comparison/data/null_calibration_gcross.rds"
+if(file.exists(gcross_file)) {
+  cat("Loading cached G-cross results...\n")
+  gcross_results <- readRDS(gcross_file)
+} else {
+  gcross_results <- run_gcross_analysis(patterns, structure)
+  cat("Saving G-cross results...\n")
+  saveRDS(gcross_results, gcross_file)
+}
 
 cat("\n=== Running K-cross analysis ===\n")
-kcross_results <- run_kcross_analysis(patterns, structure)
+kcross_file <- "sim_shade_comparison/data/null_calibration_kcross.rds"
+if(file.exists(kcross_file)) {
+  cat("Loading cached K-cross results...\n")
+  kcross_results <- readRDS(kcross_file)
+} else {
+  kcross_results <- run_kcross_analysis(patterns, structure)
+  cat("Saving K-cross results...\n")
+  saveRDS(kcross_results, kcross_file)
+}
 
 # ============================================================================
 # CALCULATE TYPE I ERROR RATES
@@ -130,7 +145,9 @@ cat("\n=== Calculating Type I Error Rates ===\n\n")
 shade_draws <- as_draws_rvars(shade_results$fit$draws())
 
 # Check SHADE hierarchical: how often do simultaneous bands exclude zero?
+cat("Checking SHADE hierarchical...\n")
 shade_false_positives <- sapply(1:structure$total_images, function(i) {
+  if(i %% 50 == 0) cat("  Image", i, "of", structure$total_images, "\n")
   beta <- as.vector(shade_draws$beta_local[i,2:4])
 
   # Use same distance range as global envelopes
@@ -154,7 +171,9 @@ shade_false_positives <- sapply(1:structure$total_images, function(i) {
 })
 
 # Check simple SHADE
+cat("\nChecking simple SHADE...\n")
 simple_shade_false_positives <- sapply(1:structure$total_images, function(i) {
+  if(i %% 10 == 0) cat("  Image", i, "of", structure$total_images, "\n")
   results <- simple_shade_results[[i]]
   if(is.null(results)) return(NA)
 
@@ -234,7 +253,6 @@ results <- list(
   kcross_false_positives = kcross_false_positives,
   n_images = structure$total_images,
   config = list(
-    n_reps = n_reps,
     num_pts_per_group = num_pts_per_group,
     num_images_per_patient = num_images_per_patient,
     np_t = np_t,
