@@ -102,7 +102,15 @@ cat("=== Running SHADE analysis ===\n")
 shade_results <- run_shade_analysis(patterns, structure, num_potentials)
 
 cat("\n=== Running simple SHADE analysis ===\n")
-simple_shade_results <- run_simple_shade_analysis(patterns, potentials)
+simple_shade_file <- "sim_shade_comparison/data/null_calibration_simple_shade.rds"
+if(file.exists(simple_shade_file)) {
+  cat("Loading cached simple SHADE results...\n")
+  simple_shade_results <- readRDS(simple_shade_file)
+} else {
+  simple_shade_results <- run_simple_shade_analysis(patterns, potentials)
+  cat("Saving simple SHADE results...\n")
+  saveRDS(simple_shade_results, simple_shade_file)
+}
 
 cat("\n=== Running G-cross analysis ===\n")
 # Note: run_gcross_analysis and run_kcross_analysis now use r = seq(10, 75, by = 1)
