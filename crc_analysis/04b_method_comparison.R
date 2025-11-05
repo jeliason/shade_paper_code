@@ -369,82 +369,116 @@ for (targ in targets) {
 }
 
 # ============================================================================
-# PART 2: G-CROSS GLOBAL ENVELOPE TEST
+# PART 2: MFPCA/SOFR ANALYSIS FOR G-CROSS AND L-CROSS
 # ============================================================================
 
-fda <- make_mxfda(metadata = pt_data %>% mutate(Group = as.numeric(as.factor(Group)) - 1),
-                         spatial = bind_rows(dats) %>% rename(x=X,y=Y),
-                         subject_key = "Patient",
-                         sample_key = "Spot")
+cat("\n=== mFPCA/SOFR Analysis for Group Comparisons ===\n")
 
-fda <- extract_summary_functions(fda,
-                summary_func = Gcross,
-                extract_func = bivariate,
-                r_vec = seq(0, 100, by = 1),
-                edge_correction = "km",
-                markvar = "type",
-                mark1 = "CTLs",
-                mark2 = "TAMs")
+# Create mxfda object (same for all analyses)
+fda_base <- make_mxfda(
+  metadata = pt_data %>% mutate(Group = as.numeric(as.factor(Group)) - 1),
+  spatial = bind_rows(dats) %>% rename(x=X, y=Y),
+  subject_key = "Patient",
+  sample_key = "Spot"
+)
 
-plot(fda, y = "fundiff", what = "bi g", sampleID = "Spot") +
-  geom_hline(yintercept = 0, color = "red", linetype = 2)
+# ============================================================================
+# G-CROSS mFPCA/SOFR ANALYSIS
+# ============================================================================
 
-fda <- run_mfpca(fda, 
-                         metric = "bi g", 
-                         r = "r", 
-                         value = "fundiff",
-                         pve = .99)
+cat("\n=== G-cross mFPCA/SOFR Analysis ===\n")
 
-fda <- run_sofr(
-    fda,
-    model_name = "group_test",
-    formula = Group ~ s(Patient, bs="re"),  # Random effect for Patient
-    family = "binomial",
-    metric = "bi g",
-    r = "r",
-    value = "fundiff"
-  )
+gcross_sofr_results <- expand_grid(
+  target = targets,
+  source = sources
+) %>%
+  pmap_dfr(\(target, source) {
 
-model = extract_model(fda, 'bi g', type = 'sofr', model_name = 'group_test')
-# plot(model)
+    cat("G-cross mFPCA/SOFR:", source, "->", target, "\n")
 
-  p <- mgcv::plot.gam(model, select  =2, shade = TRUE,
-       xlab = "Distance (μm)",
-       ylab = "Functional coefficient β(r)",
-       main = "Effect of G-cross on log-odds of Group")
-summary(model)
+    tryCatch({
+      # Extract G-cross for this pair
+      fda <- extract_summary_functions(
+        fda_base,
+        summary_func = Gcross,
+        extract_func = bivariate,
+        r_vec = seq(MIN_INTERACTION_RADIUS, 75, by = 1),
+        edge_correction = "km",
+        markvar = "type",
+        mark1 = target,
+        mark2 = source
+      )
 
-  # Simpler approach: extract from the plot object
-  plot_data <- p[[2]]  # This contains the plotting data
+      # Run multilevel FPCA
+      fda <- run_mfpca(
+        fda,
+        metric = "bi g",
+        r = "r",
+        value = "fundiff",
+        pve = 0.99
+      )
 
-  # Convert to dataframe for ggplot
-  df_plot <- data.frame(
-    r_scaled = plot_data$x,
-    beta = plot_data$fit,
-    se = plot_data$se
-  ) %>%
-    mutate(
-      # Map scaled [0,1] back to actual distances
-      r = r_scaled * (75 - MIN_INTERACTION_RADIUS) +
-  MIN_INTERACTION_RADIUS,
-      lower = beta - 1.96 * se,
-      upper = beta + 1.96 * se
-    )
+      # Run scalar-on-function regression
+      fda <- run_sofr(
+        fda,
+        model_name = "group_test",
+        formula = Group ~ s(Patient, bs="re"),
+        family = "binomial",
+        metric = "bi g",
+        r = "r",
+        value = "fundiff"
+      )
 
-  # Create ggplot
-  ggplot(df_plot, aes(x = r, y = beta)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
-    geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3, fill =
-  "steelblue") +
-    geom_line(color = "steelblue", linewidth = 1) +
-    labs(
-      x = "Distance (μm)",
-      y = "Functional coefficient β(r)",
-      title = "Effect of G-cross on log-odds of Group",
-      subtitle = paste("p =", round(summary(model)$s.table[2, "p-value"],
-   3))
-    ) +
-    theme_bw()
+      # Extract model and p-value
+      model <- extract_model(fda, 'bi g', type = 'sofr', model_name = 'group_test')
+      p_value <- summary(model)$s.table["s(xmat.tmat):L.xmat", "p-value"]
+      edf <- summary(model)$s.table["s(xmat.tmat):L.xmat", "edf"]
+
+      # Extract functional coefficient beta(r) for visualization
+      plot_obj <- mgcv::plot.gam(model, select = 2, shade = TRUE)
+      plot_data <- plot_obj[[2]]
+
+      # Convert to actual distance scale
+      beta_curve <- data.frame(
+        r_scaled = plot_data$x,
+        beta = plot_data$fit,
+        se = plot_data$se
+      ) %>%
+        mutate(
+          r = r_scaled * (75 - MIN_INTERACTION_RADIUS) + MIN_INTERACTION_RADIUS,
+          lower = beta - 1.96 * se,
+          upper = beta + 1.96 * se
+        )
+
+      data.frame(
+        target = target,
+        source = source,
+        method = "G-cross (mFPCA)",
+        p_value = p_value,
+        edf = edf,
+        detected = p_value < 0.05,
+        beta_curve = I(list(beta_curve)),
+        model = I(list(model))
+      )
+
+    }, error = \(e) {
+      cat("  Error:", conditionMessage(e), "\n")
+      data.frame(
+        target = target,
+        source = source,
+        method = "G-cross (mFPCA)",
+        p_value = NA,
+        edf = NA,
+        detected = NA,
+        beta_curve = I(list(NULL)),
+        model = I(list(NULL))
+      )
+    })
+  })
+
+cat("✓ G-cross mFPCA/SOFR complete\n")
+print(gcross_sofr_results %>%
+        select(target, source, detected, p_value, edf))
 cat("\n=== G-cross Global Envelope Tests ===\n")
 
 gcross_detections <- expand_grid(
