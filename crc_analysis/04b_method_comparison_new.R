@@ -13,9 +13,9 @@
 #   - 04b_04_visualizations.R: Create all figures
 # ============================================================================
 
-cat("=" %>% rep(80) %>% paste(collapse=""), "\n")
+cat(paste(rep("=", 80), collapse=""), "\n")
 cat("METHOD COMPARISON: SHADE vs mFPCA/SOFR\n")
-cat("=" %>% rep(80) %>% paste(collapse=""), "\n\n")
+cat(paste(rep("=", 80), collapse=""), "\n\n")
 
 start_time <- Sys.time()
 
@@ -61,7 +61,7 @@ source("crc_analysis/04b_04_visualizations.R")
 end_time <- Sys.time()
 runtime <- difftime(end_time, start_time, units = "mins")
 
-cat("\n", "=" %>% rep(80) %>% paste(collapse=""), "\n")
+cat("\n", paste(rep("=", 80), collapse=""), "\n")
 cat("✓ METHOD COMPARISON COMPLETE\n")
 cat("Total runtime:", round(runtime, 2), "minutes\n")
-cat("=" %>% rep(80) %>% paste(collapse=""), "\n\n")
+cat(paste(rep("=", 80), collapse=""), "\n\n")

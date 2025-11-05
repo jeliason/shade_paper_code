@@ -31,11 +31,12 @@ gcross_sofr_results <- expand_grid(
 
     tryCatch({
       # Extract G-cross for this pair
+      # Note: mxfda requires r_vec to start at 0
       fda <- extract_summary_functions(
         fda_base,
         summary_func = Gcross,
         extract_func = bivariate,
-        r_vec = seq(MIN_INTERACTION_RADIUS, 75, by = 1),
+        r_vec = seq(0, 75, by = 1),
         edge_correction = "km",
         markvar = "type",
         mark1 = target,
@@ -71,14 +72,14 @@ gcross_sofr_results <- expand_grid(
       plot_obj <- mgcv::plot.gam(model, select = 2, shade = TRUE)
       plot_data <- plot_obj[[2]]
 
-      # Convert to actual distance scale
+      # Convert to actual distance scale (r_vec goes from 0 to 75)
       beta_curve <- data.frame(
         r_scaled = plot_data$x,
         beta = plot_data$fit,
         se = plot_data$se
       ) %>%
         mutate(
-          r = r_scaled * (75 - MIN_INTERACTION_RADIUS) + MIN_INTERACTION_RADIUS,
+          r = r_scaled * 75,
           lower = beta - 1.96 * se,
           upper = beta + 1.96 * se
         )
@@ -129,11 +130,12 @@ lcross_sofr_results <- expand_grid(
 
     tryCatch({
       # Extract L-cross for this pair
+      # Note: mxfda requires r_vec to start at 0
       fda <- extract_summary_functions(
         fda_base,
         summary_func = Lcross,
         extract_func = bivariate,
-        r_vec = seq(MIN_INTERACTION_RADIUS, 75, by = 1),
+        r_vec = seq(0, 75, by = 1),
         edge_correction = "iso",
         markvar = "type",
         mark1 = target,
@@ -169,14 +171,14 @@ lcross_sofr_results <- expand_grid(
       plot_obj <- mgcv::plot.gam(model, select = 2, shade = TRUE)
       plot_data <- plot_obj[[2]]
 
-      # Convert to actual distance scale
+      # Convert to actual distance scale (r_vec goes from 0 to 75)
       beta_curve <- data.frame(
         r_scaled = plot_data$x,
         beta = plot_data$fit,
         se = plot_data$se
       ) %>%
         mutate(
-          r = r_scaled * (75 - MIN_INTERACTION_RADIUS) + MIN_INTERACTION_RADIUS,
+          r = r_scaled * 75,
           lower = beta - 1.96 * se,
           upper = beta + 1.96 * se
         )
