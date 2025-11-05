@@ -6,6 +6,7 @@ library(posterior)
 library(ggdist)
 library(survival)
 library(SHADE)
+source("../utils.R")
 
 path <- "./sim_sample_size/data/"
 
@@ -16,11 +17,12 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=5, width=8, units="in")
 }
-figures_folder <- "./sim_sample_size/sim_sample_size_figures/"
+figures_folder <- "./manuscript/images/sim_sample_size_figures/"
 
-out <- readRDS(paste0(path,"analysis_results.rds"))
-rmse_tb <- out$rmse_tb
-sic_tb <- out$sic_tb
+# Load standardized analysis summary
+analysis_summary <- readRDS(paste0(path, "analysis_summary.rds"))
+rmse_tb <- analysis_summary$rmse_tb
+sic_tb <- analysis_summary$sic_tb
 rmse_tb <- rmse_tb %>%
   mutate(coefficient = factor(coefficient)) %>%
   mutate(coefficient = fct_recode(coefficient,
@@ -123,8 +125,9 @@ fsave("avg_rmse_over_scales_all")
 
 sic_tb %>%
   filter(sim == 4) %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   rename(images=images_per_pt,
-         `patients per group`=num_pts_per_group) %>%  
+         `patients per group`=num_pts_per_group) %>%
   ggplot(aes(x)) +
   geom_ribbon(aes(ymin=lo,ymax=hi),fill="grey70") +
   geom_line(aes(y=value,color=Curve),linewidth=1) +

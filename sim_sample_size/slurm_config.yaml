@@ -1,0 +1,22 @@
+# SLURM configuration for sim_sample_size
+
+jobs:
+  01_generate_data:
+    job_name: make_dsize_data
+    array_range: 1-135
+    time: "45:00"
+    mem: "16G"
+    cpus: 1
+
+  02_fit_models:
+    job_name: fit_simulated_dsize
+    array_range: 1-135
+    time: "5:00"
+    mem: "4G"
+    cpus: 2
+
+  03_analyze_results:
+    job_name: analysis_simulated_dsize
+    time: "30:00"
+    mem: "32G"
+    cpus: 1

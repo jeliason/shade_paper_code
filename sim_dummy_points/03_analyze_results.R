@@ -7,18 +7,23 @@ library(ggdist)
 library(survival)
 library(SHADE)
 
-# set environment
+# Load utility functions and constants
+source("../utils.R")
+
+# Set environment and get data path
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
-  path <- "./sim_dummy_points/data/"
   ratio <- 10
   num_points_per_type <- 500
   sim <- 5
   sim_indices <- c(1,5)
 } else {
-  path <- "./sim_dummy_points/data/"
   sim_indices <- 1:125
 }
+
+# Get data path (handles HPC vs local automatically)
+path <- get_data_path("sim_dummy_points")
+print(paste("Data path:", path))
 num_types <- 3
 num_pot <- 3
 types_grid <- expand.grid(t1=num_types,t2=1:(num_types-1))
@@ -115,11 +120,11 @@ sic_tb <- grid %>%
     # print(file_fit)
     fit <- readRDS(file_fit)
     ground_truth <- readRDS(file_ground_truth)
-    
+
     # global
     estimate <- as_draws_rvars(fit$draws(variables = "beta_global"))$beta_global
     beta_estimate <-  estimate[-1,] # remove alphas
-    
+
     beta_true <- ground_truth$betas_global[-1,]
     # cbind(beta_true[,1],beta_estimate[,1])
     x_seq <- seq(0,100,1)
@@ -133,26 +138,43 @@ sic_tb <- grid %>%
     
     
     lp <- bind_cols(true=lp_t[,1],estimate=as.vector(lp_e[,1]))
-    
-    lp <- lp %>%
-      mutate(x=x_seq) %>%
-      mutate(across(estimate,list(
-        mn = ~as.vector(E(.)),
-        lo = ~as.vector(quantile(.,0.1)),
-        hi = ~as.vector(quantile(.,0.9))
-      ),.names="{fn}"),.keep="unused") %>%
-      rename(`Post. Mean`=mn,True=true) %>%
-      pivot_longer(c(`Post. Mean`,True),names_to="Curve")
-    
+
+    # Compute simultaneous 95% credible bands using utility function
+    bands <- compute_simultaneous_bands(
+      lp_data = lp %>% select(estimate),
+      x_seq = x_seq,
+      alpha = 0.05
+    )
+
+    # Combine with true values and reshape for plotting
+    lp <- bands %>%
+      rename(`Post. Mean` = mean) %>%
+      mutate(True = as.vector(lp[[1]])) %>%
+      pivot_longer(c(`Post. Mean`, True), names_to = "Curve", values_to = "value") %>%
+      mutate(
+        lo = ifelse(Curve == "Post. Mean", lower, NA_real_),
+        hi = ifelse(Curve == "Post. Mean", upper, NA_real_)
+      ) %>%
+      select(-variable, -lower, -upper)
+
     lp <- lp %>%
       mutate(ratio=ratio,num_points_per_type=num_points_per_type,sim=sim)
     
   }) %>% bind_rows()
 
 
-out <- list(
-  rmse_tb=rmse_tb,
-  sic_tb=sic_tb
+# Save standardized analysis summary for fetching/plotting
+analysis_summary <- list(
+  rmse_tb = rmse_tb,
+  sic_tb = sic_tb,
+  metadata = list(
+    sim_dir = "sim_dummy_points",
+    date_analyzed = Sys.time(),
+    n_simulations = length(sim_indices),
+    ratios = unique(grid$ratio),
+    num_points = unique(grid$num_points_per_type)
+  )
 )
 
-saveRDS(out,paste0(path,"analysis_results.rds"))
+saveRDS(analysis_summary, paste0(path, "analysis_summary.rds"))
+print(paste("Saved analysis summary to:", paste0(path, "analysis_summary.rds")))

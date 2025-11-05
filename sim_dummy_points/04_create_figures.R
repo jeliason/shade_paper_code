@@ -7,6 +7,9 @@ library(ggdist)
 library(survival)
 library(SHADE)
 
+# Load utility functions and constants
+source("../utils.R")
+
 # set environment
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
@@ -31,11 +34,12 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname,height=5,width=8) {
   ggsave(paste0(figures_folder,fname,".pdf"),device = cairo_pdf, height=height, width=width, units="in")
 }
-figures_folder <- "./sim_dummy_points/sim_dummy_points_figures/"
+figures_folder <- "./manuscript/images/sim_dummy_points_figures/"
 
-out <- readRDS(paste0(path,"analysis_results.rds"))
-rmse_tb <- out$rmse_tb
-sic_tb <- out$sic_tb
+# Load standardized analysis summary
+analysis_summary <- readRDS(paste0(path, "analysis_summary.rds"))
+rmse_tb <- analysis_summary$rmse_tb
+sic_tb <- analysis_summary$sic_tb
 rmse_tb <- rmse_tb %>%
   mutate(coefficient = factor(coefficient)) %>%
   mutate(coefficient = fct_recode(coefficient,
@@ -130,6 +134,7 @@ fsave("avg_rmse_over_scales",height=6)
 ### plot example SICs estimate vs ground truth
 
 sic_tb %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   ggplot(aes(x)) +
   geom_ribbon(aes(ymin=lo,ymax=hi),fill="grey70") +
   geom_line(aes(y=value,color=Curve),linewidth=1) +

@@ -3,19 +3,24 @@ library(spatstat)
 library(Matrix)
 library(SHADE)
 
-# set environment
+# Load utilities
+source("utils.R")
+
+# Set environment and get data path
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
-  path <- "./sim_sample_size/data/"
   sim_idx <- 50
   sample_or_var <- "var"
 } else {
-  path <- "./sim_sample_size/data/"
   args <- commandArgs(trailingOnly=TRUE)
   sim_idx <- as.numeric(args[1])
   sample_or_var <- "var"
-  print(sim_idx)
+  print(paste("Simulation index:", sim_idx))
 }
+
+# Get data path (handles HPC vs local automatically)
+path <- get_data_path("sim_sample_size")
+print(paste("Data path:", path))
 
 n_cores <- 2
 draws <- 1e3

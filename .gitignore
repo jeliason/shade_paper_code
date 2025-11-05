@@ -12,6 +12,18 @@
 *.Rproj
 .DS_Store
 
+# HPC workflow
+.env
+*.slurm
+logs/
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
 # Output directories that should not be version controlled
 */figures/*
 */data/*/*
@@ -41,6 +53,7 @@ cover_letter.tex
 responses.pdf
 journal_club.pdf
 cover_letter.pdf
+reviewer_response_todos.md
 
 # Temporary files
 *.log

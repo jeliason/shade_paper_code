@@ -18,10 +18,10 @@ Hierarchical models account for multiple levels of variation (e.g., within and b
     Fits SHADE models with hierarchical and flat structures using MCMC and variational inference. Saves results as `.rds` files.
 
 3.  **03_analyze_results.R**\
-    Compares recovery accuracy, uncertainty, and computational efficiency between model types. Summarizes performance metrics.
+    Compares recovery accuracy, uncertainty, and computational efficiency between model types. Saves standardized `analysis_summary.rds` containing all processed data needed for figures.
 
 4.  **04_create_figures.R**\
-    Produces figures highlighting differences in recovery and uncertainty between hierarchical and flat models.
+    Loads `analysis_summary.rds` and produces figures highlighting differences in recovery and uncertainty between hierarchical and flat models.
 
 ## Usage
 
@@ -47,14 +47,23 @@ source("04_create_figures.R")
 For HPC execution:
 
 ``` bash
-SYSTEM_ENV="HPC"
-# Submit jobs to SLURM
-sbatch 01_generate_data.slurm
-sbatch 02_fit_models.slurm
-sbatch 03_analyze_results.slurm
+# Submit jobs
+python scripts/hpc.py submit sim_flat_model 01_generate_data
+python scripts/hpc.py submit sim_flat_model 02_fit_models
+python scripts/hpc.py submit sim_flat_model 03_analyze_results
+
+# Fetch results (only downloads analysis_summary.rds, not raw data)
+python scripts/hpc.py fetch sim_flat_model
+
+# Generate figures locally
+Rscript sim_flat_model/04_create_figures.R
 ```
 
 ## Output
 
--   **./data/**: Contains generated hierarchical point patterns and true parameters
--   **./sim_flat_model_figures/**: Contains comparative visualizations between hierarchical and flat models
+-   **./data/** (HPC only): Raw simulation data (point patterns, model fits)
+-   **./data/analysis_summary.rds**: Standardized analysis output containing:
+    -   `rmse_tb`: RMSE comparison between hierarchical and flat models
+    -   `sic_tb`: Spatial interaction curve estimates for both model types
+    -   `metadata`: Analysis metadata (date, simulation count, etc.)
+-   **manuscript/images/sim_flat_model_figures/**: Comparative visualizations between hierarchical and flat models

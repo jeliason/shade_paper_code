@@ -6,7 +6,7 @@ source("utils.R")
 fsave <- \(fname,height=5,width=5,...) {
   ggsave(paste0(figures_folder,fname), height=height, width=width, units="in",...)
 }
-figures_folder <- "summary_figures/"
+figures_folder <- "manuscript/images/summary_figures/"
 
 seed <- 2026
 set.seed(seed)
@@ -139,10 +139,11 @@ lapply(1:(num_types-1),\(j) {
   weights <- betas[j,]
   pot_mat <- lapply(1:length(rbfs),\(i) rbfs[[i]](x_seq)*weights[i]) %>% do.call(cbind,.) %>% rowSums()
   tibble(x=x_seq,y=pot_mat,type=j)
-  
+
 }) %>%
   bind_rows() %>%
   mutate(type=factor(type)) %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   ggplot(aes(x,y)) +
   geom_line(aes(color=type,group=type),linewidth=1.5) +
   geom_hline(yintercept=0,linetype="dashed") +
@@ -211,9 +212,9 @@ cohort_df <- tibble(x = x_seq, y = cohort_y)
 
 # Plot
 ggplot() +
-  geom_line(data = patient_dfs, aes(x = x, y = y, group = patient),
+  geom_line(data = patient_dfs %>% filter(x >= MIN_INTERACTION_RADIUS), aes(x = x, y = y, group = patient),
             linetype = "dotted",color="#F8766D", linewidth = 0.5) +
-  geom_line(data = cohort_df, aes(x = x, y = y),color="#F8766D", linewidth = 1) +
+  geom_line(data = cohort_df %>% filter(x >= MIN_INTERACTION_RADIUS), aes(x = x, y = y),color="#F8766D", linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   # annotate("text", x = 65, y = 0.4, label = "Cohort-level SIC", hjust = 0, size = 4.5) +
   # annotate("text", x = 65, y = 0.15, label = "Patient-level SICs", hjust = 0, size = 4.5, color = "gray40") +
@@ -249,7 +250,9 @@ summary_df <- sic_samples %>%
   )
 
 # Plot
-ggplot(summary_df, aes(x = x)) +
+summary_df %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
+  ggplot(aes(x = x)) +
   geom_ribbon(aes(ymin = y_lower, ymax = y_upper), fill = "#7CAE00", alpha = 0.3) +
   geom_line(aes(y = y_mean), color = "#7CAE00", linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed") +
@@ -282,7 +285,9 @@ sic_df_ci <- tibble(
 )
 
 # Plot with ribbon
-ggplot(sic_df_ci, aes(x = x, y = y, color = cohort, fill = cohort)) +
+sic_df_ci %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
+  ggplot(aes(x = x, y = y, color = cohort, fill = cohort)) +
   geom_ribbon(aes(ymin = y_lower, ymax = y_upper), alpha = 0.2, color = NA) +
   geom_line(linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed") +

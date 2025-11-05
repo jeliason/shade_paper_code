@@ -8,7 +8,9 @@ library(cmdstanr)
 library(patchwork)
 library(SHADE)
 source("crc_analysis/utils.R")
+source("utils.R")
 
+refit <- FALSE
 # CRC dataset needs to be loaded here
 # Example:
 df_raw <- read_csv("crc_analysis/data/CRC_cleaned.csv")
@@ -50,7 +52,7 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname,height=5,width=8) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=height, width=width, units="in")
 }
-figures_folder <- "./crc_analysis/CRC_analysis_paper/"
+figures_folder <- "./manuscript/images/CRC_analysis_paper/"
 
 file_metadata <- paste0(path,"metadata_CRC_type_",make.names(targets[1]),".rds")
 metadata <- readRDS(file_metadata)
@@ -72,6 +74,7 @@ ggplot2::ggplot(d, ggplot2::aes(x = x, y = y, color = rbf)) +
   labs(x="Distance (microns)",y="Log-intensity",color="Basis")
 fsave("pots")
 
+if(refit) {
 # below code is long-running.
 sic_out <- lapply(targets,\(type) {
 
@@ -130,69 +133,16 @@ sic_out <- lapply(targets,\(type) {
     lev_g <- levels(factor(pt_df$Group))
     colnames(lp) <- c(paste0("Patient: ",unique(pt_df$Patient)),paste0("Global: ",lev_g))
 
+    # Compute simultaneous 95% credible bands using utility function
+    bands <- compute_simultaneous_bands(
+      lp_data = lp,
+      x_seq = x_seq,
+      alpha = 0.05
+    )
 
-    alpha <- 0.2  # for 80% simultaneous bands
-
-    # Assume lp is an rvar data.frame where each column (except x) is an rvar
-
-    # Step 1: Extract mean and SD per x
-    df_summary <- lp %>%
-      as.data.frame() %>%
-      mutate(x = x_seq) %>%
-      mutate(
-        across(
-          -x,
-          list(
-            mn = ~as.vector(E(.)),
-            sd = ~as.vector(sd(.))
-          )
-        ),
-        .keep = "unused"  # <- put .keep here, after across() closes
-      )
-
-    # Step 2: Standardize residuals across samples
-    lp_std <- lp %>%
-      as.data.frame() %>%
-      # mutate(x = x_seq) %>%
-      mutate(across(
-        everything(),
-        # -x,
-        ~ as_rvar((. - mean(.)) / sd(.))
-      ))
-
-    # Step 3: Find maximum deviation across x for each posterior sample
-    max_dev <- lp_std %>%
-      mutate(across(
-        everything(),
-        # -x,
-        ~ max(abs(.))
-      ))
-
-    # Step 4: Find critical value (z_score_band) for simultaneous coverage
-    z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
-
-    # Step 5: Construct simultaneous lower and upper bands
-    df_summ <- df_summary %>%
-      mutate(
-        across(
-          ends_with("_mn"),
-          list(
-            lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
-            hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
-          )
-        ),
-      ) %>%
-      select(-ends_with("sd"))
-
-    # Step 6: Pivot to long format
-    df_summ %>%
-      pivot_longer(
-        cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"),
-        names_to = c("lp", "transformation"),
-        names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
-      ) %>%
-      mutate(lp = gsub("_mn","",lp)) %>%
-      pivot_wider(names_from = transformation,values_from=value) %>%
+    # Reshape and join with metadata
+    bands %>%
+      rename(lp = variable, mn = mean, lo_simul = lower, hi_simul = upper) %>%
       mutate(is_global = ifelse(str_detect(lp,"Global"),"Global","Individual")) %>%
       separate(lp,c("level","ID"),sep = ": ",remove = FALSE) %>%
       mutate(Patient = ifelse(level == "Patient",ID,NA)) %>%
@@ -234,72 +184,18 @@ sic_out <- lapply(targets,\(type) {
     lp <- as.data.frame(lp)
     colnames(lp) <- c(paste0("Patient: ",unique(pt_df$Patient)),paste0("Spot: ",pt_data$Spot))
 
-    alpha <- 0.2  # for 80% simultaneous bands
+    # Compute simultaneous 95% credible bands using utility function
+    bands <- compute_simultaneous_bands(
+      lp_data = lp,
+      x_seq = x_seq,
+      alpha = 0.05
+    )
 
-    # Assume lp is an rvar data.frame where each column (except x) is an rvar
-
-    # Step 1: Extract mean and SD per x
-    df_summary <- lp %>%
-      as.data.frame() %>%
-      mutate(x = x_seq) %>%
-      mutate(
-        across(
-          -x,
-          list(
-            mn = ~as.vector(E(.)),
-            sd = ~as.vector(sd(.))
-          )
-        ),
-        .keep = "unused"  # <- put .keep here, after across() closes
-      )
-
-    # Step 2: Standardize residuals across samples
-    lp_std <- lp %>%
-      as.data.frame() %>%
-      # mutate(x = x_seq) %>%
-      mutate(across(
-        everything(),
-        # -x,
-        ~ as_rvar((. - mean(.)) / sd(.))
-      ))
-
-    # Step 3: Find maximum deviation across x for each posterior sample
-    max_dev <- lp_std %>%
-      mutate(across(
-        everything(),
-        # -x,
-        ~ max(abs(.))
-      ))
-
-    # Step 4: Find critical value (z_score_band) for simultaneous coverage
-    z_score_band <- apply(max_dev,2,\(x) quantile(x, probs = 1 - alpha))
-
-    # Step 5: Construct simultaneous lower and upper bands
-    df_summ <- df_summary %>%
-      mutate(
-        across(
-          ends_with("_mn"),
-          list(
-            lo_simul = ~ . - z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column())),
-            hi_simul = ~ . + z_score_band[sub("_mn$", "", cur_column())] * get(sub("_mn$", "_sd", cur_column()))
-          )
-        ),
-      ) %>%
-      select(-ends_with("sd"))
-
-    # Step 6: Pivot to long format
-    lp_df <- df_summ %>%
-      pivot_longer(
-        cols = matches("_(mn|mn_lo_simul|mn_hi_simul)$"),
-        names_to = c("lp", "transformation"),
-        names_pattern = "(.*)_(mn|lo_simul|hi_simul)"
-      ) %>%
-      mutate(lp = gsub("_mn","",lp)) %>%
-      pivot_wider(names_from = transformation,values_from=value) %>%
+    # Reshape and join with metadata
+    bands %>%
+      rename(lp = variable, mn = mean, lo_simul = lower, hi_simul = upper) %>%
       mutate(is_indiv = ifelse(str_detect(lp,"Patient"),"Individual","Image")) %>%
-      separate(lp,c("level","ID"),sep = ": ",remove = FALSE)
-
-    lp_df %>%
+      separate(lp,c("level","ID"),sep = ": ",remove = FALSE) %>%
       mutate(Patient = ifelse(level == "Patient",ID,NA)) %>%
       mutate(indiv_level = ifelse(level == "Patient",NA,ID)) %>%
       left_join(pt_data %>% distinct(Patient,Spot) %>% rename(pt = Patient),by=c("indiv_level"="Spot")) %>%
@@ -324,7 +220,7 @@ local_sic_df <- lapply(sic_out,\(o) o$local_sic_df) %>% bind_rows()
 
 saveRDS(sic_df,paste0(path,"sic_df.rds"))
 saveRDS(local_sic_df,paste0(path,"local_sic_df.rds"))
-
+}
 local_sic_df <- readRDS(paste0(path,"local_sic_df.rds")) %>%
   rename(lo=lo_simul,
          hi=hi_simul)
@@ -338,8 +234,9 @@ local_sic_df$Patient <- factor(local_sic_df$Patient,levels=1:35)
 # Figure 6
 sic_df %>%
   filter(Target == "CTLs" & Source == "CAFs") %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   mutate(is_global = ifelse(is_global == "Global","Cohort",is_global)) %>%
-ggplot(aes(x)) +
+  ggplot(aes(x)) +
   geom_line(aes(y=mn,color=Group,group=lp,linetype=is_global,linewidth=is_global,alpha=is_global)) +
   geom_hline(yintercept=0,linetype="dotted") +
   labs(x="Distance (microns)",y="Log-intensity",linetype="") +
@@ -352,6 +249,7 @@ fsave("sic_CRC")
 # Figure S10
 sic_df %>%
   filter(is_global == "Global") %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   mutate(Target = paste0("Target:\n", Target)) %>%
   mutate(Source = paste0("Source:\n", Source)) %>%
   ggplot(aes(x)) +
@@ -472,6 +370,7 @@ d2 <- local_sic_df %>%
   mutate(t1t2 = paste(Source,"-->",Target))
 
 bind_rows(d1,d2) %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   ggplot(aes(x)) +
   geom_line(aes(y=mn,color=Patient,group=lp,linetype=is_indiv,linewidth=is_indiv,alpha=is_indiv)) +
   # geom_ribbon(aes(ymin=lo,ymax=hi,fill=is_global,alpha=is_global)) +
@@ -490,6 +389,7 @@ fsave("sic_local_example")
 local_sic_df %>%
   # filter(Target == "CTLs" & Source == "CAFs") %>%
   filter(Patient %in% c(1,2)) %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   mutate(is_indiv = factor(is_indiv,levels=c("Individual","Image"))) %>%
   mutate(Target = paste0("Target:\n", Target)) %>%
   mutate(Source = paste0("Source:\n", Source)) %>%
@@ -510,7 +410,7 @@ fsave("sic_CRC_local_ci")
 ### SIC diffs
 # 1. Create a background dataframe with a vertical gradient
 gradient_df <- expand.grid(
-  x = seq(0, 100, length.out = 200),
+  x = seq(MIN_INTERACTION_RADIUS, 100, length.out = 200),
   y = seq(-0.3, 0.3, length.out = 200)
 )
 
@@ -528,6 +428,7 @@ gradient_df <- gradient_df %>%
 # 2. Prep your SIC difference data
 diff_df <- sic_df %>%
   filter(is_global == "Global") %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   # mutate(
   #   type1 = recode(type1, "granulocytes" = "gran.", "vasculature" = "vasc."),
   #   type2 = recode(type2, "granulocytes" = "gran.", "vasculature" = "vasc.")
@@ -582,7 +483,7 @@ spots_ix <- 1:length(spots)
 
 
 n_dummy <- 30
-
+if(refit) {
 lapply(targets,\(type) {
   print(type)
   types_keep <- c(type,sources)
@@ -720,6 +621,7 @@ lapply(targets,\(type) {
   bind_rows() -> spdf
 
 saveRDS(spdf,paste0(path,"spdf.rds"))
+}
 spdf <- readRDS(paste0(path,"spdf.rds"))
 
 dats <- df_raw %>%
@@ -761,7 +663,6 @@ spdf %>%
   coord_fixed(ratio = 1500 / 2000)  # Aspect ratio to match ranges
 fsave("example_pred",height=6,width=11)
 
-types <- types_keep
 aucs_df <- lapply(1:length(spots),\(spot_ix) {
   print(spot_ix)
   
@@ -806,3 +707,4 @@ aucs_df %>%
   facet_wrap(~name) +
   labs(y="AUC")
 fsave("auc_boxplot_groups")
+  

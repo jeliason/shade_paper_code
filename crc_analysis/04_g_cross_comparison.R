@@ -12,7 +12,7 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname,height=5,width=8) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=height, width=width, units="in")
 }
-figures_folder <- "./crc_analysis/CRC_analysis_paper/"
+figures_folder <- "./manuscript/images/CRC_analysis_paper/"
 
 # CRC dataset needs to be loaded here
 # Example:
