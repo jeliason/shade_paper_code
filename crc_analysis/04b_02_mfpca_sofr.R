@@ -115,6 +115,80 @@ print(gcross_sofr_results %>%
         select(target, source, detected, p_value, edf))
 
 # ============================================================================
+# G-CROSS mFPCA BY GROUP (FOR VISUAL COMPARISON)
+# ============================================================================
+
+cat("\n=== G-cross mFPCA by Group ===\n")
+
+# Create separate mxfda objects for each group
+fda_base_CLR <- make_mxfda(
+  metadata = pt_data %>% filter(Group == "CLR") %>% mutate(Group = as.numeric(as.factor(Group)) - 1),
+  spatial = bind_rows(dats) %>%
+    filter(Spot %in% (pt_data %>% filter(Group == "CLR") %>% pull(Spot))) %>%
+    rename(x=X, y=Y),
+  subject_key = "Patient",
+  sample_key = "Spot"
+)
+
+fda_base_DII <- make_mxfda(
+  metadata = pt_data %>% filter(Group == "DII") %>% mutate(Group = as.numeric(as.factor(Group)) - 1),
+  spatial = bind_rows(dats) %>%
+    filter(Spot %in% (pt_data %>% filter(Group == "DII") %>% pull(Spot))) %>%
+    rename(x=X, y=Y),
+  subject_key = "Patient",
+  sample_key = "Spot"
+)
+
+# Run mFPCA for each target-source pair, separately for CLR and DII
+for (targ in targets) {
+  for (src in sources) {
+    cat("G-cross mFPCA:", src, "->", targ, "\n")
+
+    # CLR group
+    tryCatch({
+      fda_CLR <- extract_summary_functions(
+        fda_base_CLR,
+        summary_func = Gcross,
+        extract_func = bivariate,
+        r_vec = seq(0, 75, by = 1),
+        edge_correction = "km",
+        markvar = "type",
+        mark1 = targ,
+        mark2 = src
+      )
+      fda_CLR <- run_mfpca(fda_CLR, metric = "bi g", r = "r", value = "fundiff", pve = 0.99)
+
+      # Default mxfda plot for CLR
+      p_CLR <- plot(fda_CLR, metric = "bi g", what = "fitted")
+      print(p_CLR + ggtitle(paste("CLR:", src, "->", targ)))
+
+    }, error = \(e) cat("  CLR Error:", conditionMessage(e), "\n"))
+
+    # DII group
+    tryCatch({
+      fda_DII <- extract_summary_functions(
+        fda_base_DII,
+        summary_func = Gcross,
+        extract_func = bivariate,
+        r_vec = seq(0, 75, by = 1),
+        edge_correction = "km",
+        markvar = "type",
+        mark1 = targ,
+        mark2 = src
+      )
+      fda_DII <- run_mfpca(fda_DII, metric = "bi g", r = "r", value = "fundiff", pve = 0.99)
+
+      # Default mxfda plot for DII
+      p_DII <- plot(fda_DII, metric = "bi g", what = "fitted")
+      print(p_DII + ggtitle(paste("DII:", src, "->", targ)))
+
+    }, error = \(e) cat("  DII Error:", conditionMessage(e), "\n"))
+  }
+}
+
+cat("✓ G-cross mFPCA by group complete\n")
+
+# ============================================================================
 # L-CROSS (K-FUNCTION) mFPCA/SOFR ANALYSIS
 # ============================================================================
 
