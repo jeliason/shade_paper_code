@@ -619,6 +619,45 @@ Model fitting was performed using variational inference with 1,000 posterior dra
     }
     \label{fig:auc_crc_boxplots}
 \end{figure}
+
+\begin{revised}
+\subsection{Multilevel Functional PCA Comparison Methodology}
+\label{sec:mfpca_methods}
+
+To contextualize SHADE's results within the broader landscape of spatial analysis methods, we compared our findings with multilevel functional principal component analysis (mFPCA) applied to classical spatial summary statistics. This comparison provides insight into how SHADE's conditional modeling framework relates to marginal pairwise analyses commonly used in multiplexed imaging.
+
+\subsubsection{mFPCA Approach}
+
+We used the \texttt{mxfda} R package~\citep{wrobel_mxfda_2024} to perform multilevel functional PCA on $G$-cross and $L$-cross functions. For each of the 15 source-target cell type pairs, we computed spatial summary functions separately for CLR and DII patient groups as follows:
+
+\begin{enumerate}
+\item \textbf{Summary function extraction:} For each tissue section, we computed $G$-cross and $L$-cross functions at distances $r \in [0, 75]~\mu$m with 1~$\mu$m increments using the \texttt{spatstat} package. $G$-cross uses Kaplan-Meier edge correction; $L$-cross uses isotropic edge correction.
+
+\item \textbf{Multilevel decomposition:} mFPCA decomposes functional variation across hierarchical levels (images nested within patients) without imposing a parametric model on the underlying point process. We specified proportion of variance explained (pve) = 0.99 to retain principal components explaining 99\% of total variability.
+
+\item \textbf{Group-level summaries:} For each group (CLR, DII), we extracted the population mean function $\mu(r)$ and uncertainty bands constructed as $\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$, where $\lambda_1$ and $\phi_1(r)$ denote the first eigenvalue and eigenfunction. These bands represent $\pm 1$ SD from the first principal component.
+\end{enumerate}
+
+\subsubsection{Key Methodological Differences}
+
+SHADE and mFPCA address complementary questions about spatial organization:
+
+\begin{itemize}
+\item \textbf{Modeling framework:} SHADE provides a generative probabilistic model of the conditional intensity $\lambda(v \mid \mathcal{X}_{A_1}, \ldots, \mathcal{X}_{A_K})$, enabling likelihood-based inference and posterior uncertainty quantification. mFPCA performs dimension reduction on observed summary statistics without modeling the data-generating process.
+
+\item \textbf{Multivariate adjustment:} SHADE estimates conditional effects adjusting for all cell types simultaneously, isolating the unique contribution of each source type. mFPCA analyzes marginal pairwise statistics ($G$-cross, $L$-cross) computed separately for each source-target pair.
+
+\item \textbf{Inference goals:} SHADE targets directional causal effects (``how does proximity to source $A$ affect target $B$ density?''), while mFPCA characterizes dominant modes of functional variation across biological scales.
+\end{itemize}
+
+\subsubsection{Results and Figure References}
+
+Complete mFPCA results for all 15 cell type pairs are provided in Figures~S[\#] ($G$-cross) and S[\#] ($L$-cross). Each figure displays group-level mean curves with $\pm 1$ SD bands for CLR (blue) and DII (orange) patients, facilitating visual comparison of marginal spatial associations across patient groups.
+
+Visual comparison reveals both concordance (e.g., CTL-vasculature short-range clustering in CLR) and informative differences (e.g., CTL-tumor cell interactions where SHADE's multivariate adjustment reveals stronger conditional effects than marginal $G$-cross suggests). These patterns are discussed in Section~\ref{sec:mfpca_comparison} of the main text.
+
+\end{revised}
+
 \clearpage
 \section{Priors for Variance Parameters}
 \label{sec:prior_var}
