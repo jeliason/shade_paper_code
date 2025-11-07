@@ -2,7 +2,7 @@
 # VISUALIZATIONS: Create All Figures for Method Comparison
 # ============================================================================
 # Module 4 of method comparison analysis
-# Creates SHADE SIC plots, group difference plots, mFPCA examples, and comparison heatmaps
+# Creates SHADE SIC plots and group difference plots
 
 cat("\n=== Module 4: Visualizations ===\n")
 
@@ -104,65 +104,6 @@ for (targ in targets) {
   print(p)
   fsave(paste0("shade_sics_", make.names(targ)), height = 8, width = 10)
 
-}
-
-# ============================================================================
-# METHOD COMPARISON HEATMAP
-# ============================================================================
-
-cat("\n=== Creating method comparison heatmap ===\n")
-
-comparison_plot <- all_detections %>%
-  mutate(detected = ifelse(detected, "Yes", "No")) %>%
-  ggplot(aes(x = source, y = target, fill = detected)) +
-  geom_tile(color = "white", linewidth = 0.5) +
-  facet_wrap(~method, ncol = 3) +
-  scale_fill_manual(values = c("No" = "gray90", "Yes" = "#D55E00"), name = "Detected") +
-  labs(
-    x = "Source cell type",
-    y = "Target cell type",
-    title = "Method Comparison: Group-Level Detection"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.border = element_rect(color = "black", fill = NA),
-    strip.background = element_rect(fill = "gray90", color = "black")
-  )
-
-print(comparison_plot)
-fsave("method_comparison_sofr", height = 6, width = 12)
-
-# ============================================================================
-# EXAMPLE mFPCA/SOFR PLOT (CHOOSE ONE SIGNIFICANT PAIR)
-# ============================================================================
-
-cat("\n=== Creating example mFPCA/SOFR visualization ===\n")
-
-# Find a significant pair from G-cross results
-sig_pair <- gcross_sofr_results %>%
-  filter(detected == TRUE, !is.na(p_value)) %>%
-  arrange(p_value) %>%
-  slice(1)
-
-if (nrow(sig_pair) > 0) {
-  cat("Plotting mFPCA example for:", sig_pair$source, "->", sig_pair$target, "\n")
-
-  beta_curve_data <- sig_pair$beta_curve[[1]]
-
-  p_mfpca <- ggplot(beta_curve_data, aes(x = r, y = beta)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
-    geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3, fill = "steelblue") +
-    geom_line(color = "steelblue", linewidth = 1) +
-    labs(
-      x = "Distance (μm)",
-      y = "Functional coefficient β(r)",
-      title = paste("G-cross mFPCA/SOFR:", sig_pair$source, "→", sig_pair$target),
-      subtitle = paste0("p = ", round(sig_pair$p_value, 4), ", edf = ", round(sig_pair$edf, 2))
-    ) +
-    theme_bw()
-
-  print(p_mfpca)
-  fsave("mfpca_example_gcross", height = 5, width = 7)
 }
 
 cat("✓ Module 4 complete\n")

@@ -1,20 +1,20 @@
 # ============================================================================
-# METHOD COMPARISON: SHADE vs mFPCA/SOFR for CRC Data
+# METHOD COMPARISON: SHADE vs mFPCA for CRC Data
 # ============================================================================
-# Main script for comparing SHADE group differences with functional data
-# analysis approaches (mFPCA + scalar-on-function regression) on G-cross
+# Main script for visual comparison of SHADE group differences with
+# multilevel functional PCA (mFPCA) group-level curves for G-cross
 # and L-cross summary statistics
 #
 # This script sources modular analysis files for better organization:
 #   - 04b_00_setup.R: Load data and prepare spatial patterns
 #   - 04b_01_shade_analysis.R: SHADE group-level detections and differences
-#   - 04b_02_mfpca_sofr.R: mFPCA/SOFR for G-cross and L-cross
+#   - 04b_02_mfpca.R: mFPCA for G-cross and L-cross (by group)
 #   - 04b_03_comparison.R: Combine results and create summary tables
-#   - 04b_04_visualizations.R: Create all figures
+#   - 04b_04_visualizations.R: Create SHADE SIC figures
 # ============================================================================
 
 cat(paste(rep("=", 80), collapse=""), "\n")
-cat("METHOD COMPARISON: SHADE vs mFPCA/SOFR\n")
+cat("METHOD COMPARISON: SHADE vs mFPCA\n")
 cat(paste(rep("=", 80), collapse=""), "\n\n")
 
 start_time <- Sys.time()
@@ -34,11 +34,11 @@ cat("\n*** Running Module 1: SHADE Analysis ***\n")
 source("crc_analysis/04b_01_shade_analysis.R")
 
 # ============================================================================
-# MODULE 2: mFPCA/SOFR ANALYSIS
+# MODULE 2: mFPCA ANALYSIS
 # ============================================================================
 
-cat("\n*** Running Module 2: mFPCA/SOFR Analysis ***\n")
-source("crc_analysis/04b_02_mfpca_sofr.R")
+cat("\n*** Running Module 2: mFPCA Analysis ***\n")
+source("crc_analysis/04b_02_mfpca.R")
 
 # ============================================================================
 # MODULE 3: COMPARISON
