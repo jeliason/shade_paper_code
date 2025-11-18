@@ -499,26 +499,22 @@ Across all cell-type pairs, we observed consistent short-range ($<$25~$\mu$m) ne
 
 \subsection{How do spatial interaction patterns vary across patients and tissue sections?}
 \label{sec:how_vary}
-Spatial interactions can vary across tumors and even between sections from the same patient, reflecting biologically meaningful heterogeneity in tumor architecture or immune organization. \begin{revised}\input{snippets/r2_q1_how_vary}\end{revised}.
+Spatial interactions can vary across tumors and even between sections from the same patient, reflecting biologically meaningful heterogeneity in tumor architecture or immune organization. \begin{revised}\input{snippets/r2_q1_how_vary} Examples of patient-level and image-level SICs for cell type pairs exhibiting high within-patient heterogeneity are shown in Figure~\ref{fig:sic_mad_examples}\end{revised}.
 
-To assess variability in spatial interaction structure across samples, we summarize between-patient and between-image heterogeneity using median absolute deviation (MAD)-based estimates. These measures are defined in the Supplement. Figure~\ref{fig:sic_mad} shows heatmaps of the resulting variability estimates for each source--target cell type pair.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_mad.pdf}
-    \caption{Heatmaps show the median absolute deviation (MAD) of SICs across spatial distances, summarizing two sources of variability: between patients (within cohort) and between images (within patient). Higher values indicate greater heterogeneity in spatial structure.}
-    \label{fig:sic_mad}
-\end{figure}
-
-We observed substantial variability in spatial interaction structure across both patients and images (Figure~\ref{fig:sic_mad}). Notably, granulocytes clustering around TAMs and vasculature exhibited high between-patient heterogeneity. This suggests that granulocyte recruitment and localization near TAMs and vessels may be modulated by patient-specific microenvironmental states, such as differences in angiogenic signaling or myeloid activation. Within patients, granulocyte interactions also showed high heterogeneity, but principally in association with vasculature and hybrid E/M cells. These image-level differences may reflect localized fluctuations in endothelial activation or epithelial plasticity, which may differentially attract or retain granulocytes within specific tissue regions. Examples of patient-level curves for two patients, along with their image-level curves, are shown in Figure~\ref{fig:sic_mad_examples}.
-
-\begin{revised}\input{snippets/r3_q10_mad_comparison}\end{revised}
+To assess variability in spatial interaction structure across samples, we summarize between-patient and between-image heterogeneity using median absolute deviation (MAD)-based estimates. \begin{revised}These measures are defined in Supplement Section~\ref{sec:mad_calc}. We also examined heterogeneity in spatial interaction structure across patients and images. \input{snippets/r3_q10_mad_comparison}\end{revised}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_CRC_local_ci.pdf}
     \caption{Examples of patient- and image-level SICs for cell type pairs with high within-patient MAD values. Solid lines show patient-level SICs; dotted lines show image-level SICs from individual tissue sections{\begin{revised}, illustrating hierarchical variability within patients\end{revised}}.}
     \label{fig:sic_mad_examples}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/mad_comparison_clr_dii.pdf}
+    \caption{\textbf{Comparison of spatial heterogeneity between CLR and DII tumor subtypes.} \begin{revised}Heatmaps show median absolute deviation (MAD) of spatial interaction curve deviations as a measure of heterogeneity for 15 source-target cell type pairs. Top row: between-patient heterogeneity (MAD of patient-level deviations from cohort mean). Bottom row: within-patient heterogeneity (MAD of image-level deviations from patient mean). Left column: CLR tumors. Right column: DII tumors. At the patient level, DII tumors show greater heterogeneity for immune-related interactions (e.g., memory CD4+ T-CAF, CTL-tumor), while CLR tumors show greater heterogeneity for granulocyte-CAF interactions. At the image level, DII shows more variability in granulocyte-vasculature interactions, while CLR shows more variability in granulocyte-CAF and granulocyte-hybrid E/M interactions.\end{revised}}
+    \label{fig:mad_clr_dii}
 \end{figure}
 
 \subsection{How do immune and stromal spatial interactions differ between hot and cold tumors?}

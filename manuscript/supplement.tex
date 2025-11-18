@@ -634,11 +634,11 @@ Model fitting was performed using variational inference with 1,000 posterior dra
     \label{fig:mfpca_lcross_grid}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/mad_comparison_clr_dii.pdf}
-    \caption{\textbf{Comparison of spatial heterogeneity between CLR and DII tumor subtypes.} \begin{revised}Heatmaps show median absolute deviation (MAD) of spatial interaction curve deviations as a measure of heterogeneity for 15 source-target cell type pairs. Top row: between-patient heterogeneity (MAD of patient-level deviations from cohort mean). Bottom row: within-patient heterogeneity (MAD of image-level deviations from patient mean). Left column: CLR tumors. Right column: DII tumors. At the patient level, DII tumors show greater heterogeneity for immune-related interactions (e.g., memory CD4+ T-CAF, CTL-tumor), while CLR tumors show greater heterogeneity for granulocyte-CAF interactions. At the image level, DII shows more variability in granulocyte-vasculature interactions, while CLR shows more variability in granulocyte-CAF and granulocyte-hybrid E/M interactions.\end{revised}}
-    \label{fig:mad_clr_dii}
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_mad.pdf}
+    \caption{Heatmaps show the median absolute deviation (MAD) of SICs across spatial distances, summarizing two sources of variability: between patients (within cohort) and between images (within patient). Higher values indicate greater heterogeneity in spatial structure.}
+    \label{fig:sic_mad}
 \end{figure}
 
 \subsection{Multilevel Functional PCA Comparison Methodology}
