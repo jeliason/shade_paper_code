@@ -335,7 +335,7 @@ Each simulation included $20$ patients per group ($40$ total), generating datase
 
 \textbf{SHADE Performance:} We assessed SHADE's ability to recover true spatial interaction curves by constructing pointwise $95\%$ credible bands around posterior estimates. Success was defined as correctly identifying the sign of spatial associations (negative for responders, positive for non-responders) at target distances ($20$, $40$, $60~\mu$m) using pointwise credible intervals.
 
-\textbf{Envelope Test Comparisons:} We compared SHADE against $G$-cross and $L$-cross envelope tests implemented using the \texttt{spatstat} package. \begin{revised}Global envelopes were constructed using $99$ Monte Carlo simulations of point patterns generated according to complete spatial randomness (CSR). The rank parameters were calibrated in preliminary null scenario simulations to achieve proper Type I error control: \texttt{nrank = 10} for $G$-cross (yielding nominal significance level $\alpha = 10/100 = 0.10$) and \texttt{nrank = 8} for $L$-cross (yielding $\alpha = 8/100 = 0.08$). These nominal levels achieved empirical Type I error rates of 2.5--8.8\% for $G$-cross and 1.3--6.7\% for $L$-cross across different density regimes (Section~\ref{sec:coverage_type1}). Detection success required the observed summary function to deviate outside the simultaneous envelope at any distance, indicating rejection of the null hypothesis of complete spatial randomness.\end{revised}
+\textbf{Envelope Test Comparisons:} We compared SHADE against $G$-cross and $L$-cross envelope tests implemented using the \texttt{spatstat} package. \begin{revised}\input{snippets/r3_q4_envelope_calibration} Detection success required the observed summary function to deviate outside the simultaneous envelope at any distance, indicating rejection of the null hypothesis of complete spatial randomness.\end{revised}
 
 \textbf{Statistical Analysis:} Power was calculated as the average over all images of the proportion of correctly classified interactions at target distances. We compared both methods' sensitivity to varying cell densities and sample sizes. \begin{revised}Additionally, we evaluated coverage (the proportion of true SIC values falling within the 95\% simultaneous credible bands) and type I error rates (the proportion of null interactions incorrectly identified as significant) for all methods.\end{revised}
 
@@ -666,6 +666,8 @@ We used the \texttt{mxfda} R package~\citep{wrobel_mxfda_2024} to perform multil
 SHADE and mFPCA address complementary questions about spatial organization:
 
 \begin{itemize}
+\item \textbf{Point process modeling vs. two-stage analysis:} \begin{revised}\input{snippets/r3_q1_fda_comparison}\end{revised}
+
 \item \textbf{Modeling framework:} SHADE provides a generative probabilistic model of the conditional intensity $\lambda(v \mid \mathcal{X}_{A_1}, \ldots, \mathcal{X}_{A_K})$, enabling likelihood-based inference and posterior uncertainty quantification. mFPCA performs dimension reduction on observed summary statistics without modeling the data-generating process.
 
 \item \textbf{Multivariate adjustment:} SHADE estimates conditional effects adjusting for all cell types simultaneously, isolating the unique contribution of each source type. mFPCA analyzes marginal pairwise statistics ($G$-cross, $L$-cross) computed separately for each source-target pair.
