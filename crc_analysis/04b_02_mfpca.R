@@ -49,7 +49,7 @@ all_mfpca_data <- expand_grid(
       tryCatch({
         fda <- extract_summary_functions(
           fda_base_grp,
-          summary_func = Gcross.inhom,
+          summary_func = Gcross,
           extract_func = bivariate,
           r_vec = seq(0, 75, by = 1),
           edge_correction = "km",

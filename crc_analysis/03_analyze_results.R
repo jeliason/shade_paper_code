@@ -10,7 +10,7 @@ library(SHADE)
 source("crc_analysis/utils.R")
 source("utils.R")
 
-refit <- FALSE
+refit <- TRUE
 # CRC dataset needs to be loaded here
 # Example:
 df_raw <- read_csv("crc_analysis/data/CRC_cleaned.csv")
@@ -153,11 +153,58 @@ sic_out <- lapply(targets,\(type) {
       mutate(Target=Target,Source=Source)
   }
 
+  # Compute SIC differences with proper simultaneous bands
+  get_SIC_diff_df <- function(Target, Source, group1 = "CLR", group2 = "DII", exponentiate = FALSE) {
+    x_seq <- seq(0, 100, 1)
+    x_des <- lapply(potentials, \(pot) pot(x_seq)) %>% do.call(cbind, .)
+    ix <- grep(paste0("_", Target, "_", Source), rownames(beta_global), fixed = TRUE)
+    b_g <- as.matrix(beta_global)[ix, ]
+
+    # Compute linear predictors for global level (includes both groups)
+    lp_g <- x_des %*% b_g
+    lev_g <- levels(factor(pt_df$Group))
+
+    # Extract samples for each group
+    # The global samples are the last columns, one for each group
+    group1_col <- ncol(lp_g) - length(lev_g) + which(lev_g == group1)
+    group2_col <- ncol(lp_g) - length(lev_g) + which(lev_g == group2)
+
+    # Compute difference samples: group1 - group2
+    lp_diff <- lp_g[, group1_col, drop = FALSE] - lp_g[, group2_col, drop = FALSE]
+
+    if (exponentiate) {
+      lp_diff <- exp(lp_diff)
+    }
+
+    # Compute simultaneous bands on the difference
+    bands <- compute_simultaneous_bands(
+      lp_data = as.data.frame(lp_diff),
+      x_seq = x_seq,
+      alpha = 0.05
+    )
+
+    # Return formatted dataframe
+    bands %>%
+      mutate(
+        Target = Target,
+        Source = Source,
+        comparison = paste0(group1, " - ", group2)
+      ) %>%
+      rename(diff = mean, diff_lo = lower, diff_hi = upper) %>%
+      select(-variable)
+  }
+
   sic_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
     pmap(\(Target,Source) {
       cat(Target,", ", Source, "\n")
       # print(Target)
       get_SIC_df(Target,Source,exponentiate = FALSE)
+    }) %>% bind_rows()
+
+  diff_df <- expand_grid(Target=type,Source=types[-which(types == type)]) %>%
+    pmap(\(Target,Source) {
+      cat("Diff: ", Target,", ", Source, "\n")
+      get_SIC_diff_df(Target, Source, exponentiate = FALSE)
     }) %>% bind_rows()
 
   # indiv-local SICs
@@ -211,15 +258,17 @@ sic_out <- lapply(targets,\(type) {
       get_local_SIC_df(Target,Source,exponentiate = FALSE)
     }) %>% bind_rows()
 
-  list(sic_df=sic_df,local_sic_df=local_sic_df)
+  list(sic_df=sic_df,local_sic_df=local_sic_df,diff_df=diff_df)
 })
 
 sic_df <- lapply(sic_out,\(o) o$sic_df) %>% bind_rows()
 local_sic_df <- lapply(sic_out,\(o) o$local_sic_df) %>% bind_rows()
+diff_df <- lapply(sic_out,\(o) o$diff_df) %>% bind_rows()
 
 
 saveRDS(sic_df,paste0(path,"sic_df.rds"))
 saveRDS(local_sic_df,paste0(path,"local_sic_df.rds"))
+saveRDS(diff_df,paste0(path,"diff_df.rds"))
 }
 local_sic_df <- readRDS(paste0(path,"local_sic_df.rds")) %>%
   rename(lo=lo_simul,
@@ -228,6 +277,8 @@ local_sic_df <- readRDS(paste0(path,"local_sic_df.rds")) %>%
 sic_df <- readRDS(paste0(path,"sic_df.rds")) %>%
   rename(lo=lo_simul,
          hi=hi_simul)
+
+diff_df <- readRDS(paste0(path,"diff_df.rds"))
 
 local_sic_df$Patient <- factor(local_sic_df$Patient,levels=1:35)
   
@@ -425,21 +476,9 @@ gradient_df <- gradient_df %>%
     )
   )
 
-# 2. Prep your SIC difference data
-diff_df <- sic_df %>%
-  filter(is_global == "Global") %>%
+# 2. Prep your SIC difference data (now with proper simultaneous bands)
+diff_df_plot <- diff_df %>%
   filter(x >= MIN_INTERACTION_RADIUS) %>%
-  # mutate(
-  #   type1 = recode(type1, "granulocytes" = "gran.", "vasculature" = "vasc."),
-  #   type2 = recode(type2, "granulocytes" = "gran.", "vasculature" = "vasc.")
-  # ) %>%
-  group_by(x, Source, Target) %>%
-  summarise(
-    diff = mn[Group == "CLR"] - mn[Group == "DII"],
-    diff_lo = lo[Group == "CLR"] - lo[Group == "DII"],
-    diff_hi = hi[Group == "CLR"] - hi[Group == "DII"],
-    .groups = "drop"
-  ) %>%
   mutate(Target = paste0("Target:\n", Target)) %>%
   mutate(Source = paste0("Source:\n", Source))
 
@@ -450,10 +489,10 @@ ggplot() +
   scale_fill_identity() +
   
   # Foreground plot layers
-  geom_line(data = diff_df, aes(x = x, y = diff), color = "black", linewidth = 0.8) +
-  geom_ribbon(data = diff_df,aes(x = x, ymin = diff_lo, ymax = diff_hi),alpha=0.2) +
+  geom_line(data = diff_df_plot, aes(x = x, y = diff), color = "black", linewidth = 0.8) +
+  geom_ribbon(data = diff_df_plot,aes(x = x, ymin = diff_lo, ymax = diff_hi),alpha=0.2) +
   geom_hline(yintercept = 0, linetype = "dotted") +
-  geom_hline(yintercept = c(-0.05, 0.05), linetype = "dashed", color = "#d88c3d") +
+  # geom_hline(yintercept = c(-0.05, 0.05), linetype = "dashed", color = "#d88c3d") +
   
   # Labels
   labs(

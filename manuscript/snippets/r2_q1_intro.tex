@@ -1,16 +1,35 @@
-Most spatial analysis pipelines for multiplex or histological imaging rely on
-standard second-order summary statistics---such as Ripley’s $K$- and
-$L$-functions or the $G$-cross function---computed independently for each
-image. These per-image summaries (e.g., $K$-function curves or $G$-cross
-area-under-curve scores) are then compared across experimental groups or used as
-sample-level covariates in downstream models
-\citep{baruaSpatialInteractionTumor2018,vuSPFSpatialFunctional2022,caneteSpicyRSpatialAnalysis2022,samorodnitskySpatialOmnibusTest2024,sealSpaceANOVASpatialCooccurrence2024,jingQuantifyingInterpretingBiologically2025,janeiroSpatiallyResolvedTissue2024}.
-Although this strategy is simple and widely adopted, it implicitly treats each
-image as an isolated point pattern and cannot share information across images or
-subjects.
+% Most spatial analysis pipelines for multiplex or histological imaging rely on
+% standard second-order summary statistics---such as Ripley’s $K$- and
+% $L$-functions or the $G$-cross function---computed independently for each
+% image. These per-image summaries (e.g., $K$-function curves or $G$-cross
+% area-under-curve scores) are then compared across experimental groups or used as
+% sample-level covariates in downstream models
+% \citep{baruaSpatialInteractionTumor2018,vuSPFSpatialFunctional2022,caneteSpicyRSpatialAnalysis2022,samorodnitskySpatialOmnibusTest2024,sealSpaceANOVASpatialCooccurrence2024,jingQuantifyingInterpretingBiologically2025,janeiroSpatiallyResolvedTissue2024,soupirBenchmarkingSpatialCoLocalization2025}.
+% Although this strategy is simple and widely adopted, it implicitly treats each
+% image as an isolated point pattern and cannot share information across images or
+% subjects. While such approaches can descriptively characterize heterogeneity by comparing per-image summaries across patients or experimental groups, they cannot formally decompose variance components or perform partial pooling within a unified statistical framework that borrows strength across images, patients, and cohorts.
+% While hierarchical models for replicated point patterns have been proposed
+% \citep{bagchiMethodAnalysingReplicated2015a,leeCharacterizingCrosssubjectSpatial2017,myllymakiHierarchicalSecondorderAnalysis2014,bellMixedModelsAnalysis2004,illianGibbsPointProcess2010},
+% these approaches either apply hierarchical regression to spatial summary statistics (e.g., $K$-function), use two-stage procedures that separately estimate per-replicate patterns before modeling cross-replicate variation, or fit parametric Gibbs models via maximum pseudolikelihood with random effects, rather than fully Bayesian joint estimation of flexible interaction functions across multiple biological scales. Summary-based methods cannot model conditional interactions at the point process level, while pseudolikelihood approaches with mixed effects impose parametric interaction forms and rely on frequentist approximations rather than full Bayesian posterior inference. This leaves a methodological gap: no existing framework jointly estimates flexible, interpretable spatial interaction curves while borrowing strength across images, patients, and cohorts through multilevel Bayesian inference.
 
-Consequently, such workflows cannot perform partial pooling or decompose
-heterogeneity across biological levels such as images, patients, and cohorts.
-While hierarchical models for replicated point patterns have been proposed
-\citep{bagchiMethodAnalysingReplicated2015a,leeCharacterizingCrosssubjectSpatial2017,myllymakiHierarchicalSecondorderAnalysis2014,bellMixedModelsAnalysis2004,illianGibbsPointProcess2010},
-these approaches either apply hierarchical regression to spatial summary statistics (e.g., K-function), use two-stage procedures that separately estimate per-replicate patterns before modeling cross-replicate variation, or fit parametric Gibbs models via maximum pseudolikelihood with random effects, rather than fully Bayesian joint estimation of flexible interaction functions across multiple biological scales. Summary-based methods cannot model conditional interactions at the point process level, while pseudolikelihood approaches with mixed effects impose parametric interaction forms and rely on frequentist approximations rather than full Bayesian posterior inference. This leaves a methodological gap: no existing framework jointly estimates flexible, interpretable spatial interaction curves while borrowing strength across images, patients, and cohorts through multilevel Bayesian inference.
+Co-localization and spatial interaction metrics are widely used in multiplexed spatial analyses of the tumor microenvironment. Standard
+pipelines compute second-order summary statistics---such as Ripley’s $K$- and
+$L$-functions or the $G$-cross function---independently for each image to
+quantify tumor–immune interactions, infiltration patterns, or neighborhood
+structure
+\citep{baruaSpatialInteractionTumor2018,vuSPFSpatialFunctional2022,caneteSpicyRSpatialAnalysis2022,samorodnitskySpatialOmnibusTest2024,sealSpaceANOVASpatialCooccurrence2024,jingQuantifyingInterpretingBiologically2025,janeiroSpatiallyResolvedTissue2024,soupirBenchmarkingSpatialCoLocalization2025}.
+These per-image summaries are then compared across groups or used as covariates
+in downstream analyses. Although effective for descriptive comparisons, this
+approach treats each image as an isolated point pattern and cannot share
+information across images or subjects during estimation or formally decompose heterogeneity across
+biological scales.
+
+Hierarchical models for replicated point patterns have been proposed
+\citep{bagchiMethodAnalysingReplicated2015a,leeCharacterizingCrosssubjectSpatial2017,myllymakiHierarchicalSecondorderAnalysis2014,bellMixedModelsAnalysis2004,illianGibbsPointProcess2010,wrobelMxfdaComprehensiveToolkit2024},
+but they typically model derived summaries, rely on two-stage estimation, or use
+parametric Gibbs models fit via pseudolikelihood with random effects. These
+methods therefore cannot jointly estimate flexible interaction functions across
+levels through full Bayesian multilevel inference. As a result, a methodological
+gap remains: current approaches to co-localization in mIF data cannot directly
+model spatial interactions at the point-process level while simultaneously
+borrowing strength across images, patients, and cohorts.

@@ -602,12 +602,9 @@ Model fitting was performed using variational inference with 1,000 posterior dra
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_CRC_all_ci.pdf}
-    \caption{
-        Cohort-level SICs (\(\psi_{t_1\to t_2}^{(g,p)}\)) estimated for all source–target cell
-        type pairs in the CRC dataset, stratified by CLR and DII patient groups.
-    }
-    \label{fig:sic_crc_all}
+    \includegraphics[width=0.9\textwidth]{images/CRC_analysis_paper/sic_CRC_diff.pdf}
+    \caption{The difference in SICs between the two patient groups, with simultaneous 95\% credible bands. Curves above 0 (in the blue area) indicate that the log-intensity is greater in CLR patients than DII patients; curves in the red area show the reverse.}
+    \label{fig:sic_CRC_diff}
 \end{figure}
 
 \begin{figure}[ht]
@@ -651,7 +648,7 @@ To contextualize SHADE's results within the broader landscape of spatial analysi
 
 \subsubsection{mFPCA Approach}
 
-We used the \texttt{mxfda} R package~\citep{wrobel_mxfda_2024} to perform multilevel functional PCA on $G$-cross and $L$-cross functions. For each of the 15 source-target cell type pairs, we computed spatial summary functions separately for CLR and DII patient groups as follows:
+We used the \texttt{mxfda} R package~\citep{wrobelMxfdaComprehensiveToolkit2024} to perform multilevel functional PCA on $G$-cross and $L$-cross functions. For each of the 15 source-target cell type pairs, we computed spatial summary functions separately for CLR and DII patient groups as follows:
 
 \begin{enumerate}
 \item \textbf{Summary function extraction:} For each tissue section, we computed $G$-cross and $L$-cross functions at distances $r \in [0, 75]~\mu$m with 1~$\mu$m increments using the \texttt{spatstat} package. $G$-cross uses Kaplan-Meier edge correction; $L$-cross uses isotropic edge correction.
