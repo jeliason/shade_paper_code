@@ -148,7 +148,7 @@
 
 \maketitle
 
-We thank the reviewers for their thoughtful comments, which we believe have greatly improved this manuscript. Your feedback helped us clarify key methodological details and expand our comparisons with existing approaches. Below we have provided point-by-point responses to each comment. For easy reference, all manuscript changes are highlighted in blue, in both the responses here as well as the revised manuscript (however, we don't ). We greatly appreciate the time and care you brought to reviewing this work!
+We thank the reviewers for their thoughtful comments, which we believe have greatly improved this manuscript. Your feedback helped us clarify key methodological details and expand our comparisons with existing approaches. Below we have provided point-by-point responses to each comment. For easy reference, all manuscript changes are highlighted in blue, in both the responses here as well as the revised manuscript. We greatly appreciate the time and care you brought to reviewing this work!
 
 \section{Reviewer Responses}
 
@@ -173,8 +173,6 @@ With that said, there are a few significant areas I hope the authors will give m
 \begin{revised}
 \input{snippets/r1_q2_crowding_sic}
 \end{revised}
-
-Importantly, the model is fit using all observed cell locations—we do not remove data. Rather, posterior summaries and SICs are evaluated and reported only at distances $r \ge r_{\min}$ for interpretation.
 
 As noted in the revised Discussion, future extensions could further reduce crowding effects using boundary-to-boundary distances:
 
@@ -212,7 +210,7 @@ Minor issues:
 
 \item Figure 10 caption needs more explanation. I'm guessing the black dots are observed cells of the labeled type, but it's not clear.
 
-\textbf{Response}: We have clarified the caption for Figure~\ref{fig:example_pred}.
+\textbf{Response}: We have clarified the caption for Figure~\ref{fig:example_pred}:
 
 \begin{revised}
 \input{snippets/r1_minor_fig_caption}
@@ -229,41 +227,57 @@ The described method appears to be a valuable contribution to a research field t
 
 Generally, I feel such statements should be made explicit and substantiated with references. Also, I do not quite understand the point, why would analyzing images independently automatically mean that patient heterogeneity is not studied? And is Shade not actually based on computing statistics (SIC curves) on individual images? In the current form of the ms, I do not find any follow-up on this point in the results or discussion sections, please clarify.
 
-\textbf{Response}: We have clarified this throughout the manuscript. We now explicitly state in the Abstract and Introduction that traditional methods:
+\textbf{Response}: We have substantially revised the manuscript to address these concerns.
+
+\textbf{(1) Explicit references:} The Introduction now provides specific citations to common spatial analysis pipelines and hierarchical point process methods:
 
 \begin{revised}
 \input{snippets/r2_q1_intro}
 \end{revised}
 
-While such methods can describe variability by computing per-image statistics, they do not enable joint estimation with partial pooling.
+\textbf{(2) Independent analysis and patient heterogeneity:} The Introduction now explicitly explains why independent image-level analysis limits formal study of heterogeneity (see above snippet: ``such workflows cannot perform partial pooling or decompose heterogeneity across biological levels'').
 
-\textbf{Key distinction:} SHADE does compute image-level parameters ($\delta^{(m,p)}$), but within a hierarchical Bayesian model where these are jointly estimated with patient-level and cohort-level parameters through partial pooling. This is fundamentally different from computing separate summary statistics for each image and then performing post-hoc comparisons.
-
-Results Section~\ref{sec:how_vary} now explicitly contrasts this approach with descriptive spatial statistics:
+\textbf{(3) SHADE's image-level parameters:} Results Section~\ref{sec:how_vary} clarifies that SHADE does estimate image-level SICs, but within a joint hierarchical framework:
 
 \begin{revised}
 \input{snippets/r2_q1_how_vary}
 \end{revised}
 
-Simulation results (Table~\ref{tab:hier_rmse}, Figure~\ref{fig:no_hier_est_SIC}) demonstrate that hierarchical modeling reduces RMSE compared to independent image-level estimation.
+Simulation evidence in Section~\ref{sec:sim_comparison} demonstrates the benefits of this hierarchical approach:
+
+\begin{quote}
+\input{snippets/r2_q5_hierarchical_rmse}
+\end{quote}
+
+\begin{revised}
+\input{snippets/r2_q5_sparse_performance}
+\end{revised}
+
+The Discussion further contextualizes SHADE's hierarchical approach relative to traditional spatial statistics:
+
+\begin{revised}
+\input{snippets/r2_q4_discussion}
+\end{revised}
 
 \item Methods (p. 8), "The SIC summarizes ... This curve represents the expected contribution of type $A_k$ cells to the log-intensity...".
 
 The term "log-intensity" appears for the first time at this point, and lacks a direct interpretation. What does log-intensity of a cell type physically mean, is it related to the spatial cell density? Or would it be possible to normalize it to the average cell-density in the image, or a set of images? This is critical for interpretation of the SIC curves where log-intensity appears on the y-axis throughout the paper.
 
-\textbf{Response}: We have added a detailed explanation of log-intensity in Section~\ref{sec:sic}.
+\textbf{Response}: We have added a detailed explanation of log-intensity and normalization in Section~\ref{sec:sic}.
 
 \begin{revised}
 \input{snippets/r1_q3_log_intensity}
 \end{revised}
 
-Regarding normalization: the intercept term ($\beta_0$) captures baseline log-intensity, effectively normalizing to average cell density. SIC values then quantify deviations from this baseline as a function of proximity to source cells, ensuring curves are directly comparable across images and patients despite differences in overall cell abundance.
+\begin{revised}
+\input{snippets/r2_q2_sic_normalization}
+\end{revised}
 
 \item Methods (p. 9), "A strong A->B SIC indicates that the presence of A is statistically predictive ..." (and similar statements in the following).
 
 It is not clear to me what statistically predictive means here. Is it possible to construct a statistical test for SIC curves different from spatial randomness, or for SIC curves differing between different image sets? The next section about "Multilevel Bayesian Model" suggests that the authors aim for statistical analysis, but I have trouble finding any clear statistical statements, also in the following chapters where synthetic data and image data sets are analyzed. Figures 4 and 5 show confidence intervals but statements on statistical significance are missing, I suggest evaluating significance using bootstrapping procedures. In Figure 4, it seems that all sown curves are within the confidence of the null (CSR) model, does that mean that the generated synthetic data cannot be distinguished from CSR?
 
-\textbf{Response}: \joel{Probably need to revisit this} We have made statistical inference much more explicit throughout the manuscript.
+\textbf{Response}: We have made statistical inference much more explicit throughout the manuscript.
 
 \textbf{Bayesian inference and uncertainty quantification:} We added Section~\ref{sec:uncertainty} describing simultaneous 95\% credible bands that control family-wise error across distances:
 
@@ -271,21 +285,19 @@ It is not clear to me what statistically predictive means here. Is it possible t
 \input{snippets/r1_q3_uncertainty}
 \end{revised}
 
-When bands exclude zero, we have statistical evidence that spatial associations differ from independence. The Bayesian framework automatically propagates uncertainty through all hierarchical levels (image → patient → cohort), accounting for both sampling variability and multilevel variance structure—unlike bootstrap methods that treat each image independently.
-
-\textbf{Clarifying ``statistically predictive'':} We added Section~\ref{sec:predictive} explaining what predictive associations mean:
+\textbf{Clarifying ``statistically predictive'':} We updated Section~\ref{sec:predictive} explaining what predictive associations mean:
 
 \begin{revised}
 \input{snippets/r2_q3_predictive}
 \end{revised}
 
-\textbf{Testing and comparison:} To test departure from spatial randomness, we check if simultaneous bands exclude zero. To compare patient groups, we compute difference curves with simultaneous bands (Figure~\ref{fig:sic_CRC_diff}); if bands exclude zero over a distance range, groups differ significantly. All SIC figures now display these bands, and Results sections explicitly state when bands exclude zero.
+\textbf{Testing and comparison:} As mentioned previously, to test departure from spatial randomness, we check if simultaneous bands exclude zero. To compare patient groups, we compute difference curves with simultaneous bands e.g. (Figure~\ref{fig:sic_CRC_diff}); if bands exclude zero over a distance range, groups differ significantly. All SIC figures now display these bands, and Results sections explicitly state when bands exclude zero.
 
-\textbf{Figure 4 and CSR:} The figure shows one simulation example. While $G$-cross envelopes contain the observed curve at some distances, SHADE's simultaneous bands correctly exclude zero where ground truth exhibits non-zero interactions. Across all replicates, SHADE achieves high detection rates (Figure~\ref{fig:gx_detections}), successfully distinguishing patterns from CSR through multilevel uncertainty propagation and joint estimation, particularly under low densities where envelope tests may fail.
+\textbf{Figure 4 and CSR:} \joel{come back to this} The figure shows one simulation example. While $G$-cross envelopes contain the observed curve at some distances, SHADE's simultaneous bands correctly exclude zero where ground truth exhibits non-zero interactions. Across all replicates, SHADE achieves high detection rates (Figure~\ref{fig:gx_detections}), successfully distinguishing patterns from CSR through multilevel uncertainty propagation and joint estimation, particularly under low densities where envelope tests may fail.
 
 \item In the same context, it would make sense to include more methods for comparison (in addition to G-cross), for example Ripley's K-function is mentioned in the introduction.
 
-\textbf{Response}: \joel{Also need more details here} We have now added Ripley's cross-type K-function ($K_{AB}$, specifically the $L$-cross transformation) to both the simulation comparison and colorectal cancer analysis.
+\textbf{Response}: We have now added Ripley's cross-type K-function ($K_{AB}$, specifically the $L$-cross transformation) to both the simulation comparison and colorectal cancer analysis.
 
 In the simulation study (Section~\ref{sec:sim_comparison}), we compared SHADE against K-cross envelope tests:
 
@@ -295,13 +307,11 @@ In the simulation study (Section~\ref{sec:sim_comparison}), we compared SHADE ag
 
 Results (Figure~\ref{fig:gx_detections}) show SHADE outperforms both $G$-cross and $K$-cross in detecting associations under low cell densities and limited sampling.
 
-The Discussion now explicitly contrasts SHADE with traditional spatial summary statistics including Ripley's K-function:
+As shown in Section~\ref{sec:gx_comparison}:
 
 \begin{revised}
-\input{snippets/r2_q4_discussion}
+\input{snippets/r2_q4_gx_comparison}
 \end{revised}
-
-CRC analysis Section~\ref{sec:gx_comparison} compares SHADE with $G$-cross, revealing that TAM–granulocyte associations show strong clustering in $G$-cross but are not emphasized by SHADE's conditional model, while vasculature effects are identified by SHADE as key drivers of CLR vs. DII differences but show limited significance in $G$-cross.
 
 We also added Section~\ref{sec:mfpca_comparison} comparing SHADE with mFPCA analysis of $G$-cross and $L$-cross functions:
 
@@ -309,7 +319,11 @@ We also added Section~\ref{sec:mfpca_comparison} comparing SHADE with mFPCA anal
 \input{snippets/r2_q4_mfpca_intro}
 \end{revised}
 
-Visual comparison (Section~\ref{sec:mfpca_comparison}) reveals both concordance and informative differences. For example, SHADE's vasculature-CTL clustering in CLR patients is corroborated by mFPCA $G$-cross patterns, while CTL-tumor interactions show stronger effects in SHADE due to multivariate adjustment.
+As shown in Section~\ref{sec:mfpca_comparison}:
+
+\begin{revised}
+\input{snippets/r3_q2_mfpca_examples}
+\end{revised}
 
 \begin{revised}
 \input{snippets/r2_q4_mfpca_conclusion}
@@ -319,7 +333,17 @@ Visual comparison (Section~\ref{sec:mfpca_comparison}) reveals both concordance 
 
 This sounds to me as if the synthetic data were generated under exactly the same assumptions used for deriving the SIC curves proposed for analysis, is that correct? Would that not by construction give an advantage to the method proposed by the authors when comparing different analysis methods? It would be important to test the method also using other sources of synthetic data, e.g. starting from Bridson sampling or using a Gauss filter after the Poisson process.
 
-\textbf{Response}: The reviewer is correct that our primary simulation generates data under the same conditional Poisson framework that SHADE assumes. This is standard for initial method evaluation—it allows us to isolate the effects of hierarchical structure, cell density, and sampling variation on estimation accuracy. Even under these ideal conditions, we demonstrate that hierarchical pooling substantially improves inference and that SHADE outperforms $G$-cross and K-function under sparse data.
+\textbf{Response}: The reviewer is correct that our primary simulation generates data under the same conditional Poisson framework that SHADE assumes. This is standard for initial method evaluation—it allows us to isolate the effects of hierarchical structure, cell density, and sampling variation on estimation accuracy. Even under these ideal conditions, Section~\ref{sec:sim_hier} demonstrates that hierarchical pooling substantially improves inference:
+
+\begin{quote}
+\input{snippets/r2_q5_hierarchical_rmse}
+\end{quote}
+
+Section~\ref{sec:sim_comparison} demonstrates that SHADE's performance relative to envelope tests depends on source cell density and the availability of multiple images for hierarchical pooling:
+
+\begin{revised}
+\input{snippets/r2_q5_sparse_performance}
+\end{revised}
 
 \textbf{Robustness to spatial confounding:} To address model misspecification, we added simulations testing SHADE's performance with unmeasured spatial heterogeneity (Section~\ref{sec:sim_comparison}):
 

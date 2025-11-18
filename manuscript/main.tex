@@ -289,6 +289,10 @@ The SIC summarizes the asymmetric spatial association between a conditioning cel
 As illustrated in Figure~\ref{fig:sic_explainer}, a positive SIC value at distance \( s \) indicates that the presence of a type \( A_k \) cell is associated with an increased expected density of type \( B \) cells at that radius, consistent with spatial attraction or clustering. Conversely, a negative SIC value suggests spatial repulsion or avoidance at that distance. This function provides an interpretable, distance-dependent summary of directional spatial association between cell types. Additional explanation of the SIC is contained in the Supplement.
 
 \begin{revised}
+\input{snippets/r2_q2_sic_normalization}
+\end{revised}
+
+\begin{revised}
 \input{snippets/r1_q2_crowding_sic}
 \end{revised}
 
@@ -390,7 +394,7 @@ In our first simulation study, we examined how accounting for hierarchical struc
 
 We generated 100 simulation replicates and fit two models to each: the full hierarchical model and a non-hierarchical model that estimates image-level SICs independently, without shrinkage to patient- or cohort-level structures. Inference quality was assessed by comparing the average RMSE of the \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients.
 
-We found that on average, and across all spatial scales, the average RMSE of \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients was lower for those estimated by the full hierarchical model than the model that fit images individually, most significantly so for closer-range coefficients (Table \ref{tab:hier_rmse}).
+\input{snippets/r2_q5_hierarchical_rmse}
 
 \begin{table}[ht]
 \centering
@@ -438,7 +442,7 @@ Figure \ref{fig:no_hier_est_SIC} shows several examples of image-level SICs esti
 
 \begin{revised}Figure~\ref{fig:gx_detections} shows detection power across simulation conditions, where power is defined as the proportion of simulated datasets in which the method correctly identifies that the spatial interaction curve differs from zero. Results reveal that SHADE Hierarchical's performance depends critically on two factors: source cell density (which provides conditioning information) and the number of images available for hierarchical pooling.
 
-\textbf{Effect of source density.} When source density is high (regardless of target density), SHADE achieves excellent median power (100\%) across all conditions, substantially outperforming envelope tests when target density is low (SHADE 100\% vs. G-cross 77\%, K-cross 73\%). Abundant source cells provide strong conditioning information that hierarchical pooling can effectively leverage. Conversely, when source density is low, performance depends on whether multiple images are available: with 2--3 images per patient, median power reaches 100\%; with only 1 image, power drops to 31\% as limited conditioning information per image prevents effective pooling.
+\textbf{Effect of source density.} \input{snippets/r2_q5_sparse_performance} Abundant source cells provide strong conditioning information that hierarchical pooling can effectively leverage. Conversely, when source density is low, performance depends on whether multiple images are available: with 2--3 images per patient, median power reaches 100\%; with only 1 image, power drops to 31\% as limited conditioning information per image prevents effective pooling.
 
 \textbf{Effect of number of images.} SHADE Hierarchical requires at least 2 images per patient for stable performance. With only 1 image per patient, the method exhibits extreme behavior: overly conservative under some conditions (100\% coverage, 0\% type I error when target density is high and source density is low) and unreliable under others (0\% power with high type I error variability when both densities are low). With 2--3 images, performance stabilizes substantially, achieving high power when source density is adequate while maintaining reasonable calibration.
 
@@ -560,7 +564,7 @@ For each tissue section, we computed $G$-cross estimates at distances from 0 to 
 \label{fig:gx_comparison}
 \end{figure}
 
-The $G$-cross-based analysis (Figure~\ref{fig:gx_comparison}) reveals several patterns of cell–cell clustering between CLR and DII patients, but notable differences emerge when we compare these results with SHADE-derived SICs. For instance, TAM–granulocyte interactions showed strong, statistically significant differences at all examined distances (20–60 microns), with higher clustering in DII tumors. This suggests a prominent granulocyte-TAM association in DII tumors according to $G$-cross. However, SHADE did not highlight this pair as a major differential interaction between groups, indicating that the clustering of granulocytes around TAMs may not translate into strong directional interactions when adjusting for other cell types or when modeled hierarchically. Conversely, SHADE identified vasculature as a key source driving differences in clustering of both CTLs and memory CD4+ T cells between CLR and DII groups, reflecting enhanced immune surveillance or trafficking around blood vessels in CLR tumors. This vasculature effect is less evident in the $G$-cross analysis, where vasculature-related interactions showed limited significance and mostly small effect sizes. These discrepancies highlight how SHADE's joint modeling and multilevel structure may capture spatial dependencies missed by simpler summary statistics like $G$-cross, or may reduce confounding by accounting for other cell types and hierarchical data structure. Conversely, $G$-cross may capture strong pairwise clustering that SHADE's model de-emphasizes in favor of more complex or conditional dependencies. Overall, this comparison underscores the differences in what each method captures, emphasizing SHADE's ability to reveal nuanced, context-dependent spatial interactions.
+\input{snippets/r2_q4_gx_comparison} These discrepancies highlight how SHADE's joint modeling and multilevel structure may capture spatial dependencies missed by simpler summary statistics like $G$-cross, or may reduce confounding by accounting for other cell types and hierarchical data structure. Conversely, $G$-cross may capture strong pairwise clustering that SHADE's model de-emphasizes in favor of more complex or conditional dependencies. Overall, this comparison underscores the differences in what each method captures, emphasizing SHADE's ability to reveal nuanced, context-dependent spatial interactions.
 
 \begin{revised}
 \subsection{Visual comparison with functional data analysis of spatial summary statistics}
