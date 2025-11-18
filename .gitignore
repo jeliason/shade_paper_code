@@ -47,7 +47,6 @@ CLAUDE.md
 !manuscript/**/latexmkrc
 
 # Manuscript submission-specific files
-responses.tex
 journal_club.tex
 cover_letter.tex
 responses.pdf
