@@ -140,9 +140,9 @@
 
 \usepackage{graphicx} % Required for inserting images
 
-\title{SHADE Responses}
-\author{Joel Eliason}
-\date{October 2025}
+\title{Responses to Reviewers for SHADE}
+\author{Joel Eliason, Michele Peruzzi, Arvind Rao}
+\date{\today}
 
 \begin{document}
 
@@ -355,7 +355,9 @@ Minor points:
 \textbf{Response}: We have added Supplement Section~\ref{sec:gibbs_background} ("Background: Multitype Gibbs Point Process Models and Relationship to SHADE") providing: (1) formal introduction to multitype Gibbs point process (MGPP) models and their symmetry constraint that prevents directional association modeling, (2) description of hierarchical Gibbs models with type ordering~\citep{hougmander_multitype_1999} that enable asymmetry via ordered dependencies, (3) SHADE's three key extensions (asymmetric SICs, flexible basis functions, multilevel Bayesian structure), and (4) comparison table (Table~\ref{tab:mgpp_vs_shade}) contrasting MGPPs, hierarchical Gibbs models, and SHADE. The Introduction now references this supplemental material.
 
 \item The introduction is quite long and contains sections that might be better placed in the discussion, such as specific comparison to other methods.
-\joel{Yes}
+
+\textbf{Response}: The introduction has been substantially revised and streamlined. Method comparisons in the introduction establish the methodological gap and motivation, while detailed comparative analysis with results is later in the manuscript (Section~\ref{sec:mfpca_comparison}).
+
 \item Methods (p. 7), "... assuming that ... follows an inhomogeneous Poisson point process": Could the authors indicate what that assumption implies in the context of typical applications of the new method (e.g., a Poisson process typically is based on a rare-events argument)? And would there be reasonable alternative choices for the probability distribution?
 
 \textbf{Response}: We have expanded Section~\ref{sec:model_setup} to clarify what the inhomogeneous Poisson point process assumption allows and why it is the appropriate modeling choice:
@@ -469,7 +471,7 @@ Specifically, for each source--target cell type pair, we compute the difference 
 
 When the simultaneous credible band excludes zero over a distance range, we conclude that the spatial association is statistically significant at that range. All SIC figures display simultaneous 95\% credible bands computed using the method now detailed in Supplement Section~\ref{sec:sim_band}.
 
-Note: The "0.05 level" mentioned in Figure~\ref{fig:sic_CRC_diff} refers to differences in log-intensity exceeding 0.05 between groups—this is a practical effect size threshold for highlighting substantive differences, not a statistical significance cutoff.
+Note: The 0.05 effect size threshold previously used to highlight substantive differences in log-intensity has been removed from the analysis.
 
 \item G assumes homogeneity in the point process. Please look at results for G by tissue compartment (tumor, stroma, etc) to somewhat control for difference in intensity of different cell types by tissue domain.
 
@@ -501,7 +503,10 @@ Additionally, Section~\ref{sec:mfpca_comparison} includes a detailed visual comp
 
 Minor:
 \begin{enumerate}
-    \item Figure 5: I can’t seem to see the 20, 40, and 60 nm data. Also, add to caption what is hight and low levels.
+    \item Figure 5: I can't seem to see the 20, 40, and 60 nm data. Also, add to caption what is hight and low levels.
+
+    \textbf{Response:} Figure 5 (Detection power comparison) has been updated. The current caption is: 
+    \begin{revised}\input{snippets/fig_gx_detections_caption}\end{revised}
 \end{enumerate}
 
 \bibliographystyle{abbrvnat}

@@ -152,7 +152,8 @@
 \newcommand{\joel}[1]{\textcolor{blue}{\textsf{[#1]}}}
 
 % Track changes toggle: set to 1 to show tracked changes, 0 to hide them
-\newcommand{\trackchanges}{1}
+% Use \providecommand so it can be overridden from command line
+\providecommand{\trackchanges}{1}
 
 % Revised text environment - for longer blocks of text
 \newenvironment{revised}{%
@@ -198,6 +199,12 @@ Open-source implementation is available at \url{https://github.com/jeliason/SHAD
 \textbf{Keywords:}
 spatial statistics, cell-cell interactions, Bayesian modeling, tissue microenvironment, multiplex imaging, colorectal cancer
 \end{abstract}
+
+\begin{revised}
+\section*{Author Summary}
+
+The spatial arrangement of cells within tumors provides critical insights into cancer progression and treatment response. Modern imaging technologies can map cellular neighborhoods across multiple tissue sections from many patients, but almost all existing statistical methods face at least one of two key limitations: they assume spatial relationships are symmetric (if immune cells cluster near tumor cells, tumor cells must cluster near immune cells), and/or they analyze each tissue section independently rather than pooling information across the biological hierarchy. We developed SHADE (Spatial Hierarchical Asymmetry via Directional Estimation) to address both challenges simultaneously. SHADE captures directional spatial dependencies, allowing asymmetric relationships between cell types, while operating within a multilevel Bayesian framework that borrows strength across tissue sections, patients, and patient groups. This hierarchical structure yields more precise estimates and directly quantifies variability at each biological scale. Applying SHADE to colorectal cancer data revealed distinct directional spatial patterns distinguishing immune-infiltrated from immune-excluded tumors, with substantial patient-level heterogeneity indicating diverse microenvironment architectures within disease subtypes. SHADE provides a principled approach for analyzing the directional, multi-scale organization of tissue microenvironments.
+\end{revised}
 
 \section{Introduction}
 \label{sec:introduction}
@@ -423,10 +430,7 @@ When both source and target densities are low, all methods struggle. With 2--3 i
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/comparison_figures/power_by_regime.pdf}
-\caption{\begin{revised}
-Detection power comparison across simulation conditions.
-Boxplots show the proportion of datasets in which methods correctly identify non-zero spatial interactions by testing whether simultaneous credible bands (SHADE) or global envelopes (G-cross, K-cross) exclude zero anywhere in the 0--75~$\mu$m range. Results are stratified by source cell density (rows: the conditioning cell type) and target cell density (columns: the cell type being modeled), with number of images per patient (1, 2, or 3) shown on the x-axis. SHADE Hierarchical achieves highest power when source density is high, with performance when source density is low depending critically on having multiple images per patient available for hierarchical pooling (see main text).
-\end{revised}}
+\caption[Detection power comparison across simulation conditions]{\begin{revised}\input{snippets/fig_gx_detections_caption}\end{revised}}
     \label{fig:gx_detections}
 \end{figure}
 
@@ -578,12 +582,19 @@ Future extensions of SHADE could incorporate functional covariates—such as mar
 Overall, our results highlight the importance of capturing asymmetric and hierarchical structure in spatial models, and position SHADE as a powerful tool for dissecting the complex architecture of tissue microenvironments in cancer and beyond.
 
 \section*{Acknowledgements}
-\section*{Conflict of Interest}
-A. Rao serves as a member for Voxel Analytics LLC and consults for Telperian, Tempus Inc. and TCS Ltd.
+\section*{Competing Interests}
+I have read the journal's policy and the authors of this manuscript have the following competing interests: A. Rao serves as a member for Voxel Analytics LLC and consults for Telperian, Tempus Inc. and TCS Ltd.
 
 \section*{Funding}
 J. Eliason was funded by NIH-NCI 5 R01-CA268426–03, R37CA214955-01A1, NSF Award Number 215776 and Advanced Proteogenomics of Cancer (T32 CA140044). A. Rao was supported by CCSG Bioinformatics Shared Resource 5 P30 CA046592, a gift from Agilent technologies, and a Precision health Investigator award from U-M Precision Health, NCI Grant R37-CA214955, The University of Michigan (UM) startup institutional research funds and Research Scholar Grant from the American Cancer Society (RSG-16-005-01).
 \bibliographystyle{abbrvnat}
 \bibliography{references}
+
+\begin{revised}
+\section*{Supporting Information}
+
+\textbf{S1 File. Supplementary Materials.} Contains supplementary methods (background on Gibbs point process models, logistic regression approximation, simultaneous credible band construction, extended simulation methods), supplementary results (hyperparameter studies, coverage and Type I error analysis, robustness to spatial confounding), extended colorectal cancer analysis results, and comparison with multilevel functional PCA methodology.
+
+\end{revised}
 
 \end{document}

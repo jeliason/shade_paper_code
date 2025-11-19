@@ -36,7 +36,8 @@
 \renewcommand{\thefigure}{S\arabic{figure}}
 
 % Track changes toggle: set to 1 to show tracked changes, 0 to hide them
-\newcommand{\trackchanges}{1}
+% Use \providecommand so it can be overridden from command line
+\providecommand{\trackchanges}{1}
 
 % Revised text/section - colors additions blue when tracking is on
 % Can be used inline: {\revised text here} or as environment: \begin{revised}...\end{revised}
@@ -49,7 +50,7 @@
 
 \newcommand{\joel}[1]{\textcolor{blue}{\textsf{[#1]}}}
 
-\title{Supplementary Material}
+\title{Supplementary Materials}
 \author{Joel Eliason, Michele Peruzzi, Arvind Rao}
 \date{}
 \begin{document}

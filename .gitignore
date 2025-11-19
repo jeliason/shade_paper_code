@@ -53,6 +53,9 @@ responses.pdf
 journal_club.pdf
 cover_letter.pdf
 reviewer_response_todos.md
+manuscript/shade_submission/
+manuscript/shade_submission.zip
+manuscript/*_flattened.tex
 
 # Temporary files
 *.log
