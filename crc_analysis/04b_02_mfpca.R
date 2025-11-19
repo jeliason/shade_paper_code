@@ -110,7 +110,7 @@ mfpca_grid <- ggplot(all_mfpca_data, aes(x = x, y = y, color = Group, fill = Gro
 legend.title = element_blank())
 
 print(mfpca_grid)
-fsave("gcross_mfpca_grid_supplement", height = 10, width = 16)
+fsave("gcross_mfpca_grid_supplement")
 
 cat("✓ G-cross mFPCA by group complete\n")
 
@@ -197,7 +197,7 @@ lcross_mfpca_grid <- ggplot(all_lcross_mfpca_data, aes(x = x, y = y, color = Gro
         legend.title = element_blank())
 
 print(lcross_mfpca_grid)
-fsave("lcross_mfpca_grid_supplement", height = 10, width = 16)
+fsave("lcross_mfpca_grid_supplement")
 
 cat("✓ L-cross mFPCA by group complete\n")
 

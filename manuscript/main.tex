@@ -204,19 +204,13 @@ spatial statistics, cell-cell interactions, Bayesian modeling, tissue microenvir
 
 Spatial dependencies between cell types play a central role in immune dynamics, tumor behavior, and tissue organization, motivating statistical models that can capture such interactions~\citep{yuan_spatial_2016,maley_classifying_2017}. The tumor microenvironment (TME) is a spatially structured system where cell arrangements are closely linked to disease progression and treatment response~\citep{binnewies_understanding_2018,schurch_coordinated_2020}. Notably, these spatial interactions are frequently asymmetric: immune cells may cluster near tumor cells without the reverse being true, reflecting directional dependencies in tissue organization~\citep{bindea_spatiotemporal_2013}.
 
-Recent advances in multiplexed imaging technologies, including multiplexed immunofluorescence (mIF) and other high-resolution spatial profiling methods, have made it possible to quantify cell type spatial distributions and interactions within the tumor microenvironment (TME) at single-cell resolution~\citep{sheng_multiplex_2023}. \begin{revised}\input{snippets/r3_q11_lit_review}\end{revised}
+Recent advances in multiplexed imaging technologies, including multiplexed immunofluorescence (mIF) and other high-resolution spatial profiling methods, have made it possible to quantify cell type spatial distributions and interactions within the tumor microenvironment at single-cell resolution~\citep{sheng_multiplex_2023}. \begin{revised}\input{snippets/r2_q1_intro}
 
-Although Gibbs point process models offer a more flexible probabilistic framework~\citep{moller_statistical_2003, baddeley_spatial_2015}, standard formulations assume symmetric interactions. While hierarchical Gibbs models have been proposed to accommodate directionality~\citep{hougmander_multitype_1999, grabarnik_modelling_2009}, \begin{revised} standard implementations depend on parametric interaction functions that impose restrictive assumptions. Observations based on the $G$-cross function suggest that spatial interactions between cell types are inherently asymmetric~\citep{tsang_assessing_2024}, motivating statistical models that directly account for directional spatial effects.\end{revised}
+Beyond these methodological limitations in handling replication, existing spatial models also struggle with directional dependencies. Gibbs point process models provide a flexible probabilistic framework~\citep{moller_statistical_2003, baddeley_spatial_2015}, yet standard formulations assume symmetric interactions. While so-called hierarchical Gibbs models have been proposed to accommodate directionality~\citep{hougmander_multitype_1999, grabarnik_modelling_2009}, standard implementations depend on parametric interaction functions that impose restrictive assumptions. Observations based on the $G$-cross function suggest that spatial interactions between cell types are inherently asymmetric~\citep{tsang_assessing_2024}, motivating statistical models that directly account for directional spatial effects.\end{revised}
 
 \begin{revised}
-In this work, we develop a flexible statistical framework for modeling asymmetric spatial associations in tissue microenvironments. Our approach extends multitype Gibbs point process models~\citep{baddeley_spatial_2015,moller_statistical_2003,hougmander_multitype_1999} by modeling directional associations via \textit{spatial interaction curves (SICs)} using flexible basis expansions within a multilevel Bayesian hierarchical structure. SICs quantify how the presence of one cell type relates to the expected density of another across spatial scales by modeling the \textit{conditional intensity function}. Full posterior inference enables simultaneous credible bands for SICs and explicit quantification of spatial heterogeneity at each biological scale. Technical comparison with Gibbs models is provided in Supplement Section~\ref{sec:gibbs_background}.
+In this work, we develop SHADE (Spatial Hierarchical Asymmetry via Directional Estimation), a statistical framework for modeling asymmetric spatial associations in tissue microenvironments. Our approach extends multitype Gibbs point process models~\citep{baddeley_spatial_2015,moller_statistical_2003,hougmander_multitype_1999} by modeling directional associations via \textit{spatial interaction curves (SICs)} that quantify how the presence of one cell type affects the expected density of another using flexible basis expansions within a multilevel Bayesian structure. The hierarchical framework enables partial pooling across biological scales (images, patients, cohorts) with full posterior inference for uncertainty quantification and heterogeneity analysis (Section~\ref{sec:how_vary}). For computational efficiency, we use logistic regression with quadrature-based dummy points rather than direct Poisson likelihood estimation~\citep{baddeley_logistic_2014}. Technical comparison with Gibbs models is provided in Supplement Section~\ref{sec:gibbs_background}. An overview of the SHADE workflow is provided in Figure~\ref{fig:summary}.
 \end{revised}
-
-Beyond asymmetry, our method accounts for multilevel variation across images, patients, and cohorts. Biological spatial patterns vary at multiple levels, yet \begin{revised}\input{snippets/r2_q1_intro}\end{revised}. We integrate the estimation of SICs into a multilevel Bayesian framework, which enables partial pooling across biological scales while preserving biologically meaningful variation. \begin{revised}This hierarchical structure allows SHADE to explicitly quantify and compare spatial heterogeneity at each level (Section~\ref{sec:how_vary}), improving estimation efficiency while maintaining interpretable decomposition of variation\end{revised}.
-
-To ensure computational efficiency, we approximate conditional intensity estimation using logistic regression with quadrature-based dummy points rather than direct Poisson likelihood estimation~\citep{baddeley_logistic_2014}. This transformation avoids computational challenges such as instability in fine-grained quadrature approximations and biases inherent in conventional spatial regression techniques.
-
-\begin{revised}We refer to this overall modeling framework as SHADE (Spatial Hierarchical Asymmetry via Directional Estimation). An overview of the SHADE workflow is provided in Figure~\ref{fig:summary}.\end{revised}
 
 \begin{sidewaysfigure}
     \centering
@@ -288,9 +282,8 @@ The SIC summarizes the asymmetric spatial association between a conditioning cel
 \label{eq:sic}
 \text{SIC}_{A_k \to B}(s) = \sum_{p=1}^{P} \psi_{A_k}^{(p)} \phi_p(s),
 \end{equation}
-\begin{revised}\input{snippets/r1_q3_log_intensity}\end{revised}
-
-As illustrated in Figure~\ref{fig:sic_explainer}, a positive SIC value at distance \( s \) indicates that the presence of a type \( A_k \) cell is associated with an increased expected density of type \( B \) cells at that radius, consistent with spatial attraction or clustering. Conversely, a negative SIC value suggests spatial repulsion or avoidance at that distance. This function provides an interpretable, distance-dependent summary of directional spatial association between cell types. Additional explanation of the SIC is contained in the Supplement.
+\begin{revised}\input{snippets/r1_q3_log_intensity} Figure~\ref{fig:sic_explainer} illustrates how SIC values correspond to spatial attraction (positive) or repulsion (negative).
+\end{revised}
 
 \begin{figure}[ht]
     \centering
@@ -305,14 +298,12 @@ A key advantage of our framework is that the spatial interaction terms \( \bpsi_
 \input{snippets/r1_q2_crowding_sic}
 \end{revised}
 
-\subsubsection{Characterizing Predictive Asymmetry}
+\begin{revised}
+\subsubsection{Interpreting Spatial Interaction Curves}
 \label{sec:predictive}
 
-\begin{revised}
 \input{snippets/r2_q3_predictive}
-\end{revised} Apparent directional associations may arise from confounding factors such as differences in the spatial distribution of \( A \) (e.g., sparser, more clustered, or more localized patterns), which can make \( A \) a stronger statistical predictor without implying direct biological influence.
-
-To mitigate such confounding, the model can incorporate spatial covariates or trend surfaces (e.g., distance to the tumor margin) to adjust for first-order intensity effects. This adjustment ensures that estimated directional SICs capture residual spatial association beyond shared background structure.
+\end{revised}
 
 \subsection{Multilevel Bayesian Model}
 \label{sec:multilevel_model}
@@ -344,30 +335,7 @@ Hyperpriors for the variance components \( \sigma_{\text{cohort}}^2 \), \( \sigm
 \subsection{Logistic Regression Approximation for Computational Efficiency}
 \label{sec:logistic_approx}
 
-Direct estimation of the Poisson likelihood in spatial point process models typically requires numerical integration over a fine spatial grid, which becomes computationally expensive and unstable in high-resolution images. To address this, we follow the logistic regression approximation introduced by~\citet{baddeley_logistic_2014}, which avoids spatial gridding by introducing a set of dummy points \( D \) sampled from a homogeneous Poisson process with known intensity \( \lambda_{\text{dummy}} \). We define the combined set of points \( Y = X_B \cup D \), and assign binary labels:
-
-\begin{equation*}
-I(v) = 
-\begin{cases}
-    1, & v \in X_B \\
-    0, & v \in D
-\end{cases}
-\end{equation*}
-
-The conditional probability that a point \( v \) is a true (observed) point of type \( B \) is given by:
-
-\begin{equation*}
-P(I(v) = 1) = \frac{\lambda(v)}{\lambda(v) + \lambda_{\text{dummy}}},
-\end{equation*}
-
-leading to the following logistic regression model:
-
-\begin{equation}
-\label{eq:logit_model}
-\log\frac{P(I(v) = 1)}{P(I(v) = 0)} = \bz^\top(v)\bbeta + \sum_{k=1}^{K} \bq_{A_k}^\top(v)\bdelta_{A_k}^{(m)} - \log \lambda_{\text{dummy}},
-\end{equation}
-
-This approximation circumvents key computational challenges of direct Poisson modeling. In Poisson models, fine spatial discretization leads to large numbers of empty pixels, often resulting in singular design matrices and unstable inference~\citep{baddeley_spatial_2015}. The Hauck-Donner effect~\citep{hauck_walds_1977} can further distort uncertainty estimates. By reframing the problem as a binary classification task over observed and dummy points, the logistic approximation enables scalable, stable inference of spatial interaction effects at the image level. \begin{revised}\input{snippets/r3_q3_logistic_inhomogeneity}\end{revised}
+Direct estimation of the Poisson likelihood in spatial point process models requires numerical integration over fine spatial grids, which becomes computationally expensive and unstable. Following~\citet{baddeley_logistic_2014}, we use a logistic regression approximation that introduces dummy points sampled from a homogeneous Poisson process, reframing spatial intensity estimation as binary classification. This approach avoids computational challenges such as singular design matrices and biased uncertainty estimates that arise in direct Poisson modeling. \begin{revised}\input{snippets/r3_q3_logistic_inhomogeneity} Details of the approximation are provided in Supplement Section~\ref{sec:logistic_supplement}.\end{revised}
 
 \subsection{Model Estimation and Computational Implementation}
 \label{sec:model_estimation}
@@ -450,7 +418,7 @@ When both source and target densities are low, all methods struggle. With 2--3 i
 
 \input{snippets/r3_q5_type1_error}
 
-\subsubsection{Robustness to spatial confounding.} \input{snippets/r2_q5_compartment_robustness}\end{revised}
+\subsubsection{Robustness to spatial confounding.}\label{sec:compartment_robustness} \input{snippets/r2_q5_compartment_robustness}\end{revised}
 
 \begin{figure}[H]
     \centering
@@ -487,7 +455,7 @@ A core question in tumor microenvironment analysis is whether certain cell types
 
 We extracted image-, patient-, and cohort-level interaction parameters ($\delta_{t_1\to t_2}^{(m,p)}$, $\gamma_{t_1\to t_2}^{(n,p)}$, and $\psi_{t_1\to t_2}^{(g,p)}$) and computed SICs as in Equation~\ref{eq:sic}. Figure~\ref{fig:sic_CRC} shows an example with \begin{revised}cytotoxic T lymphocytes (CTLs, CD8\textsuperscript{+} T cells)\end{revised} as the target cell type and CAFs as a source, highlighting differential organization between patient groups. At $\sim$75~$\mu$m, CTLs in CLR patients tend to cluster around CAFs (log-intensity $>$ 0), whereas in DII patients, CTLs appear depleted near CAFs. Patient-level curves reveal substantial within-group heterogeneity.
 
-Across all cell-type pairs, we observed consistent short-range ($<$25~$\mu$m) negative associations, likely reflecting physical crowding (see figure in Supplement). At intermediate ranges (25–75~$\mu$m), many pairs showed a distinct positive peak, suggestive of clustering, often differing in magnitude between patient groups. Associations at longer distances ($>$75~$\mu$m) were generally weaker or absent, indicating limited spatial coordination at larger scales.
+Across all cell-type pairs, we observed consistent short-range ($<$25~$\mu$m) negative associations, likely reflecting physical crowding. At intermediate ranges (25–75~$\mu$m), many pairs showed a distinct positive peak, suggestive of clustering, often differing in magnitude between patient groups. Associations at longer distances ($>$75~$\mu$m) were generally weaker or absent, indicating limited spatial coordination at larger scales.
 
 \begin{figure}[ht]
     \centering
@@ -513,7 +481,7 @@ To assess variability in spatial interaction structure across samples, we summar
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{images/CRC_analysis_paper/mad_comparison_clr_dii.pdf}
-    \caption{\textbf{Comparison of spatial heterogeneity between CLR and DII tumor subtypes.} \begin{revised}Heatmaps show median absolute deviation (MAD) of spatial interaction curve deviations as a measure of heterogeneity for 15 source-target cell type pairs. Top row: between-patient heterogeneity (MAD of patient-level deviations from cohort mean). Bottom row: within-patient heterogeneity (MAD of image-level deviations from patient mean). Left column: CLR tumors. Right column: DII tumors. At the patient level, DII tumors show greater heterogeneity for immune-related interactions (e.g., memory CD4+ T-CAF, CTL-tumor), while CLR tumors show greater heterogeneity for granulocyte-CAF interactions. At the image level, DII shows more variability in granulocyte-vasculature interactions, while CLR shows more variability in granulocyte-CAF and granulocyte-hybrid E/M interactions.\end{revised}}
+    \caption{\begin{revised}Heatmaps show median absolute deviation (MAD) of spatial interaction curve deviations as a measure of heterogeneity for 15 source-target cell type pairs. Top row: between-patient heterogeneity (MAD of patient-level deviations from cohort mean). Bottom row: within-patient heterogeneity (MAD of image-level deviations from patient mean). Left column: CLR tumors. Right column: DII tumors.\end{revised}}
     \label{fig:mad_clr_dii}
 \end{figure}
 
@@ -521,9 +489,11 @@ To assess variability in spatial interaction structure across samples, we summar
 \label{sec:hot_cold}
 Distinct tumor immune phenotypes—such as immune-infiltrated versus immune-excluded tumors—are associated with differential immune activity and prognosis. These differences are often accompanied by changes in how immune and stromal cells are spatially arranged in relation to tumor cells and each other. We used SHADE to compare SICs across these patient groups and identify interactions that are enriched or depleted in each context. This allowed us to link differences in spatial structure to known functional differences in immune activity.
 
-\begin{revised}Figure~\ref{fig:sic_crc_all} shows the estimated cohort-level SICs for all source-target cell type pairs, stratified by patient group. Comparing the CLR and DII curves reveals several notable differences in spatial interaction structure. Below, we highlight a subset of interactions exhibiting marked between-group differences, focusing on plausible underlying biological mechanisms.\end{revised} First, CLR patients showed increased clustering of CTLs and memory CD4+ T cells around vasculature at short spatial ranges, suggesting enhanced immune surveillance and trafficking in these patients. The vasculature serves as a conduit for lymphocyte infiltration into the tumor microenvironment, and vascular normalization in immunologically active tumors has been linked to improved T cell recruitment and anti-tumor immunity \citep{lanitis_targeting_2015,hendry_role_2016}. This may reflect a more organized immune response in CLR patients, consistent with better clinical outcomes. In contrast, DII patients exhibited greater clustering of CTLs around tumor cells at all spatial ranges. While this might suggest immune recognition, it may alternatively indicate ineffective or exhausted T cell responses that fail to clear tumor cells. Persistent CTL-tumor colocalization without effective cytolysis has been associated with immune dysfunction and tumor immune escape \citep{dolina_cd8_2021,raskov_cytotoxic_2021}.
+\begin{revised}Figure~\ref{fig:sic_crc_all} shows the estimated cohort-level SICs for all source-target cell type pairs, stratified by patient group. Comparing the CLR and DII curves reveals several notable differences in spatial interaction structure. While none of these differences reach statistical significance at the 95\% credible level (i.e., simultaneous credible bands for the SICs overlap everywhere), we highlight below a subset of interactions exhibiting marked between-group differences that are consistent with known biological mechanisms.
 
-We also observed distinct patterns in CTL clustering around CAFs: DII patients displayed increased clustering at short and long spatial ranges, whereas CLR patients showed elevated clustering at medium ranges. CAFs are known to mediate immune suppression via direct inhibition of CTLs and by establishing physical and cytokine-mediated barriers \citep{jenkins_cancer-associated_2022,freeman_cancer-associated_2020}. The long-range clustering in DII patients may reflect exclusionary barriers or CAF-mediated trapping of CTLs, whereas the medium-range interactions in CLR patients could represent transient engagement or immune cell penetration into CAF-dense zones under less suppressive conditions. Lastly, CLR patients demonstrated increased clustering of memory CD4+ T cells at short distances from both CAFs and hybrid E/M cells. This may suggest spatial niches where helper T cells coordinate localized immune responses, potentially promoting anti-tumor immunity or influencing the differentiation state of tumor cells. CD4+ T cells have been implicated in the modulation of EMT processes, and their proximity to hybrid E/M cells may reflect attempts to restrain phenotypic plasticity and metastatic potential \citep{xie_epithelial-mesenchymal_2025,milosevic_interactions_2024}.
+DII patients exhibited greater clustering of CTLs around tumor cells across all spatial ranges. While this might suggest immune recognition, it may alternatively indicate ineffective or exhausted T cell responses that fail to clear tumor cells. Persistent CTL-tumor colocalization without effective cytolysis has been associated with immune dysfunction and tumor immune escape \citep{dolina_cd8_2021,raskov_cytotoxic_2021}. Similarly, DII patients showed greater attraction of granulocytes to TAMs at all distances, suggesting enhanced myeloid-myeloid interactions that may contribute to immunosuppressive networks.
+
+In contrast, CLR patients demonstrated distinct spatial patterns. Hybrid E/M cells showed stronger attraction of CTLs at short ranges in CLR compared to DII patients. CD4+ T cells have been implicated in modulating EMT processes \citep{xie_epithelial-mesenchymal_2025,milosevic_interactions_2024}, and the proximity of CTLs to hybrid E/M cells in CLR tumors may reflect immune engagement with tumor cells undergoing phenotypic plasticity. Additionally, CLR patients exhibited greater repulsion of CTLs from CAFs at medium-to-long ranges compared to DII, and greater repulsion of memory CD4+ T cells from hybrid E/M cells at these distances. CAFs are known to mediate immune suppression via direct inhibition and establishment of physical barriers \citep{jenkins_cancer-associated_2022,freeman_cancer-associated_2020}. The stronger repulsion in CLR tumors may indicate more effective spatial segregation of immune and suppressive stromal compartments, whereas the reduced repulsion in DII could reflect barrier disruption or exclusionary mechanisms that constrain immune cell access.\end{revised}
 
 \begin{figure}[ht]
     \centering
@@ -540,7 +510,7 @@ Beyond estimating SICs, SHADE predicts the spatial distribution of each target c
 
 For example, in image 47\_B from the dataset, we can produce the following predictions of each target cell type, conditional on the source cell types (Figure~\ref{fig:example_pred}). We can see that the target cell types are quite well predicted, especially CTLs. Likely due to their relative paucity, granulocytes are not quite as well predicted in this image (regions of localization are not as distinct).
 
-We calculated AUCs per cell type and per group (see Supplement). All three target cell types were better predicted in CLR patients than in DII patients, though there was a relatively large amount of variability in image-level AUCs.
+We calculated AUCs per cell type and per group (Supplement Section~\ref{sec:crc_supp_figs}). All three target cell types were better predicted in CLR patients than in DII patients, though there was a relatively large amount of variability in image-level AUCs.
 
 \begin{figure}[ht]
     \centering
@@ -563,10 +533,10 @@ For each tissue section, we computed $G$-cross estimates at distances from 0 to 
 \label{fig:gx_comparison}
 \end{figure}
 
-\input{snippets/r2_q4_gx_comparison} These discrepancies highlight how SHADE's joint modeling and multilevel structure may capture spatial dependencies missed by simpler summary statistics like $G$-cross, or may reduce confounding by accounting for other cell types and hierarchical data structure. Conversely, $G$-cross may capture strong pairwise clustering that SHADE's model de-emphasizes in favor of more complex or conditional dependencies. Overall, this comparison underscores the differences in what each method captures, emphasizing SHADE's ability to reveal nuanced, context-dependent spatial interactions.
+\begin{revised}\input{snippets/r2_q4_gx_comparison}\end{revised}
 
 \begin{revised}
-\subsection{Visual comparison with functional data analysis of spatial summary statistics}
+\subsection{Comparison with functional data analysis of spatial summary statistics}
 \label{sec:mfpca_comparison}
 
 \input{snippets/r2_q4_mfpca_intro}
@@ -575,28 +545,29 @@ For each tissue section, we computed $G$-cross estimates at distances from 0 to 
 
 \input{snippets/r3_q2_mfpca_examples}
 
-\input{snippets/r2_q4_mfpca_conclusion}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/gcross_mfpca_grid_supplement.pdf}
+    \caption{Multilevel functional PCA of $G$-cross functions for all source-target pairs. For each of 15 cell type pairs, group-level mean $G$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$).}
+    \label{fig:mfpca_gcross_grid}
+\end{figure}
 \end{revised}
 
 \section{Discussion}
 
 In this work, we introduced SHADE, a Bayesian hierarchical model for quantifying asymmetric spatial interactions in multiplexed imaging data. By modeling the conditional intensity function and estimating spatial interaction curves, our approach enables the identification of directional associations between cell types while accounting for multilevel variation across images, patients, and cohorts.
 
-Through simulation studies, we demonstrated that SHADE effectively captures asymmetric spatial associations while leveraging hierarchical structure to improve estimation. Including multilevel priors improves inference accuracy, especially for short-range interactions, by reducing bias and variance in estimated coefficients. SHADE also demonstrated superior robustness to low cell densities and limited sampling, consistently outperforming $G$-cross and flat models in detecting true spatial interactions across diverse simulation conditions.
+Through simulation studies, we demonstrated that SHADE effectively captures asymmetric spatial associations while leveraging hierarchical structure to improve estimation. Including multilevel priors improves inference accuracy by reducing bias and variance in estimated coefficients. SHADE also demonstrated superior robustness to low cell densities and limited sampling, consistently outperforming $G$-cross, \begin{revised}$L$-cross\end{revised} and flat models in detecting true spatial interactions across diverse simulation conditions.
 
 \begin{revised}
 \input{snippets/r2_q4_discussion}
 \end{revised}.
 
-SHADE revealed distinct and biologically meaningful patterns of cellular organization in colorectal tumors, highlighting how immune and stromal interactions differ between immune-infiltrated (CLR) and immune-excluded (DII) phenotypes. By estimating directional spatial interaction curves across multiple spatial scales and model hierarchies, we identified key differences in the local microenvironment that may underlie divergent immune states. Notably, CLR tumors exhibited increased short-range clustering of cytotoxic and memory T cells around vasculature, consistent with enhanced immune infiltration via normalized vessels and the formation of perivascular immune niches. In contrast, CTLs in DII tumors showed elevated spatial association with tumor cells across all distances—a pattern that may reflect either failed immune surveillance or dysfunctional retention of exhausted T cells.
+\begin{revised}SHADE revealed distinct patterns of cellular organization differentiating immune-infiltrated (CLR) and immune-excluded (DII) colorectal tumors. DII tumors showed elevated CTL-tumor spatial association across all distances, potentially reflecting failed immune surveillance or exhausted T cell retention, along with greater granulocyte-TAM clustering suggesting enhanced immunosuppressive myeloid networks. In contrast, CLR tumors demonstrated stronger CTL attraction to hybrid E/M cells at short ranges and greater immune-stromal spatial segregation, with CTLs and memory CD4+ T cells showing stronger repulsion from CAFs and hybrid E/M cells at medium-to-long ranges. Given CAFs' role in immune suppression and barrier formation, these patterns may indicate more effective compartmentalization of immune and suppressive elements in CLR tumors, whereas reduced segregation in DII could reflect barrier disruption or exclusionary mechanisms constraining immune access.\end{revised}
 
-Our analysis also uncovered cell-type-specific interaction patterns with stromal components. CTLs in DII patients showed greater clustering near CAFs at both short and long spatial ranges, whereas in CLR patients, CTL–CAF interactions peaked at intermediate distances. Given CAFs’ established role in immune suppression and physical exclusion, these patterns may reflect differential stromal constraint across tumor types. Similarly, CLR patients exhibited increased short-range clustering of memory CD4+ T cells around both CAFs and hybrid E/M cells. These interactions suggest a potentially immunoregulatory or anti-tumor role for helper T cells in CLR tumors, possibly including modulation of EMT plasticity or the stabilization of immune-supportive niches.
+Beyond cohort-level differences, we also found substantial heterogeneity in spatial organization across patients and across tissue sections from the same patient. This variability was particularly pronounced in granulocyte interactions with TAMs, vasculature, and hybrid E/M cells, suggesting patient-specific or localized microenvironmental factors influencing spatial localization. Finally, SHADE's ability to predict target cell distributions from spatial covariates varied by cell type and tumor subtype: immune cell organization was more predictable in CLR tumors, indicating more structured immune environments compared to the more disorganized spatial context of DII tumors. \begin{revised}These findings illustrate both consistent interaction motifs and biologically meaningful variability across spatial scales in tumor immune landscapes.\end{revised}
 
-Beyond cohort-level differences, we also found substantial heterogeneity in spatial organization across patients and across tissue sections from the same patient. This variability was particularly pronounced in granulocyte interactions with TAMs, vasculature, and hybrid E/M cells, suggesting patient-specific or localized microenvironmental factors influencing spatial localization. Finally, SHADE’s ability to predict target cell distributions from spatial covariates varied by cell type and tumor subtype: immune cell organization was more predictable in CLR tumors, indicating more structured immune environments compared to the more disorganized spatial context of DII tumors. Collectively, these results emphasize the need for multiscale spatial modeling to capture both consistent interaction motifs and the biologically meaningful variability that characterizes tumor immune landscapes.
-
-Additionally, we compared SHADE's results with $G$-cross function estimates, a standard spatial summary statistic. $G$-cross estimates identified strong clustering of granulocytes around TAMs and hybrid E/M cells, which SHADE did not highlight. Conversely, SHADE revealed significant vasculature-driven clustering of CTLs and memory CD4+ T cells in CLR tumors, a pattern less evident in $G$-cross estimates. This highlights how SHADE's hierarchical, conditional modeling framework can capture context-dependent interactions that simpler pairwise clustering methods might miss or misrepresent.
-
-\begin{revised}Our comparison with multilevel functional PCA (Section~\ref{sec:mfpca_comparison}) further illustrates the complementary strengths of SHADE and functional data analysis approaches. While both methods analyze spatial patterns hierarchically, they address fundamentally different questions: SHADE provides a generative probabilistic model of the point process with multivariate adjustment for confounding cell types, whereas mFPCA characterizes dominant modes of variation in marginal pairwise summary statistics without imposing a parametric model on the underlying spatial process. The concordance we observed between SHADE's conditional SICs and mFPCA's marginal $G$-cross curves for certain interactions (e.g., CTL-vasculature) validates that SHADE's directional effects reflect genuine pairwise spatial associations. Conversely, discrepancies highlight where multivariate adjustment reveals conditional dependencies not apparent in marginal analyses. This suggests that SHADE and FDA methods are best viewed as complementary tools rather than competing approaches: SHADE excels at isolating directional causal effects while controlling for confounders, whereas FDA methods provide model-free exploration of functional variation across biological hierarchies. The choice between approaches should be guided by the inferential goal---mechanistic understanding of conditional dependencies versus descriptive characterization of marginal spatial patterns.\end{revised}
+\begin{revised}Comparisons with $G$-cross function estimates and multilevel functional PCA (Section~\ref{sec:mfpca_comparison}) illustrate SHADE's complementary value. Both SHADE and marginal summary statistics identified granulocyte-TAM clustering in DII tumors, but diverged for other interactions where SHADE's multivariate adjustment revealed conditional dependencies obscured in marginal analyses (e.g., CTL-tumor clustering, CTL-CAF repulsion in CLR). While SHADE provides a generative probabilistic model with conditional intensity estimation and partial pooling for improved precision, functional data methods offer model-free characterization of variation in marginal pairwise statistics. These approaches are complementary rather than competing: the choice depends on whether the goal is mechanistic understanding of conditional dependencies or descriptive analysis of marginal spatial patterns.\end{revised}
 
 A key strength of SHADE is its flexibility in modeling directional interactions across spatial scales, avoiding the restrictive symmetry assumptions of traditional spatial models. Moreover, the use of logistic regression for conditional intensity estimation allows for scalable and stable inference, sidestepping common numerical pitfalls of direct Poisson modeling.
 

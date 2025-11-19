@@ -20,6 +20,11 @@
 \newcommand{\bq}{\bm{q}}
 \DeclareMathOperator*{\argmax}{argmax}
 
+\newcommand{\bolds}[1]{\boldsymbol{#1}}
+\newcommand{\bz}{\bolds{z}}
+\newcommand{\bdelta}{\bolds{\delta}}
+\newcommand{\bbeta}{\bolds{\beta}}
+
 
 \geometry{margin=1in}
 \doublespacing
@@ -57,7 +62,7 @@
 
 \subsection{Multitype Gibbs Point Process Models}
 
-Multitype Gibbs point process (MGPP) models provide a general framework for modeling spatial patterns where interactions between points influence their configuration \citep{baddeley_spatial_2015,moller_statistical_2004}. Unlike inhomogeneous Poisson processes, Gibbs processes explicitly model dependencies between points via pairwise interaction potentials.
+Multitype Gibbs point process (MGPP) models provide a general framework for modeling spatial patterns where interactions between points influence their configuration \citep{baddeley_spatial_2015,moller_statistical_2003}. Unlike inhomogeneous Poisson processes, Gibbs processes explicitly model dependencies between points via pairwise interaction potentials.
 
 \subsubsection{Mathematical Formulation}
 
@@ -83,11 +88,11 @@ This requirement ensures the joint density defines a valid probability measure.
 
 \textbf{Biological implication}: MGPPs \emph{cannot} distinguish directional spatial associations. If tumor cells cluster around blood vessels, but vessels are not preferentially located near tumors, a symmetric MGPP estimates only the average of these distinct directional effects—a severe limitation for studying directional biological processes.
 
-In practice, MGPPs also typically assume parametric interaction functions (e.g., Strauss process with $\gamma_{j,k}(r) = \gamma_{j,k} \mathbb{I}(r \leq R)$) with fixed interaction radii. Inference for Gibbs models is challenging due to intractable normalizing constants, though the Berman-Turner logistic regression approximation \citep{berman_approximating_1992} provides a computationally efficient alternative to MCMC over point configurations.
+In practice, MGPPs also typically assume parametric interaction functions (e.g., Strauss process with $\gamma_{j,k}(r) = \gamma_{j,k} \mathbb{I}(r \leq R)$) with fixed interaction radii. Inference for Gibbs models is challenging due to intractable normalizing constants, though the Berman-Turner logistic regression approximation \citep{bermanApproximatingPointProcess1992} provides a computationally efficient alternative to MCMC over point configurations.
 
 \subsubsection{Hierarchical Gibbs Models: Asymmetry via Type Ordering}
 
-One approach to modeling asymmetric spatial interactions is to impose an ordering on cell types \citep{haugmander_multitype_1999}. In a hierarchical Gibbs model, types are indexed $1, 2, \ldots, K$ with the convention that type $k$ may depend on types $1, \ldots, k-1$ but not on types $k+1, \ldots, K$. The conditional intensity for type $k$ becomes:
+One approach to modeling asymmetric spatial interactions is to impose an ordering on cell types \citep{hougmander_multitype_1999}. In a hierarchical Gibbs model, types are indexed $1, 2, \ldots, K$ with the convention that type $k$ may depend on types $1, \ldots, k-1$ but not on types $k+1, \ldots, K$. The conditional intensity for type $k$ becomes:
 
 \begin{equation}
 \lambda_k(v \mid \mathbf{x}_{<k}) = \beta_k \exp\left\{ \sum_{j < k} \sum_{x_i \in \mathbf{x}_j} \log \gamma_{j,k}(\|v - x_i\|) \right\},
@@ -125,16 +130,7 @@ Standard MGPPs and hierarchical Gibbs models focus on single-image estimation. S
 \psi_{A_k}^{(g,p)} &\sim \mathcal{N}(\mu_p, \sigma_{\text{cohort},p}^2) \quad &&\text{(cohort-level)}
 \end{align}
 
-This hierarchical Bayesian framework, implemented via the Berman-Turner logistic approximation and Hamiltonian Monte Carlo, enables:
-
-\begin{itemize}
-    \item \textbf{Borrowing strength} across images within patients and patients within cohorts
-    \item \textbf{Full posterior inference} on derived quantities (SICs) at any hierarchical level, with simultaneous credible bands
-    \item \textbf{Cohort-level comparisons} of spatial organization patterns between biological groups
-    \item \textbf{Quantification of heterogeneity} via variance parameters at each level
-\end{itemize}
-
-This enables interpretable, uncertainty-aware inference on biologically meaningful spatial interaction patterns across multiple scales.
+This hierarchical Bayesian framework, implemented via the logistic approximation and Hamiltonian Monte Carlo/variational inference, enables borrowing strength across images within patients and patients within cohorts, full posterior inference on derived quantities (SICs) at any hierarchical level with simultaneous credible bands, cohort-level comparisons of spatial organization patterns between biological groups, and quantification of heterogeneity via variance parameters at each level. This provides interpretable, uncertainty-aware inference on biologically meaningful spatial interaction patterns across multiple scales.
 
 \subsection{Summary of Key Differences}
 
@@ -164,6 +160,41 @@ Together, these innovations enable SHADE to overcome fundamental limitations of 
 
 \end{revised}
 
+\begin{revised}
+\section{Logistic Regression Approximation Details}
+\label{sec:logistic_supplement}
+
+Direct estimation of the Poisson likelihood in spatial point process models typically requires numerical integration over a fine spatial grid, which becomes computationally expensive and unstable in high-resolution images. To address this, we follow the logistic regression approximation introduced by~\citet{baddeley_logistic_2014}, which avoids spatial gridding by introducing a set of dummy points \( D \) sampled from a homogeneous Poisson process with known intensity \( \lambda_{\text{dummy}} \).
+
+We define the combined set of points \( Y = X_B \cup D \), and assign binary labels:
+
+\begin{equation}
+\label{eq:dummy_labels}
+I(v) =
+\begin{cases}
+    1, & v \in X_B \\
+    0, & v \in D
+\end{cases}
+\end{equation}
+
+The conditional probability that a point \( v \) is a true (observed) point of type \( B \) is given by:
+
+\begin{equation}
+\label{eq:conditional_prob}
+P(I(v) = 1) = \frac{\lambda(v)}{\lambda(v) + \lambda_{\text{dummy}}},
+\end{equation}
+
+leading to the following logistic regression model:
+
+\begin{equation}
+\label{eq:logit_model}
+\log\frac{P(I(v) = 1)}{P(I(v) = 0)} = \bz^\top(v)\bbeta + \sum_{k=1}^{K} \bq_{A_k}^\top(v)\bdelta_{A_k}^{(m)} - \log \lambda_{\text{dummy}},
+\end{equation}
+
+This approximation circumvents key computational challenges of direct Poisson modeling. In Poisson models, fine spatial discretization leads to large numbers of empty pixels, often resulting in singular design matrices and unstable inference~\citep{baddeley_spatial_2015}. The Hauck-Donner effect~\citep{hauck_walds_1977} can further distort uncertainty estimates. By reframing the problem as a binary classification task over observed and dummy points, the logistic approximation enables scalable, stable inference of spatial interaction effects at the image level.
+
+\end{revised}
+
 \section{Interpreting Example Spatial Interaction Curves}
 
 Figure~\ref{fig:example_SICs} shows two example SICs representative of those estimated from real data. Type 2 cells (cyan) exhibit a strong positive association at short distances, consistent with clustering behavior observed in immune infiltration around tumor cells. In contrast, Type 1 cells (red) show negative association at close range, suggestive of exclusion zones, as might be induced by physical barriers or competitive interactions in the tissue microenvironment.
@@ -189,7 +220,7 @@ Figure~\ref{fig:example_intensity} demonstrates how these spatial interactions m
 \subsection{Simultaneous Credible Bands for Spatial Interaction Curves}
 \label{sec:sim_band}
 
-To quantify uncertainty in estimated spatial interaction curves (SICs), we constructed \emph{simultaneous 95\% credible bands} using posterior samples from our Bayesian model. While pointwise credible intervals can quantify uncertainty at individual distances, they do not account for multiple comparisons across the distance domain and tend to overstate confidence when evaluating the entire curve. In contrast, simultaneous credible bands provide a global probabilistic guarantee that the entire SIC lies within the band over its domain with high posterior probability.
+To quantify uncertainty in estimated spatial interaction curves (SICs), we constructed \emph{simultaneous 95\% credible bands} using posterior samples from our Bayesian model~\citep{ruppertSemiparametricRegression2003,myllymakiGlobalEnvelopeTests2017}. While pointwise credible intervals can quantify uncertainty at individual distances, they do not account for multiple comparisons across the distance domain and tend to overstate confidence when evaluating the entire curve. In contrast, simultaneous credible bands provide a global probabilistic guarantee that the entire SIC lies within the band over its domain with high posterior probability.
 
 Let $\widehat{\text{SIC}}_{A_k \to B}(s)$ denote the posterior mean and $\hat{\sigma}_{A_k \to B}(s)$ the posterior standard deviation of the SIC at distance $s$, evaluated over a fixed grid of distances $s \in [r_{\min}, r_{\max}]$. For each posterior draw $j$, we computed the standardized residual
 \[
@@ -210,9 +241,9 @@ The resulting \emph{simultaneous credible band} is:
 \]
 This construction ensures that with posterior probability $1 - \alpha$, the entire SIC remains within the band across the full distance domain. It provides a conservative yet interpretable summary of global uncertainty, correcting for the multiple comparisons that arise when interpreting the SIC across many distances.
 
-This approach is conceptually analogous to Scheffé's method for simultaneous inference in classical linear models, but adapted to functional estimation and implemented through posterior simulation. Simultaneous credible bands are particularly useful for assessing whether a spatial interaction is consistently positive, negative, or null over specific distance ranges, and for identifying features such as consistent attraction or repulsion that are unlikely to be due to noise. They also serve as a diagnostic for the informativeness of the data: wider bands reflect higher posterior uncertainty, particularly in regions where data are sparse or spatial patterns are weak.
+Simultaneous credible bands are particularly useful for assessing whether a spatial interaction is consistently positive, negative, or null over specific distance ranges, and for identifying features such as consistent attraction or repulsion that are unlikely to be due to noise. They also serve as a diagnostic for the informativeness of the data: wider bands reflect higher posterior uncertainty, particularly in regions where data are sparse or spatial patterns are weak.
 
-All figures in the main manuscript showing SICs (Figures~\ref{fig:sic_explainer}, \ref{fig:no_hier_est_SIC}, \ref{fig:gx_3}, and \ref{fig:sic_CRC_diff}) display simultaneous 95\% credible bands computed via this method.
+All figures in the main manuscript showing SICs display simultaneous 95\% credible bands computed via this method.
 \end{revised}
 \begin{revised}
 \subsection{Screening Strategies for Multiple Cell Type Pairs}
@@ -254,9 +285,13 @@ The choice among these measures depends on the biological question: peak magnitu
 \subsection{Extended Methods for Hyperparameter Studies and Study of Explicit Modeling of Multilevel Structure}
 \label{sec:sim_full}
 
+\begin{revised}To evaluate SHADE's performance under controlled conditions and assess the effect of modeling multilevel structure, we conducted simulation studies generating synthetic spatial point patterns with known hierarchical structure and asymmetric spatial interactions. This section describes the data generation process and default parameter settings used across simulation experiments reported in Section~\ref{sec:sim_hier} of the main text (comparing hierarchical vs. flat models) and Sections~\ref{sec:hyperparam_dummy} and~\ref{sec:hyperparam_dsize} of this supplement (hyperparameter studies examining the effects of cell count, dummy point ratio, and dataset size).\end{revised}
+
+The simulation process consists of three steps: (1) generating hierarchical spatial interaction coefficients according to the model in Equation~\ref{eq:beta_priors}, (2) generating source cell locations from a homogeneous Poisson process, and (3) generating target cell locations from an inhomogeneous Poisson process whose intensity depends on proximity to source cells via spatial interaction features.
+
 \subsubsection{Generating Target Points}
 
-Target cell locations are drawn from an inhomogeneous Poisson process with intensity:
+Given source cell locations and hierarchical spatial interaction coefficients, target cell locations are drawn from an inhomogeneous Poisson process with conditional intensity:
 
 \begin{equation}
 \lambda(v) = \exp \left( \sum_{k=1}^{K} \sum_{p=1}^{P}  \bm{q}_{A_k}^\top(v)\bm{\delta}_{A_k}^{(m)} + \beta_0^{(m)} \right),
@@ -291,23 +326,21 @@ Unless otherwise specified, the following defaults were used in simulation exper
 \subsection{Extended Methods for Comparison of Spatial Pattern Detection Accuracy Across Methods and Conditions}
 \label{sec:sim_details}
 
+\begin{revised}To evaluate SHADE's detection capabilities relative to standard spatial analysis methods and assess how performance varies with data characteristics, we conducted a factorial simulation study varying cell densities and number of images per patient. All simulated datasets contained a single patient cohort with known positive spatial interactions (attraction pattern) at multiple distance scales. This section describes the data generation process, experimental design, and evaluation metrics for the method comparison study reported in Section~\ref{sec:sim_comparison} of the main text.\end{revised}
+
 \subsubsection{Hierarchical Data Generation}
 
-We simulate spatial interaction coefficients $\delta^{(m,p)}$ at three hierarchical levels (for image $m$ and basis function $p \in \{1, 2, 3\}$):
+\begin{revised}We simulate spatial interaction coefficients $\delta^{(m,p)}$ at three hierarchical levels (for image $m$ and basis function $p \in \{1, 2, 3\}$) for a single patient cohort:
 
 \[
 \begin{aligned}
-\psi^{(g,p)} &=
-\begin{cases}
--1.5,\ -1.0,\ -0.5 & \text{if group } g = \text{Responder} \\
-\phantom{-}1.5,\ \phantom{-}1.0,\ \phantom{-}0.5 & \text{if group } g = \text{Non-responder}
-\end{cases} \\
-\gamma^{(n,p)} &\sim \mathcal{N}(\psi^{(g(n),p)},\ \sigma_{\text{patient}}^2), \quad \sigma_{\text{patient}} = 0.1 \\
+\psi^{(p)} &= (1.5,\ 1.0,\ 0.5) \quad \text{for } p \in \{1, 2, 3\} \quad \text{(cohort-level, fixed)} \\
+\gamma^{(n,p)} &\sim \mathcal{N}(\psi^{(p)},\ \sigma_{\text{patient}}^2), \quad \sigma_{\text{patient}} = 0.1 \\
 \delta^{(m,p)} &\sim \mathcal{N}(\gamma^{(n(m),p)},\ \sigma_{\text{image}}^2), \quad \sigma_{\text{image}} = 0.1
 \end{aligned}
 \]
 
-Here, $g(n)$ denotes the group of patient $n$, and $n(m)$ denotes the patient corresponding to image $m$.
+where $n(m)$ denotes the patient corresponding to image $m$. The positive cohort-level coefficients create an attraction pattern between source and target cells across all distance scales, with the strongest effect at short range ($\psi^{(1)} = 1.5$) and decreasing effects at medium ($\psi^{(2)} = 1.0$) and long range ($\psi^{(3)} = 0.5$).\end{revised}
 
 \subsubsection{Spatial Pattern Generation}
 
@@ -321,25 +354,28 @@ where $\phi_p(s)$ represents radial basis functions with $\sigma = 15~\mu$m and 
 
 \subsubsection{Experimental Design}
 
-We employed a factorial design varying the following:
+We employed a $2 \times 2 \times 3$ factorial design varying the following factors:
 
 \begin{itemize}
-  \item \textbf{Cell Density:} High ($150$ cells) vs.\ Low ($15$ cells) for both T cells and tumor cells.
-  \item \textbf{Images per Patient:} $1$, $2$, or $3$ tissue sections.
+  \item \textbf{T cell (source) density:} High ($150$ cells) vs. Low ($15$ cells) per image.
+  \item \textbf{Tumor cell (target) density:} High ($150$ cells) vs. Low ($15$ cells) per image.
+  \item \textbf{Images per patient:} $1$, $2$, or $3$ tissue sections.
   \item \textbf{Replication:} $50$ independent simulations per condition.
 \end{itemize}
 
-Each simulation included $20$ patients per group ($40$ total), generating datasets with realistic sample sizes for multiplexed imaging studies.
+All simulations included $40$ patients in a single cohort and an additional B cell population (density matched to T cells) as a third cell type. This design yielded 12 experimental conditions ($2 \times 2 \times 3$) with 50 replicates each (600 total simulations), allowing systematic assessment of how detection power and calibration vary with data quantity and hierarchical structure.
 
 \subsubsection{Evaluation Metrics}
+\label{sec:sim_evaluation_metrics}
+\begin{revised}
+\textbf{SHADE Performance:} We assessed SHADE's ability to recover true spatial interaction curves by evaluating whether $95\%$ simultaneous credible bands (Section~\ref{sec:sim_band}) correctly identified the known positive spatial interaction (attraction pattern). Detection success required the credible band to exclude zero at any distance in the $0$--$75~\mu$m range.
 
-\textbf{SHADE Performance:} We assessed SHADE's ability to recover true spatial interaction curves by constructing pointwise $95\%$ credible bands around posterior estimates. Success was defined as correctly identifying the sign of spatial associations (negative for responders, positive for non-responders) at target distances ($20$, $40$, $60~\mu$m) using pointwise credible intervals.
-
-\textbf{Envelope Test Comparisons:} We compared SHADE against $G$-cross and $L$-cross envelope tests implemented using the \texttt{spatstat} package. \begin{revised}\input{snippets/r3_q4_envelope_calibration} Detection success required the observed summary function to deviate outside the simultaneous envelope at any distance, indicating rejection of the null hypothesis of complete spatial randomness.\end{revised}
+\textbf{Envelope Test Comparisons:} We compared SHADE against $G$-cross and $L$-cross envelope tests implemented using the \texttt{spatstat} package. \input{snippets/r3_q4_envelope_calibration} Detection success required the observed summary function to deviate outside the simultaneous envelope at any distance, indicating rejection of the null hypothesis of complete spatial randomness.\end{revised}
 
 \textbf{Statistical Analysis:} Power was calculated as the average over all images of the proportion of correctly classified interactions at target distances. We compared both methods' sensitivity to varying cell densities and sample sizes. \begin{revised}Additionally, we evaluated coverage (the proportion of true SIC values falling within the 95\% simultaneous credible bands) and type I error rates (the proportion of null interactions incorrectly identified as significant) for all methods.\end{revised}
 
 \subsection{Hyperparameter Study 1 - The effect of cell count and dummy point ratio on inference quality}
+\label{sec:hyperparam_dummy}
 
 We investigated how inference quality is affected by the number of observed cells per cell type (\( N_t \)) and the ratio of dummy points to real points (\( R_d \)) used for quadrature. Simulations were run for all combinations of \( N_t \in \{20, 80, 150, 300\} \) and \( R_d \in \{0.5, 1, 2, 5, 10\} \), with five replicates per setting. Each dataset contained three cell types, with the third serving as the target for spatial interaction estimation. The number of patient groups was fixed at 1, with 40 patients per group and two images per patient. All other simulation parameters were set to defaults.
 
@@ -384,6 +420,7 @@ A representative cohort-level SIC estimate is shown in Figure~\ref{fig:dummy_est
 \end{figure}
 
 \subsection{Hyperparameter Study 2 - The effect of number of patients and images per patient on inference quality}
+\label{sec:hyperparam_dsize}
 
 Next, we examined the sensitivity of inference quality to the total number of patients as well as the number of images per patient. Here, we set the number of points per type to 150 and the ratio of dummy points to actual points to 2, while keeping the rest of the default parameters the same, as outlined in the Supplement. We then simulated 15 realizations each of every combination of the number of images per patient $N_{\text{images per patient}}$ and the total number of patients $N_{\text{patients}}$, where $N_{\text{images per patient}}\in \{1,2,4\}$ and $N_{\text{patients}}\in\{10,20,40\}$, according to our simulation procedure described in the Supplement.
 
@@ -428,12 +465,6 @@ Finally, we demonstrate an example of an estimated global SIC from this simulati
 \end{figure}
 
 \begin{revised}
-\subsection{Robustness to Hard-Core Repulsion}
-\label{sec:robust_sim}
-
-To assess robustness to violations of the Poisson assumption, we simulated spatial point patterns where both source and target cells were generated using a Strauss hard-core process ($r_{\text{hc}} = 10$ microns) rather than a Poisson process. This introduces complete spatial regularity at distances below the hard-core radius, mimicking the physical constraint that cell centroids cannot be arbitrarily close.
-
-\textbf{[PLACEHOLDER: Full methods and results to be added after simulation is run.]} Preliminary analysis indicates that SHADE successfully recovers spatial interaction effects at distances above MIN\_INTERACTION\_RADIUS despite the hard-core violation at shorter distances, validating this exclusion approach.
 
 \subsection{Computational Scaling: Timing Experiments}
 \label{sec:timing_experiments}
@@ -460,7 +491,7 @@ Figure~\ref{fig:timing_results} shows the scaling behavior of feature constructi
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{images/sim_timing/scaling_results.pdf}
-    \caption{Computational scaling of SHADE as a function of cell count. \textbf{(A)} Feature construction time shows near-quadratic scaling ($O(n^{1.46})$) with cell count, consistent with the $\mathcal{O}(n_{\mathrm{focal}} \times n_{\mathrm{source}})$ complexity of pairwise distance computation. \textbf{(B)} Total model fitting time scales sublinearly ($O(n^{0.85})$) due to parallelization and distance matrix reuse. Points show mean timing across 20 replicates per condition; error bars show $\pm 1$ standard deviation. Dashed and dotted reference lines indicate theoretical $O(n^2)$ and $O(n)$ scaling for comparison.}
+    \caption{Computational scaling of SHADE as a function of cell count. A: Feature construction time shows near-quadratic scaling ($O(n^{1.46})$) with cell count, consistent with the $\mathcal{O}(n_{\mathrm{focal}} \times n_{\mathrm{source}})$ complexity of pairwise distance computation. B: Total model fitting time scales sublinearly ($O(n^{0.85})$) due to parallelization and distance matrix reuse. Points show mean timing across 20 replicates per condition; error bars show $\pm 1$ standard deviation. Dashed and dotted reference lines indicate theoretical $O(n^2)$ and $O(n)$ scaling for comparison.}
     \label{fig:timing_results}
 \end{figure}
 
@@ -471,15 +502,9 @@ These results demonstrate that SHADE remains computationally tractable even for 
 \subsection{Coverage and Type I Error Performance}
 \label{sec:coverage_type1}
 
-In addition to detection power (Figure~\ref{fig:gx_detections} in the main text), we evaluated the calibration of SHADE's uncertainty quantification and the control of false positive rates across all simulation conditions.
+Beyond detection power (Figure~\ref{fig:gx_detections} in the main text), we evaluated coverage (do 95\% credible bands contain the true SIC?) and Type I error control (false positive rates under the null) across all simulation conditions (Figures~\ref{fig:coverage_performance}--\ref{fig:type1_error}). Results reveal adaptive calibration depending on source density, target density, and number of images per patient.
 
-\subsubsection{Coverage Performance}
-
-Figure~\ref{fig:coverage_performance} shows coverage rates for SHADE Hierarchical and SHADE Flat models. Coverage is defined as the proportion of simulated images in which the 95\% simultaneous credible band fully contains the true SIC at all distances in the 0--75~$\mu$m range. Results reveal adaptive calibration that depends on source density (conditioning cell type), target density (modeled cell type), and number of images per patient.
-
-\textbf{Effect of source and target density.} When source density is low and target density is high, median coverage ranges from 86--100\% across different numbers of images, with SHADE achieving perfect 100\% coverage when only 1 image is available per patient. This reflects appropriate conservatism when conditioning information is limited. Conversely, when source density is high and target density is low (SHADE's most powerful scenario), coverage drops to 53--59\%, as the method trades calibration for sensitivity when abundant conditioning information enables effective hierarchical pooling. When both densities are low, coverage varies dramatically by number of images: with 1 image, coverage is 73\%; with 2--3 images, it improves to 94\%, demonstrating that hierarchical pooling across multiple images stabilizes uncertainty quantification.
-
-\textbf{Effect of number of images.} With 1 image per patient, SHADE Hierarchical exhibits extreme calibration: either overly conservative (100\% coverage when source is low and target is high) or poorly calibrated (73\% when both are low). With 2--3 images per patient, coverage stabilizes to more consistent values (53--94\% depending on density conditions). SHADE Flat maintains consistently poor coverage (53--86\%) regardless of number of images, demonstrating that hierarchical pooling is essential for proper calibration.
+SHADE Hierarchical with 2--3 images per patient maintains well-controlled median Type I error (0.8--7.5\%, comparable to envelope tests) and coverage that trades conservatism for power based on data characteristics: highest coverage (86--100\%) when source density is low, lowest coverage (53--59\%) when source is high and target is low (SHADE's most powerful regime). With only 1 image per patient, SHADE exhibits extreme behavior (either overly conservative or poorly calibrated), requiring multiple images for stable performance. SHADE Flat shows severe miscalibration (Type I error: 27--29\%, coverage: 53--86\%) regardless of conditions, demonstrating hierarchical pooling's critical importance.
 
 \begin{figure}[ht]
     \centering
@@ -488,15 +513,6 @@ Figure~\ref{fig:coverage_performance} shows coverage rates for SHADE Hierarchica
     \label{fig:coverage_performance}
 \end{figure}
 
-\subsubsection{Type I Error Control}
-
-Figure~\ref{fig:type1_error} shows type I error rates for all four methods. Type I error is defined as the proportion of null simulations (true SIC $= 0$ everywhere) in which the method incorrectly detects a non-zero spatial interaction.
-
-\textbf{SHADE Hierarchical with 2--3 images per patient} maintains well-controlled median type I error rates (0.8--7.5\%) comparable to G-cross (2.5--8.8\%) and K-cross (1.3--6.7\%). The most conservative control occurs when source density is low and target density is high (median 0.8--1.3\%), while the highest rates occur when both densities are high (6.2--7.5\%). However, SHADE Hierarchical exhibits greater variability (IQR 0.02--0.12) compared to envelope tests (IQR 0.02--0.05), indicating occasional liberal inference despite good typical-case performance.
-
-\textbf{Effect of number of images.} With only 1 image per patient, SHADE Hierarchical shows extreme type I error behavior: perfectly controlled (0\%) when source density is low, but with high variability (IQR up to 0.64) when both densities are low. With 2--3 images per patient, type I error rates stabilize substantially, demonstrating that hierarchical pooling requires multiple images for reliable calibration.
-
-\textbf{SHADE Flat} shows substantially inflated median type I error rates (27--29\%) across all conditions and numbers of images, demonstrating the critical importance of hierarchical pooling for maintaining proper calibration. The flat model's poor performance underscores that estimating SICs independently per image leads to severe miscalibration.
 
 \begin{figure}[ht]
     \centering
@@ -505,40 +521,19 @@ Figure~\ref{fig:type1_error} shows type I error rates for all four methods. Type
     \label{fig:type1_error}
 \end{figure}
 
-\subsubsection{Interpretation}
+\subsubsection{Practical Recommendations}
 
-These calibration results reveal that SHADE Hierarchical exhibits \textbf{adaptive calibration} that depends critically on data characteristics: source density (amount of conditioning information), target density, and number of images per patient.
+SHADE Hierarchical requires at least 2 images per patient for stable performance. With multiple images and at least one cell type at moderate-to-high density, SHADE offers superior power with acceptable error control (0.8--7.5\%, comparable to envelope tests), making it suitable for exploratory hypothesis generation. For confirmatory studies requiring uniform error control, or when only 1 image per patient is available, envelope tests provide more stable though conservative performance.
 
-\textbf{The source density effect.} Source density determines the quality of conditioning information available for hierarchical pooling. When source density is high, abundant conditioning information enables aggressive but effective information sharing, yielding perfect power (100\%) with reduced coverage (53--59\%). When source density is low, limited conditioning information leads to appropriate conservatism, with higher coverage (86--100\%) but power that depends on having multiple images for pooling.
-
-\textbf{The multiple images requirement.} SHADE Hierarchical requires at least 2 images per patient for stable, reliable performance. With only 1 image per patient, the method exhibits extreme and unpredictable behavior across scenarios: overly conservative in some cases (100\% coverage, 0\% type I error, but poor power when source is low) and poorly calibrated in others (high type I error variability when both densities are low). With 2--3 images per patient, performance stabilizes across all metrics: power improves substantially (from 31\% to 100\% when source is low and target is high), coverage becomes more consistent (94\% when both densities are low), and type I error rates become well-controlled (0.8--7.5\%). This stabilization occurs because hierarchical pooling across multiple images provides more reliable estimates of patient-level and population-level effects.
-
-\textbf{Comparison with SHADE Flat.} The hierarchical model's critical importance is demonstrated by SHADE Flat's consistent poor performance: severe type I error inflation (27--29\%) and inadequate coverage (53--86\%) regardless of density conditions or number of images. Estimating SICs independently per image without hierarchical pooling leads to systematic miscalibration that cannot be resolved by having more images per patient.
-
-\textbf{Practical recommendations.} For exploratory spatial analyses with at least 2 images per patient and at least one cell type at moderate to high density, SHADE Hierarchical offers superior power with acceptable median type I error control (0.8--7.5\%, comparable to envelope tests). The method's adaptive calibration—conservative when evidence is weak, aggressive when hierarchical pooling provides strong signal—is appropriate for hypothesis generation. For confirmatory studies requiring stringent and uniform error control, or when only 1 image per patient is available, envelope tests provide more stable (though conservative) performance. Studies with sparse source cells and only 1 image per patient represent a particularly challenging scenario where envelope tests may be preferable.
-
+\end{revised}
 \subsection{Robustness to Spatial Confounding}
 \label{sec:compartment_confounder}
 
-We tested SHADE's robustness to a realistic model misspecification: discrete spatial compartments (e.g., tumor islands, stromal regions, tissue crypts) that create baseline differences in target cell density independent of source-target interactions. In real tissue, such compartment structure is common but rarely measured or explicitly modeled. We simulated patterns where both a true source-target interaction existed AND compartment effects influenced target density (multiplicative effects on baseline density with strength 0.8, 1.2, or 1.5), then fit SHADE models that ignored the compartment structure entirely. All simulations used 3 images per patient (the stable regime) and 3 spatial compartments defined by Voronoi tessellation.
+\begin{revised}We tested SHADE's robustness to unmeasured spatial compartments (e.g., tumor islands, stromal regions) that create baseline density differences independent of cell-cell interactions. We simulated patterns with true source-target interactions plus compartment effects (multiplicative baseline intensity: 0.8, 1.2, or 1.5) across 3 spatial regions, then fit SHADE models ignoring compartment structure. All simulations used 3 images per patient and 3 compartments defined by Voronoi tessellation. We assessed detection power, coverage (do 95\% credible bands contain the true SIC?), and Type I error (false detection when only compartment effects exist).
 
-Three key metrics assessed robustness: (1) detection power—can SHADE still identify the true interaction?, (2) coverage—do 95\% credible bands contain the true source-target interaction curve?, and (3) Type I error—when we simulated patterns with compartment effects but NO source-target interaction, how often did SHADE falsely detect one?
+\subsubsection{Key Findings}
 
-\subsubsection{Compartment Confounding Produces Regime-Dependent Bias}
-
-When target density is high and source density is high, SHADE achieves excellent detection power (100\% median) but severely undercovers (43--52\% coverage vs. expected 95\%; Figure~\ref{fig:compartment_coverage}) and exhibits elevated false positive rates that increase with compartment strength (11.7\% $\rightarrow$ 17.1\% Type I error as compartment effect increases from 0.8 to 1.5; Figure~\ref{fig:compartment_type1}). In this data-rich regime, SHADE confidently estimates spatial interactions, but the estimated curves conflate the true source-target relationship with compartment-induced spatial heterogeneity. The credible bands exclude the true interaction curve because SHADE incorrectly attributes compartment effects to the source-target relationship—a classic confounding bias.
-
-\subsubsection{Low Target Density Provides Partial Robustness Through Uncertainty}
-
-When target density is low, coverage improves substantially (SHADE Hierarchical: 82--93\% vs. 43--57\% in high target scenarios; Figure~\ref{fig:compartment_coverage}) and Type I error drops dramatically (1.7--5.8\% vs. 11.7--17.1\%; Figure~\ref{fig:compartment_type1}). Sparse target cell data yields wider credible bands that, while less powerful for detection, better encompass the bias introduced by unmeasured compartment structure. This represents a fortunate side effect of data scarcity: greater uncertainty provides some protection against misattributing compartment effects.
-
-\subsubsection{The Low Source / Low Target Regime Shows Conservative Behavior}
-
-When both cell types are sparse, SHADE Hierarchical achieves excellent coverage (92--93\%) and well-controlled Type I error (1.3--2.9\%), but power drops substantially (27--30\% median; Figure~\ref{fig:compartment_power}). With limited conditioning information and sparse target data, hierarchical pooling cannot effectively borrow strength across images, leading to conservative inference that maintains calibration at the cost of detection sensitivity. Notably, even envelope tests struggle in this regime (G-cross: 43--45\%, K-cross: 23--26\% power), suggesting fundamental limitations of spatial point process methods when data are extremely sparse.
-
-\subsubsection{SHADE Flat Exhibits Consistently Higher False Positive Rates}
-
-Across all regimes, SHADE Flat's Type I error rates (26--40\%) exceed those of SHADE Hierarchical (0.8--17.1\%; Figure~\ref{fig:compartment_type1}), indicating that hierarchical pooling provides some protection against false discoveries even when model assumptions are violated. However, neither version fully controls Type I error in the presence of compartment confounding when target density is high, as both incorrectly detect interactions that arise solely from unmeasured spatial structure. Figure~\ref{fig:compartment_overall_type1} shows the overall trend: Type I error increases with compartment effect strength across all methods, with SHADE Flat consistently exhibiting the highest false positive rates.
+SHADE's performance under spatial confounding depends critically on cell densities (Figures~\ref{fig:compartment_power}--\ref{fig:compartment_overall_type1}). When both source and target densities are high, SHADE achieves perfect power (100\%) but severely undercovers (43--52\% vs. nominal 95\%) and exhibits elevated Type I error (11.7--17.1\%) that worsens with compartment strength. The method confidently estimates interactions but conflates true spatial associations with compartment-induced heterogeneity. When target density is low, wider uncertainty bands provide partial robustness: coverage improves (82--93\%) and Type I error drops (1.7--5.8\%), though at the cost of reduced power. When both densities are sparse, SHADE becomes appropriately conservative (92--93\% coverage, 1.3--2.9\% Type I error) but loses detection sensitivity (27--30\% power). SHADE Flat consistently exhibits higher false positive rates (26--40\%) than SHADE Hierarchical across all regimes, demonstrating hierarchical pooling's protective effect even under model misspecification.
 
 \subsubsection{Implications for Practice}
 
@@ -588,6 +583,7 @@ For each target cell type, we constructed a quadrature scheme by generating 1,00
 Model fitting was performed using variational inference with 1,000 posterior draws after fitting. SICs were estimated jointly for all source cell types with respect to each target, providing interpretable, distance-resolved summaries of spatial associations. We set $r_{\min}$ to the dataset’s mean cell radius (8--12~$\mu$m depending on cohort) and restricted visualization to $r\ge r_{\min}$.
 
 \subsection{Supplementary Figures}
+\label{sec:crc_supp_figs}
 
 \begin{figure}[ht]
     \centering
@@ -620,20 +616,6 @@ Model fitting was performed using variational inference with 1,000 posterior dra
 
 \begin{revised}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/gcross_mfpca_grid_supplement.pdf}
-    \caption{\textbf{Multilevel functional PCA of $G$-cross functions for all source-target pairs.} For each of 15 cell type pairs, group-level mean $G$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$). Results complement SHADE's conditional SICs by characterizing marginal pairwise spatial associations without multivariate adjustment.}
-    \label{fig:mfpca_gcross_grid}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/lcross_mfpca_grid_supplement.pdf}
-    \caption{\textbf{Multilevel functional PCA of $L$-cross functions for all source-target pairs.} For each of 15 cell type pairs, group-level mean $L$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component. The $L$-cross function provides a variance-stabilized alternative to $G$-cross, facilitating comparison across different spatial scales and cell type combinations.}
-    \label{fig:mfpca_lcross_grid}
-\end{figure}
-
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_mad.pdf}
@@ -660,23 +642,20 @@ We used the \texttt{mxfda} R package~\citep{wrobelMxfdaComprehensiveToolkit2024}
 
 \subsubsection{Key Methodological Differences}
 
-SHADE and mFPCA address complementary questions about spatial organization:
-
-\begin{itemize}
-\item \textbf{Point process modeling vs. two-stage analysis:} \begin{revised}\input{snippets/r3_q1_fda_comparison}\end{revised}
-
-\item \textbf{Modeling framework:} SHADE provides a generative probabilistic model of the conditional intensity $\lambda(v \mid \mathcal{X}_{A_1}, \ldots, \mathcal{X}_{A_K})$, enabling likelihood-based inference and posterior uncertainty quantification. mFPCA performs dimension reduction on observed summary statistics without modeling the data-generating process.
-
-\item \textbf{Multivariate adjustment:} SHADE estimates conditional effects adjusting for all cell types simultaneously, isolating the unique contribution of each source type. mFPCA analyzes marginal pairwise statistics ($G$-cross, $L$-cross) computed separately for each source-target pair.
-
-\item \textbf{Inference goals:} SHADE targets directional causal effects (``how does proximity to source $A$ affect target $B$ density?''), while mFPCA characterizes dominant modes of functional variation across biological scales.
-\end{itemize}
+\begin{revised}SHADE and mFPCA address complementary questions: \input{snippets/r3_q1_fda_comparison} SHADE provides a generative probabilistic model estimating conditional effects with multivariate adjustment, while mFPCA performs dimension reduction on marginal pairwise summary statistics without modeling the data-generating process.\end{revised}
 
 \subsubsection{Results and Figure References}
 
 Complete mFPCA results for all 15 cell type pairs are provided in Figures~\ref{fig:mfpca_gcross_grid} ($G$-cross) and~\ref{fig:mfpca_lcross_grid} ($L$-cross). Each figure displays group-level mean curves with $\pm 1$ SD bands for CLR (blue) and DII (orange) patients, facilitating visual comparison of marginal spatial associations across patient groups.
 
 Visual comparison reveals both concordance (e.g., CTL-vasculature short-range clustering in CLR) and informative differences (e.g., CTL-tumor cell interactions where SHADE's multivariate adjustment reveals stronger conditional effects than marginal $G$-cross suggests). These patterns are discussed in Section~\ref{sec:mfpca_comparison} of the main text.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/lcross_mfpca_grid_supplement.pdf}
+    \caption{Multilevel functional PCA of $L$-cross functions for all source-target pairs. For each of 15 cell type pairs, group-level mean $L$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$). The $L$-cross function provides a variance-stabilized alternative to $G$-cross, facilitating comparison across different spatial scales and cell type combinations.}
+    \label{fig:mfpca_lcross_grid}
+\end{figure}
 
 \end{revised}
 
@@ -729,5 +708,8 @@ The between-image variability is defined as the MAD of image-level SICs from the
 \end{equation}
 
 These robust statistics provide interpretable summaries of spatial heterogeneity at each level of the hierarchy while mitigating sensitivity to outliers and small-sample variability. We report these values for each cell type pair and visualize them using heatmaps (Figure~\ref{fig:sic_mad}).
+
+\bibliographystyle{abbrvnat}
+\bibliography{references}
 
 \end{document}

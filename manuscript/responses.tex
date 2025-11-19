@@ -239,7 +239,7 @@ The reviewer correctly notes that SHADE does compute image-level SICs. Results S
 \input{snippets/r2_q1_how_vary}
 \end{revised}
 
-Simulation evidence in Section~\ref{sec:sim_comparison} now demonstrates the benefits of this hierarchical approach:
+Simulation evidence in Section~\ref{sec:sim_hier} and \ref{sec:sim_comparison} now demonstrates the benefits of this hierarchical approach:
 
 \begin{quote}
 \input{snippets/r2_q5_hierarchical_rmse}
@@ -259,11 +259,13 @@ The Discussion now further contextualizes SHADE's hierarchical approach relative
 
 The term "log-intensity" appears for the first time at this point, and lacks a direct interpretation. What does log-intensity of a cell type physically mean, is it related to the spatial cell density? Or would it be possible to normalize it to the average cell-density in the image, or a set of images? This is critical for interpretation of the SIC curves where log-intensity appears on the y-axis throughout the paper.
 
-\textbf{Response}: We have added a detailed explanation of log-intensity and normalization in Section~\ref{sec:sic}.
+\textbf{Response}: We have added a detailed explanation of log-intensity in Section~\ref{sec:sic}.
 
 \begin{revised}
 \input{snippets/r1_q3_log_intensity}
 \end{revised}
+
+Additionally, we have added further clarification on the normalization term in Section~\ref{sec:model_setup}:
 
 \begin{revised}
 \input{snippets/r2_q2_sic_normalization}
@@ -287,7 +289,7 @@ It is not clear to me what statistically predictive means here. Is it possible t
 \input{snippets/r2_q3_predictive}
 \end{revised}
 
-\textbf{Testing and comparison:} As mentioned previously, to test departure from spatial randomness, we now check if simultaneous bands exclude zero. To compare patient groups, we compute difference curves with simultaneous bands e.g. (Figure~\ref{fig:sic_CRC_diff}); if bands exclude zero over a distance range, groups differ significantly. All SIC figures now display these bands, and Results sections explicitly state when bands exclude zero.
+\textbf{Testing and comparison:} As mentioned previously, to test departure from spatial randomness, we now check if simultaneous bands exclude zero. To compare patient groups, we can also compute e.g. difference curves with simultaneous bands e.g. (Figure~\ref{fig:sic_CRC_diff}); if bands exclude zero over a distance range, groups differ significantly. All SIC figures now display these bands, and Results sections explicitly state when bands exclude zero.
 
 \textbf{Figure 4 and CSR:} Figure~\ref{fig:method_comparison} shows one simulation example: while $G$-cross and $L$-cross envelopes sometimes contain the observed curves, SHADE's credible bands correctly exclude zero where the ground truth exhibits non-zero interactions, demonstrating that the data can be distinguished from CSR. Panel (d) also shows that SHADE Hierarchical (red) estimates the ground truth more accurately than SHADE Flat (blue), illustrating the benefit of hierarchical pooling. Across all replicates, SHADE achieves high detection rates (Figure~\ref{fig:gx_detections}).
 
@@ -321,10 +323,6 @@ As now shown in Section~\ref{sec:mfpca_comparison}:
 \input{snippets/r3_q2_mfpca_examples}
 \end{revised}
 
-\begin{revised}
-\input{snippets/r2_q4_mfpca_conclusion}
-\end{revised}
-
 \item Simulation Studies (p. 12), "Spatial patterns were simulated ... with source points generated from a homogeneous Poisson process and target points influenced by spatial interaction curves ..."
 
 This sounds to me as if the synthetic data were generated under exactly the same assumptions used for deriving the SIC curves proposed for analysis, is that correct? Would that not by construction give an advantage to the method proposed by the authors when comparing different analysis methods? It would be important to test the method also using other sources of synthetic data, e.g. starting from Bridson sampling or using a Gauss filter after the Poisson process.
@@ -341,7 +339,7 @@ Section~\ref{sec:sim_comparison} now demonstrates that SHADE's performance relat
 \input{snippets/r2_q5_sparse_performance}
 \end{revised}
 
-\textbf{Robustness to spatial confounding:} To address model misspecification, we added simulations testing SHADE's performance with unmeasured spatial heterogeneity (Section~\ref{sec:sim_comparison}):
+\textbf{Robustness to spatial confounding:} To address model misspecification, we added simulations testing SHADE's performance with unmeasured spatial heterogeneity (Section~\ref{sec:compartment_robustness}):
 
 \begin{revised}
 \input{snippets/r2_q5_compartment_robustness}
@@ -387,12 +385,6 @@ As now discussed in Section~\ref{sec:mfpca_comparison}:
 \input{snippets/r2_q4_mfpca_intro}
 \end{revised}
 
-And also now in Section~\ref{sec:mfpca_comparison}:
-
-\begin{revised}
-\input{snippets/r2_q4_mfpca_conclusion}
-\end{revised}
-
 Lastly, as now noted in the Discussion:
 
 \begin{revised}
@@ -401,22 +393,10 @@ Lastly, as now noted in the Discussion:
 
 \item It would be good to compare you approach to using FDA on the G or K statistics, as implemented in the R package mxfda(Wrobel et al. 2024). Additionally, should compare to not just G but also K as this has been used often in practice and has been reported to have better discrimination ability for detecting co-localization than G(Soupir et al. 2025).
 
-\textbf{Response}: We have added both $G$-cross and Ripley's $L$-cross function (transformation of the $K$-function) to our analysis. As now described in Section~\ref{sec:mfpca_comparison}, we implemented a visual comparison with mxfda~\citep{wrobelMxfdaComprehensiveToolkit2024} (detailed methodology in Supplement Section~\ref{sec:mfpca_methods}):
-
-\begin{revised}
-\input{snippets/r2_q4_mfpca_intro}
-\end{revised}
-
-\begin{revised}
-\input{snippets/r3_q2_mfpca_methods}
-\end{revised}
+\textbf{Response}: We have added both $G$-cross and Ripley's $L$-cross function (transformation of the $K$-function) to our analysis. As now described in Section~\ref{sec:mfpca_comparison} and outlined in the response to the previous question, we implemented a comparison with mxfda~\citep{wrobelMxfdaComprehensiveToolkit2024} (detailed methodology in Supplement Section~\ref{sec:mfpca_methods}):
 
 \begin{revised}
 \input{snippets/r3_q2_mfpca_examples}
-\end{revised}
-
-\begin{revised}
-\input{snippets/r2_q4_mfpca_conclusion}
 \end{revised}
 
 \item In the set-up of the model and approach in section 2.1, assume a inhomogeneous Poisson process. However, in the computational approximation using logistic regression you have a homogeneous Poisson process. In the logistic regression model fitting, how do you account for inhomogeneity? That is, is the analysis done within the tumor and stroma compartments of the tissue as different cells could have different intensity within these two tissue domains. If this is not explicitly accounted for in the model, I would recommend that analysis be done by tissue domains to limit the issue of inhomogeneity.
@@ -443,7 +423,7 @@ Regarding the logistic regression approximation (now in Section~\ref{sec:logisti
 
 Each replication consists of multiple images (1--3 per patient), and hypothesis testing is performed at the image level, resulting in well over 100 image-level tests per scenario for precise power and Type I error estimates.
 
-For envelope test calibration (now in Supplement Section~\ref{sec:sim_details}):
+For envelope test calibration (now in Supplement Section~\ref{sec:sim_evaluation_metrics}):
 
 \begin{revised}
 \input{snippets/r3_q4_envelope_calibration}
@@ -493,7 +473,7 @@ Note: The "0.05 level" mentioned in Figure~\ref{fig:sic_CRC_diff} refers to diff
 
 \item G assumes homogeneity in the point process. Please look at results for G by tissue compartment (tumor, stroma, etc) to somewhat control for difference in intensity of different cell types by tissue domain.
 
-\textbf{Response}: The CRC dataset lacks compartment annotations, and the \texttt{mxfda} package only supports standard $G$-cross and not \texttt{Gcross.inhom}, the inhomogeneous version of $G$-cross from \texttt{spatstat}. Our CRC analysis does not incorporate spatial covariates, so both methods make homogeneity assumptions in this application. However, we have added an investigation of the impact of unmeasured compartment structure through simulation (Section~\ref{sec:sim_comparison}; Supplement Section~\ref{sec:compartment_confounder}):
+\textbf{Response}: The CRC dataset lacks compartment annotations, and the \texttt{mxfda} package only supports standard $G$-cross and not \texttt{Gcross.inhom}, the inhomogeneous version of $G$-cross from \texttt{spatstat}. Our CRC analysis does not incorporate spatial covariates, so both methods make homogeneity assumptions in this application. However, we have added an investigation of the impact of unmeasured compartment structure through simulation (Section~\ref{sec:compartment_robustness}; Supplement Section~\ref{sec:compartment_confounder}):
 
 \begin{revised}
 \input{snippets/r2_q5_compartment_robustness}
@@ -523,10 +503,6 @@ Minor:
 \begin{enumerate}
     \item Figure 5: I can’t seem to see the 20, 40, and 60 nm data. Also, add to caption what is hight and low levels.
 \end{enumerate}
-
-
-Soupir, A. C., I. V. Gadiyar, B. R. Helm, C. R. Harris, S. N. Vandekar, L. C. Peres, R. J. Coffey, J. Wrobel, S. Ma, and B. L. Fridley. 2025. 'Benchmarking Spatial Co-Localization Methods for Single-Cell Multiplex Imaging Data with Applications to High-Grade Serous Ovarian and Triple Negative Breast Cancer', Stat Data Sci Imaging, 2.
-Wrobel, J., A. C. Soupir, M. T. Hayes, L. C. Peres, T. Vu, A. Leroux, and B. L. Fridley. 2024. 'mxfda: a comprehensive toolkit for functional data analysis of single-cell spatial data', Bioinform Adv, 4: vbae155.
 
 \bibliographystyle{abbrvnat}
 \bibliography{references}

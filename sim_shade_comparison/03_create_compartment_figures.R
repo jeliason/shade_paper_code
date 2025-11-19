@@ -152,7 +152,7 @@ for(comp_id in unique(as.vector(compartment_mat))) {
   effect_val <- log(compartment_effects[comp_id])
   compartment_centroids <- rbind(compartment_centroids,
                                  data.frame(x = x_coord, y = y_coord,
-                                           label = sprintf("%.2f", effect_val)))
+                                           label = sprintf("%.1f", effect_val)))
 }
 
 pA_compartment <- ggplot(confounder_df, aes(x = x, y = y, fill = value)) +
@@ -188,7 +188,7 @@ pA <- pA_compartment / pA_pattern
 pC <- df %>%
   mutate(compartment_effect = factor(compartment_effect,
                                     levels = c("0.8", "1.2", "1.5"),
-                                    labels = c("Weak (0.8)", "Moderate (1.2)", "Strong (1.5)"))) %>%
+                                    labels = c("Weak", "Moderate", "Strong"))) %>%
   rename(Gcross=gcross_image_power, Kcross=kcross_image_power,
          SHADE=shade_image_power, Flat=simple_shade_image_power) %>%
   pivot_longer(c(SHADE, Flat, Gcross, Kcross), names_to = "Method") %>%
@@ -218,8 +218,8 @@ combined_main
 ggsave(paste0(figures_folder, "compartment_main_figure.pdf"),
        plot = combined_main,
        device = cairo_pdf,
-       height = 6,
-       width = 12,
+       height = 4.5,
+       width = 7.5,
        units = "in",
        bg = "white")
 

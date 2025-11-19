@@ -122,7 +122,7 @@ ggplot(mad_combined, aes(x = Target, y = Source, fill = MAD)) +
   labs(x = "Target cell type",
        y = "Source cell type")
 
-fsave("mad_comparison_clr_dii", width = 12, height = 10)
+fsave("mad_comparison_clr_dii",height = 6)
 
 # ============================================================================
 # Compute differences: DII - CLR
