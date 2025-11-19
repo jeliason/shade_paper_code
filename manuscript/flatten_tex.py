@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Flatten LaTeX files by replacing \input{snippets/...} with actual content.
 Creates self-contained .tex files for journal submission.
 """
@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 def flatten_tex(input_file, output_file):
-    """
+    r"""
     Read a .tex file and replace all \input{snippets/...} with actual content.
     """
     input_path = Path(input_file)
@@ -28,7 +28,7 @@ def flatten_tex(input_file, output_file):
     pattern = r'\\input\{snippets/([^}]+)\}'
 
     def replace_input(match):
-        """Replace \input command with file contents."""
+        r"""Replace \input command with file contents."""
         snippet_name = match.group(1)
 
         # Add .tex extension if not present
@@ -45,10 +45,15 @@ def flatten_tex(input_file, output_file):
         with open(snippet_path, 'r', encoding='utf-8') as f:
             snippet_content = f.read()
 
+        # Ensure snippet content ends with newline to prevent comment from eating next line
+        if not snippet_content.endswith('\n'):
+            snippet_content += '\n'
+
         # Add comment markers to show where snippet was inserted
+        # Note: % END comment needs trailing newline to prevent commenting out following text
         return (f"% BEGIN: {snippet_name}\n"
-                f"{snippet_content}\n"
-                f"% END: {snippet_name}")
+                f"{snippet_content}"
+                f"% END: {snippet_name}\n")
 
     # Replace all \input{snippets/...} with actual content
     flattened_content = re.sub(pattern, replace_input, content)
