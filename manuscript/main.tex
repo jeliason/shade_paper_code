@@ -191,7 +191,7 @@
 Understanding how different cell types interact spatially within tissue microenvironments is critical for deciphering immune dynamics, tumor progression, and tissue organization. Many current spatial analysis methods assume symmetric associations or \begin{revised}\input{snippets/r2_q1_abstract}\end{revised}, limiting biological interpretability and statistical power. 
 
 \textbf{Results:}
-We present SHADE (Spatial Hierarchical Asymmetry via Directional Estimation), a multilevel Bayesian framework for modeling asymmetric spatial interactions across scales. SHADE quantifies direction-specific cell-cell associations using smooth spatial interaction curves (SICs) and integrates data across tissue sections, patients, and cohorts. Through simulation studies, SHADE demonstrates improved accuracy, robustness, and interpretability over existing methods. Application to colorectal cancer multiplexed imaging data reveals biologically meaningful spatial asymmetries in immune and stromal organization, underscoring SHADE’s potential for translational insights.
+\begin{revised}We present SHADE (Spatial Hierarchical Asymmetry via Directional Estimation), a multilevel Bayesian framework for modeling asymmetric spatial interactions across scales. SHADE quantifies direction-specific cell-cell associations using smooth spatial interaction curves (SICs) and integrates data across tissue sections, patients, and cohorts. Through simulation studies, SHADE demonstrates improved accuracy, robustness, and interpretability over existing methods. Application to colorectal cancer multiplexed imaging data reveals distinct patterns of spatial asymmetry in immune and stromal organization, demonstrating SHADE's utility for characterizing directional spatial interactions in tissue microenvironments.\end{revised}
 
 \textbf{Availability and Implementation:}
 Open-source implementation is available at \url{https://github.com/jeliason/SHADE} and \url{https://github.com/jeliason/shade_paper_code}, developed in R and Stan.
@@ -445,13 +445,11 @@ Robustness to spatial confounding via compartments. A: Compartment structure sho
 
 \section{Results: Multiscale inference of directional spatial interactions in colorectal cancer}
 \label{sec:results}
+\begin{revised}
 \subsection{Description of colorectal cancer dataset}
 
-We applied our hierarchical spatial interaction model to a publicly available colorectal cancer (CRC) dataset of multiplexed tumor tissue images from 35 patients \citep{schurch_coordinated_2020}. The dataset includes four images per patient, each annotated with single-cell resolution across 16 cell types and 56 protein markers, yielding a multilevel structure of images nested within patients and patients nested within immune phenotype groups: Crohn’s-like reaction (CLR) and diffuse inflammatory infiltration (DII). CLR tumors are typically immune-infiltrated (“hot”), while DII tumors show immune exclusion (“cold”).
-
-For analysis, we focused on the eight most abundant cell types, including reclassification of "stroma" cells as hybrid epithelial-mesenchymal (E/M) cells and "smooth muscle" cells as cancer-associated fibroblasts (CAFs) based on marker expression \citep{kuburich_cancer_2024,cao_cancer-associated_2025}. Target populations were selected for their relevance to anti-tumor immunity (CD8\textsuperscript{+} T cells, memory CD4\textsuperscript{+} T cells, and granulocytes), while source populations included vasculature, tumor cells, CAFs, \begin{revised}tumor-associated macrophages (TAMs, CD163\textsuperscript{+})\end{revised}, and hybrid E/M cells, reflecting key players in tissue architecture and immune regulation.
-
-For each target cell type, we jointly estimated spatial interaction curves (SICs) with respect to all source types. Detailed data preparation procedures—including quadrature construction, basis function choices for interaction features, and model fitting settings—are provided in the Supplement.
+We applied SHADE to a publicly available colorectal cancer dataset of multiplexed tumor tissue images from 35 patients \citep{schurch_coordinated_2020}, with four images per patient annotated at single-cell resolution across 16 cell types. Patients were stratified by immune phenotype: Crohn's-like reaction (CLR, immune-infiltrated) and diffuse inflammatory infiltration (DII, immune-excluded). We analyzed the eight most abundant cell types, reclassifying "stroma" and "smooth muscle" as hybrid epithelial-mesenchymal (E/M) cells and cancer-associated fibroblasts (CAFs) based on marker expression \citep{kuburich_cancer_2024,cao_cancer-associated_2025}. Target populations (CD8\textsuperscript{+} T cells, memory CD4\textsuperscript{+} T cells, granulocytes) were selected for relevance to anti-tumor immunity; source populations (vasculature, tumor cells, CAFs, tumor-associated macrophages, hybrid E/M cells) represent key tissue architecture and immune regulatory elements. For each target type, we jointly estimated SICs with respect to all sources (data preparation details in Supplement Section~\ref{sec:crc_data_prep}).
+\end{revised}
 
 \subsection{How are specific cell types spatially organized in the tumor microenvironment?}
 
@@ -493,11 +491,9 @@ To assess variability in spatial interaction structure across samples, we summar
 \label{sec:hot_cold}
 Distinct tumor immune phenotypes—such as immune-infiltrated versus immune-excluded tumors—are associated with differential immune activity and prognosis. These differences are often accompanied by changes in how immune and stromal cells are spatially arranged in relation to tumor cells and each other. We used SHADE to compare SICs across these patient groups and identify interactions that are enriched or depleted in each context. This allowed us to link differences in spatial structure to known functional differences in immune activity.
 
-\begin{revised}Figure~\ref{fig:sic_crc_all} shows the estimated cohort-level SICs for all source-target cell type pairs, stratified by patient group. Comparing the CLR and DII curves reveals several notable differences in spatial interaction structure. While none of these differences reach statistical significance at the 95\% credible level (i.e., simultaneous credible bands for the SICs overlap everywhere), we highlight below a subset of interactions exhibiting marked between-group differences that are consistent with known biological mechanisms.
+\begin{revised}Figure~\ref{fig:sic_crc_all} shows the estimated cohort-level SICs for all source-target cell type pairs, stratified by patient group. Comparing the CLR and DII curves reveals several notable differences in spatial interaction structure. While none of these differences reach statistical significance at the 95\% credible level (i.e., simultaneous credible bands for the SICs overlap everywhere), we highlight several exploratory patterns that warrant validation in independent cohorts.
 
-DII patients exhibited greater clustering of CTLs around tumor cells across all spatial ranges. While this might suggest immune recognition, it may alternatively indicate ineffective or exhausted T cell responses that fail to clear tumor cells. Persistent CTL-tumor colocalization without effective cytolysis has been associated with immune dysfunction and tumor immune escape \citep{dolina_cd8_2021,raskov_cytotoxic_2021}. Similarly, DII patients showed greater attraction of granulocytes to TAMs at all distances, suggesting enhanced myeloid-myeloid interactions that may contribute to immunosuppressive networks.
-
-In contrast, CLR patients demonstrated distinct spatial patterns. Hybrid E/M cells showed stronger attraction of CTLs at short ranges in CLR compared to DII patients. CD4+ T cells have been implicated in modulating EMT processes \citep{xie_epithelial-mesenchymal_2025,milosevic_interactions_2024}, and the proximity of CTLs to hybrid E/M cells in CLR tumors may reflect immune engagement with tumor cells undergoing phenotypic plasticity. Additionally, CLR patients exhibited greater repulsion of CTLs from CAFs at medium-to-long ranges compared to DII, and greater repulsion of memory CD4+ T cells from hybrid E/M cells at these distances. CAFs are known to mediate immune suppression via direct inhibition and establishment of physical barriers \citep{jenkins_cancer-associated_2022,freeman_cancer-associated_2020}. The stronger repulsion in CLR tumors may indicate more effective spatial segregation of immune and suppressive stromal compartments, whereas the reduced repulsion in DII could reflect barrier disruption or exclusionary mechanisms that constrain immune cell access.\end{revised}
+DII patients exhibited greater clustering of CTLs around tumor cells and greater granulocyte-TAM attraction, potentially reflecting distinct myeloid-lymphoid organization. In contrast, CLR patients showed stronger CTL attraction to hybrid E/M cells at short ranges and greater immune-stromal spatial segregation, with enhanced repulsion of CTLs and memory CD4+ T cells from CAFs and hybrid E/M cells at medium-to-long ranges. These hypothesis-generating observations suggest distinct spatial architectures in immune-infiltrated versus immune-excluded tumors (see Supplement Section~\ref{sec:detailed_spatial_interpretation} for detailed discussion and mechanistic interpretation).\end{revised}
 
 \begin{figure}[ht]
     \centering
@@ -509,19 +505,9 @@ In contrast, CLR patients demonstrated distinct spatial patterns. Hybrid E/M cel
     \label{fig:sic_crc_all}
 \end{figure}
 
-\subsection{How well can spatial interactions predict the organization of individual cell types across tumor regions?}
-Beyond estimating SICs, SHADE predicts the spatial distribution of each target cell type conditional on the source cells, allowing us to assess how well spatial interactions explain observed patterns. This reveals which cell types are more spatially constrained and how predictability varies across images, patients, and tumor subtypes.
-
-For example, in image 47\_B from the dataset, we can produce the following predictions of each target cell type, conditional on the source cell types (Figure~\ref{fig:example_pred}). We can see that the target cell types are quite well predicted, especially CTLs. Likely due to their relative paucity, granulocytes are not quite as well predicted in this image (regions of localization are not as distinct).
-
-We calculated AUCs per cell type and per group (Supplement Section~\ref{sec:crc_supp_figs}). All three target cell types were better predicted in CLR patients than in DII patients, though there was a relatively large amount of variability in image-level AUCs.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/example_pred.pdf}
-    \caption[Predicted spatial distributions for target cell types in a representative image]{Predicted spatial distributions for target cell types in a representative image (47\_B), based on the estimated conditional intensity functions. \revisedtext{Heat maps show predicted log-intensity; black dots indicate observed cell locations for each target cell type.}}
-    \label{fig:example_pred}
-\end{figure}
+\begin{revised}
+Beyond estimating spatial interactions, SHADE's conditional intensity functions enable prediction of target cell spatial distributions from source cell configurations. Predictive performance varied by cell type and tumor subtype, with all target cell types showing higher prediction accuracy in CLR versus DII tumors (Supplement Section~\ref{sec:predictions_supplement}).
+\end{revised}
 
 \subsection{Comparing SHADE to traditional $G$-cross-based spatial clustering analysis}
 \label{sec:gx_comparison}
@@ -575,7 +561,7 @@ Beyond cohort-level differences, we also found substantial heterogeneity in spat
 
 A key strength of SHADE is its flexibility in modeling directional interactions across spatial scales, avoiding the restrictive symmetry assumptions of traditional spatial models. Moreover, the use of logistic regression for conditional intensity estimation allows for scalable and stable inference, sidestepping common numerical pitfalls of direct Poisson modeling.
 
-Nonetheless, SHADE has limitations. First, while SICs capture directional spatial association, they remain correlational and cannot determine causality or infer mechanisms of interaction. Second, the SICs reflect spatial dependence rather than molecular signaling pathways, which may limit biological interpretability in some settings. Third, although SHADE supports biologically motivated conditioning structures, exploratory analyses may benefit from modeling both directions of association when directionality is uncertain.
+\begin{revised}Nonetheless, SHADE has limitations. First, while SICs capture directional spatial association, they remain correlational and cannot determine causality or infer mechanisms of interaction. Second, the SICs reflect spatial dependence rather than molecular signaling pathways, which may limit biological interpretability in some settings. Third, although SHADE supports biologically motivated conditioning structures, exploratory analyses may benefit from modeling both directions of association when directionality is uncertain. Fourth, hierarchical shrinkage produces credible intervals that are narrower than marginal image-level intervals, reflecting the precision-accuracy tradeoff inherent in borrowing strength across images (see Supplement Section~\ref{sec:coverage_type1}).\end{revised}
 
 Future extensions of SHADE could incorporate functional covariates—such as marker intensity, proliferation, or exhaustion scores—into the SIC framework, enabling joint analysis of spatial structure and functional state. This would open the door to modeling not just where cells are, but how they behave spatially in context. \begin{revised}\input{snippets/r1_q2_crowding_discussion}\end{revised}
 

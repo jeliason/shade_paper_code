@@ -503,9 +503,11 @@ These results demonstrate that SHADE remains computationally tractable even for 
 \subsection{Coverage and Type I Error Performance}
 \label{sec:coverage_type1}
 
-Beyond detection power (Figure~\ref{fig:gx_detections} in the main text), we evaluated coverage (do 95\% credible bands contain the true SIC?) and Type I error control (false positive rates under the null) across all simulation conditions (Figures~\ref{fig:coverage_performance}--\ref{fig:type1_error}). Results reveal adaptive calibration depending on source density, target density, and number of images per patient.
+Beyond detection power (Figure~\ref{fig:gx_detections} in the main text), we evaluated coverage (do 95\% credible bands contain the true SIC?) and Type I error control (false positive rates under the null) across all simulation conditions (Figures~\ref{fig:coverage_performance}--\ref{fig:type1_error}).
 
-SHADE Hierarchical with 2--3 images per patient maintains well-controlled median Type I error (0.8--7.5\%, comparable to envelope tests) and coverage that trades conservatism for power based on data characteristics: highest coverage (86--100\%) when source density is low, lowest coverage (53--59\%) when source is high and target is low (SHADE's most powerful regime). With only 1 image per patient, SHADE exhibits extreme behavior (either overly conservative or poorly calibrated), requiring multiple images for stable performance. SHADE Flat shows severe miscalibration (Type I error: 27--29\%, coverage: 53--86\%) regardless of conditions, demonstrating hierarchical pooling's critical importance.
+\textbf{Note on coverage interpretation:} Our coverage metric assesses whether hierarchically-shrunk image-level credible bands contain true unshrunk image-level parameters. Hierarchical models intentionally shrink image-level estimates toward patient means to borrow strength across images, producing narrower credible bands centered closer to patient means than true image-specific values. This results in lower-than-nominal coverage (53--100\% vs. 95\%) but reflects the intended precision-accuracy tradeoff of hierarchical shrinkage, not miscalibration. Coverage is lowest when source density is high (strong signal enables aggressive shrinkage) and highest when source density is low (weak signal produces conservative estimates).
+
+SHADE Hierarchical with 2--3 images per patient maintains well-controlled median Type I error (0.8--7.5\%, comparable to envelope tests). With only 1 image per patient, SHADE exhibits extreme behavior (either overly conservative or poorly calibrated), requiring multiple images for stable performance. SHADE Flat shows severe miscalibration (Type I error: 27--29\%, coverage: 53--86\%) regardless of conditions, demonstrating hierarchical pooling's critical importance.
 
 \begin{figure}[ht]
     \centering
@@ -572,6 +574,7 @@ These results demonstrate that unmeasured spatial heterogeneity—compartments, 
 
 \section{Extended results for colorectal cancer analysis}
 \subsection{Detailed description of colorectal cancer dataset and model preparation}
+\label{sec:crc_data_prep}
 
 The colorectal cancer (CRC) dataset used in this study is a publicly available collection of multiplexed tumor tissue images from 35 patients \citep{schurch_coordinated_2020}. Each patient contributed four images, each derived from separate biopsies, yielding a total of 140 images. Images were annotated with single-cell resolution across 16 cell types and 56 protein markers, resulting in a multilevel structure: images nested within patients, patients nested within two immune phenotype groups—Crohn’s-like reaction (CLR) and diffuse inflammatory infiltration (DII).
 
@@ -582,6 +585,47 @@ We selected target populations (CD8\textsuperscript{+} T cells, memory CD4\texts
 For each target cell type, we constructed a quadrature scheme by generating 1,000 dummy points per image per cell type. To capture distance-dependent spatial interactions, we constructed interaction features $\bq_{A_k}(v)$ using a set of three radial basis functions $\phi_p$. Data preprocessing included normalization of coordinates and preparation of covariates and interaction features. 
 
 Model fitting was performed using variational inference with 1,000 posterior draws after fitting. SICs were estimated jointly for all source cell types with respect to each target, providing interpretable, distance-resolved summaries of spatial associations. We set $r_{\min}$ to the dataset’s mean cell radius (8--12~$\mu$m depending on cohort) and restricted visualization to $r\ge r_{\min}$.
+
+\subsection{Detailed biological interpretation of CLR vs DII spatial patterns}
+\label{sec:detailed_spatial_interpretation}
+
+The cohort-level spatial interaction curves shown in Figure~\ref{fig:sic_crc_all} of the main text reveal several notable differences between CLR (immune-infiltrated) and DII (immune-excluded) patient groups. While these differences do not reach statistical significance and require validation in independent cohorts, we provide here a detailed mechanistic interpretation of the observed patterns in the context of known tumor microenvironment biology.
+
+\subsubsection{DII-enriched spatial patterns}
+
+DII patients exhibited greater clustering of CTLs around tumor cells across all spatial ranges. While this might initially suggest immune recognition, it may alternatively indicate ineffective or exhausted T cell responses that fail to clear tumor cells. Persistent CTL-tumor colocalization without effective cytolysis has been associated with immune dysfunction and tumor immune escape \citep{dolina_cd8_2021,raskov_cytotoxic_2021}. The sustained spatial proximity despite poor tumor control could reflect T cells trapped in a dysfunctional state, unable to eliminate their targets despite close contact.
+
+Similarly, DII patients showed greater attraction of granulocytes to tumor-associated macrophages (TAMs) at all distances, suggesting enhanced myeloid-myeloid interactions that may contribute to immunosuppressive networks. TAMs and granulocytes can form mutually reinforcing suppressive circuits in the tumor microenvironment, with TAMs recruiting and activating immunosuppressive neutrophils, and neutrophils in turn supporting M2-like macrophage polarization. The enhanced spatial co-localization in DII tumors may reflect the establishment of such suppressive myeloid networks that exclude effective adaptive immunity.
+
+\subsubsection{CLR-enriched spatial patterns}
+
+In contrast, CLR patients demonstrated distinct spatial patterns suggesting different modes of immune-tumor-stroma organization. Hybrid epithelial-mesenchymal (E/M) cells showed stronger attraction of CTLs at short ranges in CLR compared to DII patients. CD4+ T cells have been implicated in modulating epithelial-mesenchymal transition (EMT) processes \citep{xie_epithelial-mesenchymal_2025,milosevic_interactions_2024}, and the proximity of CTLs to hybrid E/M cells in CLR tumors may reflect active immune engagement with tumor cells undergoing phenotypic plasticity. Cells in hybrid E/M states may present altered antigen profiles or adhesion molecules that promote CTL infiltration and recognition.
+
+Additionally, CLR patients exhibited greater repulsion of CTLs from cancer-associated fibroblasts (CAFs) at medium-to-long ranges compared to DII, and greater repulsion of memory CD4+ T cells from hybrid E/M cells at these distances. CAFs are known to mediate immune suppression via multiple mechanisms including direct inhibition of T cell function and establishment of physical barriers through extracellular matrix remodeling \citep{jenkins_cancer-associated_2022,freeman_cancer-associated_2020}. The stronger repulsion in CLR tumors may indicate more effective spatial segregation of immune and suppressive stromal compartments, potentially reflecting physical barriers that constrain the spatial distribution of immune cells while still permitting local infiltration. In contrast, the reduced repulsion in DII could reflect barrier disruption or alternative exclusionary mechanisms that globally constrain immune cell access to tumor regions rather than creating localized segregation patterns.
+
+\subsubsection{Caveats and validation requirements}
+
+These interpretations remain speculative in the absence of functional validation. The dataset lacks direct measurements of T cell exhaustion, cytolytic activity, CAF activation states, or other functional markers that would support these mechanistic hypotheses. The patterns observed may also reflect technical factors such as unmeasured spatial compartments (tumor islands vs. stroma) that confound apparent cell-cell interactions, as demonstrated in our compartment robustness simulations (Supplement Section~\ref{sec:compartment_confounder}).
+
+Future studies should validate these exploratory findings using: (1) independent colorectal cancer cohorts with multiplexed imaging, (2) functional measurements such as proliferation markers (Ki67), exhaustion markers (PD-1, TIM-3, LAG-3), activation markers (granzyme B, perforin), and CAF phenotyping (FAP, $\alpha$-SMA, podoplanin), (3) orthogonal clinical outcomes such as survival and treatment response, and (4) explicit modeling of tissue compartment boundaries if available.
+
+\begin{revised}
+\subsection{Predictive performance: Spatial interactions and target cell organization}
+\label{sec:predictions_supplement}
+
+Beyond estimating SICs, SHADE predicts the spatial distribution of each target cell type conditional on the source cells, allowing us to assess how well spatial interactions explain observed patterns. This reveals which cell types are more spatially constrained and how predictability varies across images, patients, and tumor subtypes.
+
+For example, in image 47\_B from the dataset, we can produce the following predictions of each target cell type, conditional on the source cell types (Supplementary Figure~\ref{fig:example_pred_supp}). We can see that the target cell types are quite well predicted, especially CTLs. Likely due to their relative paucity, granulocytes are not quite as well predicted in this image (regions of localization are not as distinct).
+
+We calculated AUCs per cell type and per group (Supplementary Figure~\ref{fig:crc_aucs}). All three target cell types were better predicted in CLR patients than in DII patients, though there was a relatively large amount of variability in image-level AUCs.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/example_pred.pdf}
+    \caption{Predicted spatial distributions for target cell types in a representative image (47\_B), based on the estimated conditional intensity functions. Heat maps show predicted log-intensity; black dots indicate observed cell locations for each target cell type.}
+    \label{fig:example_pred_supp}
+\end{figure}
+\end{revised}
 
 \subsection{Supplementary Figures}
 \label{sec:crc_supp_figs}
