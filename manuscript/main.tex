@@ -416,14 +416,12 @@ Robustness to spatial confounding via compartments. A: Compartment structure sho
 \begin{revised}
 \subsection{Description of colorectal cancer dataset}
 
-We applied SHADE to a publicly available colorectal cancer dataset of multiplexed tumor tissue images from 35 patients \citep{schurch_coordinated_2020}, with four images per patient annotated at single-cell resolution across 16 cell types. Patients were stratified by immune phenotype: Crohn's-like reaction (CLR, immune-infiltrated) and diffuse inflammatory infiltration (DII, immune-excluded). We analyzed the eight most abundant cell types, reclassifying "stroma" and "smooth muscle" as hybrid epithelial-mesenchymal (E/M) cells and cancer-associated fibroblasts (CAFs) based on marker expression \citep{kuburich_cancer_2024,cao_cancer-associated_2025}. Target populations (CD8\textsuperscript{+} T cells, memory CD4\textsuperscript{+} T cells, granulocytes) were selected for relevance to anti-tumor immunity; source populations (vasculature, tumor cells, CAFs, tumor-associated macrophages, hybrid E/M cells) represent key tissue architecture and immune regulatory elements. For each target type, we jointly estimated SICs with respect to all sources (data preparation details in Supplement Section~\ref{sec:crc_data_prep}).
+\begin{revised}We applied SHADE to a colorectal cancer dataset \citep{schurch_coordinated_2020} of 35 patients (140 images) stratified by immune phenotype: Crohn's-like reaction (CLR, immune-infiltrated) and diffuse inflammatory infiltration (DII, immune-excluded). We analyzed eight cell types with three target populations (CD8\textsuperscript{+} T cells, memory CD4\textsuperscript{+} T cells, granulocytes) and five source populations (vasculature, tumor cells, cancer-associated fibroblasts [CAFs], tumor-associated macrophages [TAMs], hybrid epithelial-mesenchymal [E/M] cells). Details on cell type reclassification and data preparation are in Supplement Section~\ref{sec:crc_data_prep}.\end{revised}
 \end{revised}
 
-\subsection{How are specific cell types spatially organized in the tumor microenvironment?}
+\begin{revised}\subsection{Cell-type-specific spatial organization patterns}
 
-A core question in tumor microenvironment analysis is whether certain cell types tend to cluster near or avoid others, and how these patterns vary with spatial scale. Such spatial relationships reflect underlying mechanisms of attraction, repulsion, communication, or physical constraint, and may provide insight into processes like immune surveillance, tumor evasion, and niche formation. SHADE's directional SICs allow detection of cell-type-specific clustering and exclusion behaviors across scales.
-
-We extracted image-, patient-, and cohort-level interaction parameters ($\delta_{t_1\to t_2}^{(m,p)}$, $\gamma_{t_1\to t_2}^{(n,p)}$, and $\psi_{t_1\to t_2}^{(g,p)}$) and computed SICs as in Equation~\ref{eq:sic}. Figure~\ref{fig:sic_CRC} shows an example with \begin{revised}cytotoxic T lymphocytes (CTLs, CD8\textsuperscript{+} T cells)\end{revised} as the target cell type and CAFs as a source, highlighting differential organization between patient groups. At $\sim$75~$\mu$m, CTLs in CLR patients tend to cluster around CAFs (log-intensity $>$ 0), whereas in DII patients, CTLs appear depleted near CAFs. Patient-level curves reveal substantial within-group heterogeneity.
+We extracted image-, patient-, and cohort-level interaction parameters and computed SICs as in Equation~\ref{eq:sic}. Figure~\ref{fig:sic_CRC} shows an example with cytotoxic T lymphocytes (CTLs, CD8\textsuperscript{+} T cells) as the target cell type and CAFs as a source. At $\sim$75~$\mu$m, CTLs in CLR patients cluster around CAFs (log-intensity $>$ 0), whereas in DII patients, CTLs are depleted near CAFs. Patient-level curves reveal substantial within-group heterogeneity.\end{revised}
 
 Across all cell-type pairs, we observed consistent short-range ($<$25~$\mu$m) negative associations, likely reflecting physical crowding. At intermediate ranges (25–75~$\mu$m), many pairs showed a distinct positive peak, suggestive of clustering, often differing in magnitude between patient groups. Associations at longer distances ($>$75~$\mu$m) were generally weaker or absent, indicating limited spatial coordination at larger scales.
 
@@ -435,24 +433,15 @@ Across all cell-type pairs, we observed consistent short-range ($<$25~$\mu$m) ne
     \label{fig:sic_CRC}
 \end{figure}
 
-\subsection{How do spatial interaction patterns vary across patients and tissue sections?}
+\begin{revised}\subsection{Quantifying spatial heterogeneity across biological scales}
 \label{sec:how_vary}
-Spatial interactions can vary across tumors and even between sections from the same patient, reflecting biologically meaningful heterogeneity in tumor architecture or immune organization. \begin{revised}\input{snippets/r2_q1_how_vary} Examples of patient-level and image-level SICs for cell type pairs exhibiting high within-patient heterogeneity are shown in Figure~\ref{fig:sic_mad_examples}\end{revised}.
-
-To assess variability in spatial interaction structure across samples, we summarize between-patient and between-image heterogeneity using median absolute deviation (MAD)-based estimates. \begin{revised}These measures are defined in Supplement Section~\ref{sec:mad_calc}. We also examined heterogeneity in spatial interaction structure across patients and images. \input{snippets/r3_q10_mad_comparison}\end{revised}
+\input{snippets/r2_q1_how_vary} We quantified between-patient and within-patient variability using median absolute deviation (MAD) of SIC deviations (methods in Supplement Section~\ref{sec:mad_calc}). \input{snippets/r3_q10_mad_comparison} Figure~\ref{fig:sic_mad_examples} shows examples illustrating substantial differences in spatial organization both between patients and across tissue sections from the same patient.\end{revised}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_CRC_local_ci.pdf}
-    \caption{Examples of patient- and image-level SICs for cell type pairs with high within-patient MAD values. Solid lines show patient-level SICs; dotted lines show image-level SICs from individual tissue sections{\begin{revised}, illustrating hierarchical variability within patients\end{revised}}.}
+    \caption{\begin{revised}Examples of patient- and image-level SICs for high-heterogeneity cell type pairs. Solid lines: patient-level SICs; dotted lines: image-level SICs, illustrating variability within patients.\end{revised}}
     \label{fig:sic_mad_examples}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/mad_comparison_clr_dii.pdf}
-    \caption{\begin{revised}Heatmaps show median absolute deviation (MAD) of spatial interaction curve deviations as a measure of heterogeneity for 15 source-target cell type pairs. Top row: between-patient heterogeneity (MAD of patient-level deviations from cohort mean). Bottom row: within-patient heterogeneity (MAD of image-level deviations from patient mean). Left column: CLR tumors. Right column: DII tumors.\end{revised}}
-    \label{fig:mad_clr_dii}
 \end{figure}
 
 \begin{revised}\subsection{Comparison of spatial interactions between immune-infiltrated and immune-excluded tumors}
