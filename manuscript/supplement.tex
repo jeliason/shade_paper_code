@@ -724,11 +724,23 @@ We used the \texttt{mxfda} R package~\citep{wrobelMxfdaComprehensiveToolkit2024}
 
 \begin{revised}SHADE and mFPCA address complementary questions: \input{snippets/r3_q1_fda_comparison} SHADE provides a generative probabilistic model estimating conditional effects with multivariate adjustment, while mFPCA performs dimension reduction on marginal pairwise summary statistics without modeling the data-generating process.\end{revised}
 
-\subsubsection{Results and Figure References}
+\subsubsection{Results: Comparison of SHADE with mFPCA}
+\label{sec:mfpca_comparison}
+
+\input{snippets/r2_q4_mfpca_intro}
+
+\input{snippets/r3_q2_mfpca_methods}
+
+\input{snippets/r3_q2_mfpca_examples}
 
 Complete mFPCA results for all 15 cell type pairs are provided in Figures~\ref{fig:mfpca_gcross_grid} ($G$-cross) and~\ref{fig:mfpca_lcross_grid} ($L$-cross). Each figure displays group-level mean curves with $\pm 1$ SD bands for CLR (blue) and DII (orange) patients, facilitating visual comparison of marginal spatial associations across patient groups.
 
-Visual comparison reveals both concordance (e.g., CTL-vasculature short-range clustering in CLR) and informative differences (e.g., CTL-tumor cell interactions where SHADE's multivariate adjustment reveals stronger conditional effects than marginal $G$-cross suggests). These patterns are discussed in Section~\ref{sec:mfpca_comparison} of the main text.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/gcross_mfpca_grid_supplement.pdf}
+    \caption{Multilevel functional PCA of $G$-cross functions for all source-target pairs. For each of 15 cell type pairs, group-level mean $G$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$).}
+    \label{fig:mfpca_gcross_grid}
+\end{figure}
 
 \begin{figure}[h!]
     \centering

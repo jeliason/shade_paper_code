@@ -493,24 +493,6 @@ For each tissue section, we computed $G$-cross estimates at distances from 0 to 
 
 \begin{revised}\input{snippets/r2_q4_gx_comparison}\end{revised}
 
-\begin{revised}
-\subsection{Comparison with functional data analysis of spatial summary statistics}
-\label{sec:mfpca_comparison}
-
-\input{snippets/r2_q4_mfpca_intro}
-
-\input{snippets/r3_q2_mfpca_methods}
-
-\input{snippets/r3_q2_mfpca_examples}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/gcross_mfpca_grid_supplement.pdf}
-    \caption{Multilevel functional PCA of $G$-cross functions for all source-target pairs. For each of 15 cell type pairs, group-level mean $G$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$).}
-    \label{fig:mfpca_gcross_grid}
-\end{figure}
-\end{revised}
-
 \section{Discussion}
 
 In this work, we introduced SHADE, a Bayesian hierarchical model for quantifying asymmetric spatial interactions in multiplexed imaging data. By modeling the conditional intensity function and estimating spatial interaction curves, our approach enables the identification of directional associations between cell types while accounting for multilevel variation across images, patients, and cohorts.
