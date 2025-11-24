@@ -286,7 +286,7 @@ The choice among these measures depends on the biological question: peak magnitu
 \subsection{Extended Methods for Hyperparameter Studies and Study of Explicit Modeling of Multilevel Structure}
 \label{sec:sim_full}
 
-\begin{revised}To evaluate SHADE's performance under controlled conditions and assess the effect of modeling multilevel structure, we conducted simulation studies generating synthetic spatial point patterns with known hierarchical structure and asymmetric spatial interactions. This section describes the data generation process and default parameter settings used across simulation experiments reported in Section~\ref{sec:sim_hier} of the main text (comparing hierarchical vs. flat models) and Sections~\ref{sec:hyperparam_dummy} and~\ref{sec:hyperparam_dsize} of this supplement (hyperparameter studies examining the effects of cell count, dummy point ratio, and dataset size).\end{revised}
+\begin{revised}To evaluate SHADE's performance under controlled conditions and assess the effect of modeling multilevel structure, we conducted simulation studies generating synthetic spatial point patterns with known hierarchical structure and asymmetric spatial interactions. This section describes the data generation process and default parameter settings used across simulation experiments, including: (1) comparison of hierarchical vs. non-hierarchical models (Section~\ref{sec:sim_hier}), and (2) hyperparameter studies examining the effects of cell count, dummy point ratio, and dataset size (Sections~\ref{sec:hyperparam_dummy} and~\ref{sec:hyperparam_dsize}).\end{revised}
 
 The simulation process consists of three steps: (1) generating hierarchical spatial interaction coefficients according to the model in Equation~\ref{eq:beta_priors}, (2) generating source cell locations from a homogeneous Poisson process, and (3) generating target cell locations from an inhomogeneous Poisson process whose intensity depends on proximity to source cells via spatial interaction features.
 
@@ -323,6 +323,41 @@ Unless otherwise specified, the following defaults were used in simulation exper
     \end{itemize}
     \item \textbf{Number of patients and images:} variable across experiments.
 \end{itemize}
+
+\begin{revised}
+\subsection{Results: The effect of explicitly modeling multilevel structure}
+\label{sec:sim_hier}
+
+We examined how accounting for hierarchical structure affects inference quality by comparing the full hierarchical model against a non-hierarchical alternative that estimates image-level SICs independently, without shrinkage to patient- or cohort-level structures. We simulated data from two patient groups, each with 20 patients and 4 images per patient. Each image contained 150 points of each type, with a dummy-to-real point ratio of 2. Remaining parameters followed the defaults specified in Section~\ref{sec:default_params}.
+
+We generated 100 simulation replicates and fit both models to each replicate. Inference quality was assessed by comparing the average RMSE of the \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients.
+
+\input{snippets/r2_q5_hierarchical_rmse}
+
+\begin{table}[ht]
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\begin{tabular}{l>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}}
+\toprule
+\textbf{Hierarchical} & \textbf{Scale: All} & \textbf{Scale: Small} & \textbf{Scale: Medium} & \textbf{Scale: Large}\\
+\midrule
+\cellcolor[HTML]{F0F0F0}{False} & \cellcolor[HTML]{F0F0F0}{0.142 (0.097, 0.196)} & \cellcolor[HTML]{F0F0F0}{0.355 (0.230, 0.509)} & \cellcolor[HTML]{F0F0F0}{0.022 (0.016, 0.031)} & \cellcolor[HTML]{F0F0F0}{0.048 (0.034, 0.066)}\\
+True & 0.039 (0.027, 0.043) & 0.072 (0.043, 0.084) & 0.017 (0.013, 0.020) & 0.028 (0.021, 0.036)\\
+\bottomrule
+\end{tabular}}
+\caption{Average RMSE of \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients in aggregate and across spatial scales, comparing hierarchical and non-hierarchical models.}
+\label{tab:hier_rmse}
+\end{table}
+
+Figure~\ref{fig:no_hier_est_SIC} shows several examples of image-level SICs estimated with both models. In all cases, the SIC is better estimated when hierarchical structure is accounted for, with improvements in both bias and variance. Table~\ref{tab:hier_rmse} quantifies this improvement: the hierarchical model achieves substantially lower RMSE across all spatial scales, with the most dramatic improvement at small scales (RMSE reduction from 0.355 to 0.072).
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_no_hier/estimated_SIC.pdf}
+    \caption{Examples of estimated image-level SICs from hierarchical modeling simulations, with simultaneous 95\% credible bands, demonstrating better estimation of SICs when accounting for multilevel structure.}
+    \label{fig:no_hier_est_SIC}
+\end{figure}
+\end{revised}
 
 \subsection{Extended Methods for Comparison of Spatial Pattern Detection Accuracy Across Methods and Conditions}
 \label{sec:sim_details}

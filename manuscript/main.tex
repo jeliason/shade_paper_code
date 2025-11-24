@@ -358,47 +358,15 @@ Using these constructed features, we fit a multilevel Bayesian logistic regressi
 
 \section{Simulation Studies}
 
-To evaluate the proposed model, we conducted simulation studies generating synthetic spatial point patterns that incorporated asymmetric interactions and multilevel structure. Spatial patterns were simulated within a bounded domain \( W = [0, S] \times [0, S] \), with source points generated from a homogeneous Poisson process and target points influenced by spatial interaction curves defined over source-target distances. Hierarchical structure was introduced via interaction coefficients generated according to~\eqref{eq:beta_priors}.
+\begin{revised}To evaluate SHADE's performance, we conducted simulation studies generating synthetic spatial point patterns with asymmetric interactions and multilevel structure. Spatial patterns were simulated within a bounded domain \( W = [0, S] \times [0, S] \), with source points from a homogeneous Poisson process and target points influenced by spatial interaction curves defined over source-target distances. Hierarchical structure was introduced via interaction coefficients generated according to~\eqref{eq:beta_priors}.
 
-The final point pattern was converted into a logistic regression dataset using dummy points sampled from a homogeneous Poisson process with intensity $\lambda_{\text{dummy}}$, and spatial interaction features were computed as in~\eqref{eq:interaction_feature}. Full simulation details, including two additional studies exploring the effect of various hyperparameters on statistical inference, are provided in Supplement Section~\ref{sec:sim_details}.
-
-\subsection{The effect of explicitly modeling multilevel structure}
-\label{sec:sim_hier}
-
-In our first simulation study, we examined how accounting for hierarchical structure affects inference quality. We simulated data from two patient groups, each with 20 patients and 4 images per patient. Each image contained 150 points of each type, with a dummy-to-real point ratio of 2. The remaining parameters were set to defaults (Supplement Section~\ref{sec:sim_details}).  
-
-We generated 100 simulation replicates and fit two models to each: the full hierarchical model and a non-hierarchical model that estimates image-level SICs independently, without shrinkage to patient- or cohort-level structures. Inference quality was assessed by comparing the average RMSE of the \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients.
-
-\input{snippets/r2_q5_hierarchical_rmse}
-
-\begin{table}[ht]
-\centering
-\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
-\begin{tabular}{l>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}}
-\toprule
-\textbf{Hierarchical} & \textbf{Scale: All} & \textbf{Scale: Small} & \textbf{Scale: Medium} & \textbf{Scale: Large}\\
-\midrule
-\cellcolor[HTML]{F0F0F0}{False} & \cellcolor[HTML]{F0F0F0}{0.142 (0.097, 0.196)} & \cellcolor[HTML]{F0F0F0}{0.355 (0.230, 0.509)} & \cellcolor[HTML]{F0F0F0}{0.022 (0.016, 0.031)} & \cellcolor[HTML]{F0F0F0}{0.048 (0.034, 0.066)}\\
-True & 0.039 (0.027, 0.043) & 0.072 (0.043, 0.084) & 0.017 (0.013, 0.020) & 0.028 (0.021, 0.036)\\
-\bottomrule
-\end{tabular}}
-\caption{Average RMSE of \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients in aggregate and across spatial scales, from both a model that fully accounts for the hierarchical structure as well as a model that does not account for hierarchy.}
-\label{tab:hier_rmse}
-\end{table}
-
-Figure \ref{fig:no_hier_est_SIC} shows several examples of image-level SICs estimated with both models from this simulation study. In all cases, we can see that the SIC is better estimated when hierarchical structure is accounted for, in terms of both the bias and and variance of the estimate.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{images/simulated_no_hier/estimated_SIC.pdf}
-    \caption{Examples of estimated image-level SICs from hierachical modeling simulations{\begin{revised}, with simultaneous 95\% credible bands\end{revised}}, demonstrating better estimation of SICs when accounting for multilevel structure.}
-    \label{fig:no_hier_est_SIC}
-\end{figure}
+The final point pattern was converted into a logistic regression dataset using dummy points sampled from a homogeneous Poisson process with intensity $\lambda_{\text{dummy}}$, and spatial interaction features were computed as in~\eqref{eq:interaction_feature}. We first validated that SHADE's hierarchical structure substantially improves estimation quality compared to non-hierarchical alternatives (Supplement Section~\ref{sec:sim_hier}). We then conducted a comprehensive comparison of SHADE's detection capabilities against established spatial analysis methods across varying data conditions, presented below. Additional hyperparameter studies are provided in Supplement Section~\ref{sec:sim_details}.
+\end{revised}
 
 \subsection{Comparison of spatial pattern detection accuracy across methods}
 \label{sec:sim_comparison}
 
-\begin{revised}We next conducted a simulation study to evaluate SHADE's detection power and calibration against established spatial analysis methods. We generated hierarchical spatial point patterns with known positive spatial interactions between two cell types, modeling a single patient cohort with attraction patterns across multiple distance scales.\end{revised}
+\begin{revised}We evaluated SHADE's detection power and calibration against established spatial analysis methods by generating hierarchical spatial point patterns with known positive spatial interactions between two cell types, modeling a single patient cohort with attraction patterns across multiple distance scales.\end{revised}
 
 \begin{revised}These simulations focus on \emph{image-level} detection capabilities—the ability to identify spatial interactions within individual tissue sections using envelope-based methods. While SHADE's hierarchical framework enables inference at multiple biological scales (image, patient, and cohort levels), we compare here against $G$-cross and $K$-cross envelope tests that assess significance via completely spatially random (CSR) Monte Carlo simulations. In Section~\ref{sec:mfpca_comparison}, we present a complementary analysis comparing SHADE's group-level inference with functional data analysis methods that analyze marginal pairwise summary statistics.\end{revised}
 
