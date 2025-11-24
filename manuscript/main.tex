@@ -475,22 +475,6 @@ Distinct tumor immune phenotypes—such as immune-infiltrated (CLR) versus immun
 Beyond estimating spatial interactions, SHADE's conditional intensity functions enable prediction of target cell spatial distributions from source cell configurations. Predictive performance varied by cell type and tumor subtype, with all target cell types showing higher prediction accuracy in CLR versus DII tumors (Supplement Section~\ref{sec:predictions_supplement}).
 \end{revised}
 
-\subsection{Comparing SHADE to traditional $G$-cross-based spatial clustering analysis}
-\label{sec:gx_comparison}
-
-To contextualize our SHADE results, we performed an alternative analysis using the $G$-cross function \citep{baddeley_spatial_2015}, a nonparametric estimator of cross-type clustering commonly used in spatial point pattern analysis. This comparison highlights how SHADE differs from traditional methods in its modeling framework and interpretability of results.
-
-For each tissue section, we computed $G$-cross estimates at distances from 0 to 80 microns and extracted values at key distances (20, 40, 60 microns) for comparison. To quantify whether differences in clustering could predict patient group (CLR vs DII), we fitted logistic regression models with $G$-cross as the predictor and used FDR-adjusted p-values to identify significant associations. The resulting estimates are visualized as a heatmap of log-odds ratios (log-ORs), indicating the strength and direction of group differences in clustering at each distance.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{images/CRC_analysis_paper/gx_comparison.pdf}
-\caption{Heatmap of log-odds ratios (log-ORs) from logistic regression models comparing $G$-cross clustering metrics between CLR and DII patient groups, stratified by distance (20, 40, 60 microns). Tiles represent the estimated log-OR for each source–target pair at a given distance, with asterisks indicating significant differences ($p<0.05$, FDR-adjusted). Green indicates stronger clustering in DII, purple indicates stronger clustering in CLR.}
-\label{fig:gx_comparison}
-\end{figure}
-
-\begin{revised}\input{snippets/r2_q4_gx_comparison}\end{revised}
-
 \section{Discussion}
 
 In this work, we introduced SHADE, a Bayesian hierarchical model for quantifying asymmetric spatial interactions in multiplexed imaging data. By modeling the conditional intensity function and estimating spatial interaction curves, our approach enables the identification of directional associations between cell types while accounting for multilevel variation across images, patients, and cohorts.
@@ -503,7 +487,7 @@ Through simulation studies, we demonstrated that SHADE effectively captures asym
 
 \begin{revised}Application of SHADE to colorectal cancer data demonstrated the method's ability to estimate spatial interaction curves across hierarchical levels and characterize spatial heterogeneity. Comparison of immune-infiltrated (CLR) versus immune-excluded (DII) tumors revealed no statistically significant differences in spatial interactions at the cohort level, though several exploratory trends emerged that may inform hypothesis generation for future studies (detailed in Supplement). The primary validated findings from the CRC analysis are: (1) substantial heterogeneity in spatial organization exists across patients and tissue sections, particularly for granulocyte interactions with TAMs, vasculature, and hybrid E/M cells, suggesting patient-specific or localized microenvironmental factors, and (2) target cell spatial distributions were more predictable from source cell configurations in CLR tumors, indicating more structured immune microenvironments compared to DII tumors.\end{revised}
 
-\begin{revised}Comparisons with $G$-cross function estimates and multilevel functional PCA (Section~\ref{sec:mfpca_comparison}) illustrate SHADE's complementary value. Both SHADE and marginal summary statistics identified granulocyte-TAM clustering in DII tumors, but diverged for other interactions where SHADE's multivariate adjustment revealed conditional dependencies obscured in marginal analyses (e.g., CTL-tumor clustering, CTL-CAF repulsion in CLR). While SHADE provides a generative probabilistic model with conditional intensity estimation and partial pooling for improved precision, functional data methods offer model-free characterization of variation in marginal pairwise statistics. These approaches are complementary rather than competing: the choice depends on whether the goal is mechanistic understanding of conditional dependencies or descriptive analysis of marginal spatial patterns.\end{revised}
+\begin{revised}Comparisons with $G$-cross function estimates (Supplement Section~\ref{sec:gx_comparison}) and multilevel functional PCA (Supplement Section~\ref{sec:mfpca_comparison}) illustrate SHADE's complementary value. Both SHADE and marginal summary statistics identified granulocyte-TAM clustering in DII tumors, but diverged for other interactions where SHADE's multivariate adjustment revealed conditional dependencies obscured in marginal analyses (e.g., CTL-tumor clustering, CTL-CAF repulsion in CLR). While SHADE provides a generative probabilistic model with conditional intensity estimation and partial pooling for improved precision, functional data methods offer model-free characterization of variation in marginal pairwise statistics. These approaches are complementary rather than competing: the choice depends on whether the goal is mechanistic understanding of conditional dependencies or descriptive analysis of marginal spatial patterns.\end{revised}
 
 A key strength of SHADE is its flexibility in modeling directional interactions across spatial scales, avoiding the restrictive symmetry assumptions of traditional spatial models. Moreover, the use of logistic regression for conditional intensity estimation allows for scalable and stable inference, sidestepping common numerical pitfalls of direct Poisson modeling.
 

@@ -644,6 +644,22 @@ These interpretations remain speculative in the absence of functional validation
 
 Future studies should validate these exploratory findings using: (1) independent colorectal cancer cohorts with multiplexed imaging, (2) functional measurements such as proliferation markers (Ki67), exhaustion markers (PD-1, TIM-3, LAG-3), activation markers (granzyme B, perforin), and CAF phenotyping (FAP, $\alpha$-SMA, podoplanin), (3) orthogonal clinical outcomes such as survival and treatment response, and (4) explicit modeling of tissue compartment boundaries if available.
 
+\subsection{Comparison with traditional $G$-cross-based spatial clustering analysis}
+\label{sec:gx_comparison}
+
+To contextualize our SHADE results, we performed an alternative analysis using the $G$-cross function \citep{baddeley_spatial_2015}, a nonparametric estimator of cross-type clustering commonly used in spatial point pattern analysis. This comparison highlights how SHADE differs from traditional methods in its modeling framework and interpretability of results.
+
+For each tissue section, we computed $G$-cross estimates at distances from 0 to 80 microns and extracted values at key distances (20, 40, 60 microns) for comparison. To quantify whether differences in clustering could predict patient group (CLR vs DII), we fitted logistic regression models with $G$-cross as the predictor and used FDR-adjusted p-values to identify significant associations. The resulting estimates are visualized as a heatmap of log-odds ratios (log-ORs), indicating the strength and direction of group differences in clustering at each distance.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{images/CRC_analysis_paper/gx_comparison.pdf}
+\caption{Heatmap of log-odds ratios (log-ORs) from logistic regression models comparing $G$-cross clustering metrics between CLR and DII patient groups, stratified by distance (20, 40, 60 microns). Tiles represent the estimated log-OR for each source–target pair at a given distance, with asterisks indicating significant differences ($p<0.05$, FDR-adjusted). Green indicates stronger clustering in DII, purple indicates stronger clustering in CLR.}
+\label{fig:gx_comparison}
+\end{figure}
+
+\input{snippets/r2_q4_gx_comparison}
+
 \begin{revised}
 \subsection{Predictive performance: Spatial interactions and target cell organization}
 \label{sec:predictions_supplement}
