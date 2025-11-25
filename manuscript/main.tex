@@ -191,7 +191,10 @@
 Understanding how different cell types interact spatially within tissue microenvironments is critical for deciphering immune dynamics, tumor progression, and tissue organization. Many current spatial analysis methods assume symmetric associations or \begin{revised}\input{snippets/r2_q1_abstract}\end{revised}, limiting biological interpretability and statistical power. 
 
 \textbf{Results:}
-\begin{revised}We present SHADE (Spatial Hierarchical Asymmetry via Directional Estimation), a multilevel Bayesian framework for modeling asymmetric spatial interactions across scales. SHADE quantifies direction-specific cell-cell associations using smooth spatial interaction curves (SICs) and integrates data across tissue sections, patients, and cohorts. Through simulation studies, SHADE demonstrates improved accuracy, robustness, and interpretability over existing methods. Application to colorectal cancer multiplexed imaging data reveals distinct patterns of spatial asymmetry in immune and stromal organization, demonstrating SHADE's utility for characterizing directional spatial interactions in tissue microenvironments.\end{revised}
+\begin{revised}We present SHADE (Spatial Hierarchical Asymmetry via Directional Estimation), a multilevel Bayesian framework for modeling asymmetric spatial interactions across scales. SHADE quantifies direction-specific cell-cell associations using smooth spatial interaction curves (SICs) and integrates data across tissue sections, patients, and cohorts. Through simulation studies, SHADE demonstrates improved accuracy, robustness, and interpretability over existing methods. Application to colorectal cancer multiplexed imaging data demonstrates SHADE’s ability to quantify
+directional spatial patterns while controlling for tissue architecture confounders and
+capturing substantial patient-level heterogeneity. The framework successfully identifies
+biologically interpretable spatial organization patterns, revealing that local microenvironmental structure varies considerably across patients within molecular subtypes\end{revised}
 
 \textbf{Availability and Implementation:}
 Open-source implementation is available at \url{https://github.com/jeliason/SHADE} and \url{https://github.com/jeliason/shade_paper_code}, developed in R and Stan.
