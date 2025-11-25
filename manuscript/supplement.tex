@@ -35,6 +35,16 @@
 \captionsetup[figure]{labelformat=simple, labelsep=period, name=Supplementary Figure}
 \renewcommand{\thefigure}{S\arabic{figure}}
 
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thesubsection}{S\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{S\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+
+
+\captionsetup[table]{labelformat=simple, labelsep=period, name=Supplementary Table}
+\renewcommand{\thetable}{S\arabic{table}}
+
+\renewcommand{\theequation}{S\arabic{equation}}
+
 % Track changes toggle: set to 1 to show tracked changes, 0 to hide them
 % Use \providecommand so it can be overridden from command line
 \providecommand{\trackchanges}{1}
@@ -625,7 +635,7 @@ Model fitting was performed using variational inference with 1,000 posterior dra
 \subsection{Compartment-adjusted models}
 \label{sec:compartment_models}
 
-To test robustness to spatial confounding from tissue architecture, we fit compartment-adjusted models incorporating a binary compartment covariate. Compartments were defined based on local tumor cell density: regions with high tumor cell density ($>$ 75th percentile) were classified as tumor-enriched, while remaining regions were classified as stromal. This binary compartment indicator was added as a covariate $z_{\text{comp}}(v) \in \{0,1\}$ to the conditional intensity function (Equation 2 in main text), with coefficient $\beta_{\text{comp}}$ capturing the effect of compartment on target cell density independent of spatial interactions with source cell types.
+To test robustness to spatial confounding from tissue architecture, we fit compartment-adjusted models incorporating a binary compartment covariate. Compartments were defined based on local tumor cell density: regions with high tumor cell density ($>$ 50th percentile) were classified as tumor-enriched, while remaining regions were classified as stromal. This binary compartment indicator was added as a covariate $z_{\text{comp}}(v) \in \{0,1\}$ to the conditional intensity function (Equation 2 in main text), with coefficient $\beta_{\text{comp}}$ capturing the effect of compartment on target cell density independent of spatial interactions with source cell types.
 
 Models were fit identically to the primary analysis with the addition of this covariate term. The compartment coefficient was estimated separately for CLR and DII patient groups to allow for potential group-specific compartment effects. Table~\ref{tab:compartment_effects} shows the estimated compartment effects for each target cell type and patient group.
 
