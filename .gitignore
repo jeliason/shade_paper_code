@@ -46,6 +46,12 @@ CLAUDE.md
 !manuscript/**/.latexmkrc
 !manuscript/**/latexmkrc
 
+# But ignore compiled manuscript PDFs
+manuscript/main.pdf
+manuscript/supplement.pdf
+manuscript/responses.pdf
+manuscript/output-subdoc/*.pdf
+
 # Manuscript submission-specific files
 journal_club.tex
 cover_letter.tex
