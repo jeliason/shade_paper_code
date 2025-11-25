@@ -448,14 +448,16 @@ Across all cell-type pairs, we observed consistent short-range ($<$25~$\mu$m) ne
 \label{sec:hot_cold}
 Distinct tumor immune phenotypes—such as immune-infiltrated (CLR) versus immune-excluded (DII) tumors—are associated with differential immune activity and prognosis. To investigate whether these functional differences are accompanied by changes in spatial organization, we used SHADE to compare cohort-level SICs across patient groups.\end{revised}
 
-\begin{revised}Figure~\ref{fig:sic_crc_all} shows the estimated cohort-level SICs for all source-target cell type pairs, stratified by patient group. Visual comparison of CLR and DII curves reveals no statistically significant differences: simultaneous 95\% credible bands overlap at all distances for all cell type pairs. While several suggestive trends are visible (e.g., greater CTL-tumor clustering in DII, stronger immune-stromal segregation in CLR), these patterns do not reach significance thresholds and should be considered strictly hypothesis-generating. Detailed exploratory observations and potential biological interpretations are provided in Supplement Section~\ref{sec:detailed_spatial_interpretation} for readers interested in formulating hypotheses for future validation studies.\end{revised}
+\begin{revised}To validate that CLR vs DII comparisons are robust to tissue architecture confounding—a potential issue identified in our compartment robustness simulations (Section~\ref{sec:compartment_robustness})—we fit compartment-adjusted models incorporating binary compartment covariates based on local tumor cell density. Figure~\ref{fig:sic_crc_all} shows the estimated cohort-level SICs from these compartment-adjusted models for all source-target cell type pairs, stratified by patient group. Visual comparison of CLR and DII curves reveals no statistically significant differences: simultaneous 95\% credible bands overlap at all distances for all cell type pairs. While several suggestive trends are visible (e.g., greater CTL-tumor clustering in DII, stronger immune-stromal segregation in CLR), these patterns do not reach significance thresholds and should be considered strictly hypothesis-generating. Detailed exploratory observations and potential biological interpretations are provided in Supplement Section~\ref{sec:detailed_spatial_interpretation} for readers interested in formulating hypotheses for future validation studies.
+
+Despite including compartment covariates, spatial interaction patterns remained nearly identical to the original models (Supplement Figure~\ref{fig:compartment_comparison}), confirming that the observed CLR vs DII similarities reflect true spatial organization rather than architectural confounding. Granulocytes showed significant depletion in tumor-enriched regions (particularly in CLR patients), while CTLs and memory CD4+ T cells showed minimal compartment effects (Supplement Section~\ref{sec:compartment_models}).\end{revised}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_CRC_all_ci.pdf}
+    \includegraphics[width=\textwidth]{../compartment_analysis/manuscript_figures/sic_CRC_all_compartment_adjusted.pdf}
     \caption{
         {\begin{revised}Cohort-level SICs (\(\psi_{t_1\to t_2}^{(g,p)}\)) estimated for all source–target cell
-        type pairs in the CRC dataset, stratified by CLR and DII patient groups, with simultaneous 95\% credible bands\end{revised}}.
+        type pairs from compartment-adjusted models, stratified by CLR and DII patient groups, with simultaneous 95\% credible bands. Estimates control for tissue architecture by including binary compartment covariates distinguishing tumor-enriched from stromal regions\end{revised}}.
     }
     \label{fig:sic_crc_all}
 \end{figure}
