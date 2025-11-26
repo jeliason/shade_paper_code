@@ -1,72 +1,83 @@
 # Colorectal Cancer (CRC) Analysis
 
-This directory contains code for analyzing real CRC tissue data using the SHADE model.
+Analysis of colorectal cancer tissue data from Schürch et al. (2020) using the SHADE model.
 
 ## Purpose
 
-The goal is to uncover how immune and tumor cells are spatially organized in the tumor microenvironment and what this reveals about cancer biology and patient outcomes. Specifically, the analysis:
+Uncover how immune and tumor cells are spatially organized in the tumor microenvironment:
 
--   Models directional spatial interactions between key cell types\
--   Identifies hierarchical spatial patterns across images, patients, and cohorts\
--   Characterizes spatial interaction curves (SICs) at multiple scales\
--   Links spatial patterns to biological mechanisms in CRC
+- Model directional spatial interactions between key cell types
+- Identify hierarchical spatial patterns across images, patients, and cohorts (CLR vs DII)
+- Characterize spatial interaction curves (SICs) at multiple scales
+- Compare with classical spatial statistics methods (G-cross, mFPCA)
 
 ## Workflow
 
-The analysis is structured into sequential scripts:
+### Main Analysis Pipeline
 
-0. **00_preprocess_data.R**\
-    Downloads and preprocesses single-cell CRC data as well as clinical patient annotations.
+Run these scripts in order:
 
-1.  **01_generate_data.R**\
-    Prepares point pattern data, creates quadrature approximations, organizes it hierarchically, and performs quality checks.
+```
+00_preprocess_data.R    → Download and preprocess single-cell CRC data
+01_generate_data.R      → Create point patterns and quadrature approximations
+02_fit_models.R         → Fit SHADE models (saves to data/)
+03_analyze_results.R    → Extract SICs, compute uncertainty, generate main figures
+04_g_cross_comparison.R → Compare SHADE with G-cross (generates gx_comparison.pdf)
+05_mad_comparison.R     → Analyze spatial heterogeneity across patients/images
+```
 
-2.  **02_fit_models.R**\
-    Fits SHADE models using MCMC or variational inference, accounting for patient- and image-level variation. Outputs model fits as `.rds` files.
+### mFPCA Comparison (Supplement)
 
-3.  **03_analyze_results.R**\
-    Extracts and interprets spatial interaction patterns, quantifies uncertainty, and generates summaries and visualizations.
+For the SHADE vs mFPCA comparison in the supplement, run:
 
-4.  **04_gcross_comparison.R**\
-    Compares results from SHADE with those from a G-cross point pattern analysis.
+```r
+source("crc_analysis/04b_method_comparison_new.R")
+```
 
-5.  **05_mad_comparison.R**\
-    Analyzes heterogeneity in spatial patterns across patients and images.
+This orchestrator script runs modular analyses:
+- `04b_00_setup.R` - Load data and prepare spatial patterns
+- `04b_01_shade_analysis.R` - SHADE group-level detections
+- `04b_02_mfpca.R` - mFPCA for G-cross and L-cross by group
+- `04b_03_comparison.R` - Combine results into summary tables
+- `04b_04_visualizations.R` - Create SHADE SIC figures
 
-6.  **06_compartment_sensitivity.R**\
-    Tests robustness to spatial compartments by adding density-based compartments as covariates and refitting models.
+Output: `gcross_mfpca_grid_supplement.pdf`, `lcross_mfpca_grid_supplement.pdf`
 
-7.  **07_compartment_comparison.R**\
-    Compares original vs compartment-adjusted SIC estimates to assess sensitivity to unmeasured spatial structure.
+## Cell Types
+
+**Targets** (outcome cells):
+- CTLs (CD8+ T cells)
+- Memory CD4+ T cells
+- Granulocytes
+
+**Sources** (predictor cells):
+- TAMs (tumor-associated macrophages)
+- CAFs (cancer-associated fibroblasts)
+- Vasculature
+- Hybrid E/M cells
+- Tumor cells
 
 ## Usage
 
-To run the main analysis locally:
-
-``` r
+```r
+# Run main analysis
 source("crc_analysis/00_preprocess_data.R")
 source("crc_analysis/01_generate_data.R")
 source("crc_analysis/02_fit_models.R")
 source("crc_analysis/03_analyze_results.R")
-source("crc_analysis/04_gcross_comparison.R")
+source("crc_analysis/04_g_cross_comparison.R")
 source("crc_analysis/05_mad_comparison.R")
+
+# Run mFPCA comparison for supplement
+source("crc_analysis/04b_method_comparison_new.R")
 ```
-
-To run the compartment sensitivity analysis (for revision):
-
-``` r
-# First ensure main analysis is complete, then:
-source("crc_analysis/06_compartment_sensitivity.R")  # Refit with compartments
-source("crc_analysis/07_compartment_comparison.R")   # Compare results
-```
-
-This will:
-1. Add density-based compartments to each image (median split of local tumor density)
-2. Refit all models including compartment as a covariate
-3. Compare original vs compartment-adjusted SIC estimates
-4. Generate comparison figures and tables for the supplement
 
 ## Output
 
--   **./data/**: Contains processed CRC point pattern data
--   **./CRC_analysis_paper/**: Contains visualizations of spatial interaction patterns in CRC tissue
+- `data/` - Processed point patterns, model fits, analysis summaries
+- `CRC_analysis_paper/` - Generated figures:
+  - `sic_CRC_all_ci.pdf` - All SICs with credible bands
+  - `sic_CRC_diff.pdf` - CLR vs DII difference curves
+  - `gx_comparison.pdf` - G-cross comparison heatmap
+  - `sic_mad.pdf` - Heterogeneity visualization
+  - `*_mfpca_grid_supplement.pdf` - mFPCA supplement figures
