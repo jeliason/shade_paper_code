@@ -3,21 +3,26 @@ library(tidyverse)
 library(Matrix)
 library(SHADE)
 
-# set environment
+# Load utilities
+source("utils.R")
+
+# Set environment and get data path
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
-  path <- "./sim_flat_model/data/"
   num_pts_per_group <- 10
   images_per_pt <- 2
   sim_idx <- 1
 } else {
-  path <- "./sim_flat_model/data/"
   args <- commandArgs(trailingOnly=TRUE)
   sim_idx <- as.numeric(args[1])
   num_pts_per_group <- 20
   images_per_pt <- 4
-  print(sim_idx)
+  print(paste("Simulation index:", sim_idx))
 }
+
+# Get data path (handles HPC vs local automatically)
+path <- get_data_path("sim_flat_model")
+print(paste("Data path:", path))
 
 # parameters to adjust
 grid <- expand.grid(sim=1:100)

@@ -18,11 +18,11 @@ Dummy points in this context are used to approximate quadrature for estimating c
 2. **02_fit_models.R**  
    Fits SHADE models using MCMC or variational inference, tests different dummy point ratios, and saves results as `.rds` files.
 
-3. **03_analyze_results.R**  
-   Loads model fits and ground truth, computes recovery metrics (e.g. RMSE, coverage), and summarizes performance across conditions.
+3. **03_analyze_results.R**
+   Loads model fits and ground truth, computes recovery metrics (e.g. RMSE, coverage), and saves standardized `analysis_summary.rds` containing all processed data needed for figures.
 
-4. **04_create_figures.R**  
-   Generates figures of parameter recovery and interaction curves, comparing estimated vs. true parameters.
+4. **04_create_figures.R**
+   Loads `analysis_summary.rds` and generates figures of parameter recovery and interaction curves, comparing estimated vs. true parameters.
 
 ## Usage
 
@@ -40,15 +40,23 @@ source("04_create_figures.R")
 
 For HPC execution:
 ```bash
-# Submit jobs to SLURM
-SYSTEM_ENV="HPC"
+# Submit jobs
+python scripts/hpc.py submit sim_dummy_points 01_generate_data
+python scripts/hpc.py submit sim_dummy_points 02_fit_models
+python scripts/hpc.py submit sim_dummy_points 03_analyze_results
 
-sbatch 01_generate_data.slurm
-sbatch 02_fit_models.slurm
-sbatch 03_analyze_results.slurm
+# Fetch results (only downloads analysis_summary.rds, not raw data)
+python scripts/hpc.py fetch sim_dummy_points
+
+# Generate figures locally
+Rscript sim_dummy_points/04_create_figures.R
 ```
 
 ## Output
 
-- **./data/**: Contains generated point patterns, dummy point ratios, and true parameters
-- **./sim_dummy_points_figures/**: Contains visualizations of results showing parameter recovery across different quadrature approximation settings
+- **./data/** (HPC only): Raw simulation data (point patterns, model fits, dummy point configurations)
+- **./data/analysis_summary.rds**: Standardized analysis output containing:
+  - `rmse_tb`: RMSE metrics by coefficient, scale, ratio, and count
+  - `sic_tb`: Spatial interaction curve estimates for plotting
+  - `metadata`: Analysis metadata (date, simulation count, ratios, point counts)
+- **manuscript/images/sim_dummy_points_figures/**: Visualizations showing parameter recovery across different quadrature approximation settings

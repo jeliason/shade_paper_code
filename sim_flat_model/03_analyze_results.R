@@ -7,15 +7,21 @@ library(ggdist)
 library(survival)
 library(SHADE)
 
-# set environment
+# Load utility functions and constants
+source("../utils.R")
+
+# Set environment and get data path
 SYSTEM_ENV <- Sys.getenv("SYSTEM_ENV")
 if(SYSTEM_ENV != "HPC") {
-  path <- "./sim_flat_model/data/"
   sim_indices <- c(1,2,3)
 } else {
-  path <- "./sim_flat_model/data/"
   sim_indices <- 1:100
 }
+
+# Get data path (handles HPC vs local automatically)
+path <- get_data_path("sim_flat_model")
+print(paste("Data path:", path))
+
 num_types <- 3
 num_pot <- 3
 types_grid <- expand.grid(t1=num_types,t2=1:(num_types-1))
@@ -104,22 +110,29 @@ sic_tb <- grid %>%
     lp <- bind_cols(true=lp_t[,1],
                     estimate_hier=as.vector(lp_e_h[,1]),
                     estimate_no_hier=as.vector(lp_e_nh[,1]))
-    
-    lp <- lp %>%
-      mutate(x=x_seq) %>%
-      mutate(across(c(estimate_hier,estimate_no_hier),list(
-        mn = ~as.vector(E(.)),
-        lo = ~as.vector(quantile(.,0.1)),
-        hi = ~as.vector(quantile(.,0.9))
-      ),.names="{.col}_{.fn}"),.keep="unused") %>%
+
+    # Compute simultaneous 95% credible bands using utility function
+    bands <- compute_simultaneous_bands(
+      lp_data = lp %>% select(estimate_hier, estimate_no_hier),
+      x_seq = x_seq,
+      alpha = 0.05
+    )
+
+    # Combine with true values and reshape for plotting
+    lp <- bands %>%
+      pivot_wider(
+        id_cols = x,
+        names_from = variable,
+        values_from = c(mean, lower, upper)
+      ) %>%
+      mutate(True = as.vector(lp[[1]])) %>%
       rename(
-        `Post. Mean (Hier)` = estimate_hier_mn,
-        `Post. Mean (No Hier)` = estimate_no_hier_mn,
-        `Lower Bound (Hier)` = estimate_hier_lo,
-        `Upper Bound (Hier)` = estimate_hier_hi,
-        `Lower Bound (No Hier)` = estimate_no_hier_lo,
-        `Upper Bound (No Hier)` = estimate_no_hier_hi,
-        `True` = true
+        `Post. Mean (Hier)` = mean_estimate_hier,
+        `Post. Mean (No Hier)` = mean_estimate_no_hier,
+        `Lower Bound (Hier)` = lower_estimate_hier,
+        `Upper Bound (Hier)` = upper_estimate_hier,
+        `Lower Bound (No Hier)` = lower_estimate_no_hier,
+        `Upper Bound (No Hier)` = upper_estimate_no_hier
       ) %>%
       pivot_longer(
         cols = c(`Post. Mean (Hier)`, `Post. Mean (No Hier)`, `True`),
@@ -146,9 +159,16 @@ sic_tb <- grid %>%
   }) %>% bind_rows()
 
 
-out <- list(
-  rmse_tb=rmse_tb,
-  sic_tb=sic_tb
+# Save standardized analysis summary for fetching/plotting
+analysis_summary <- list(
+  rmse_tb = rmse_tb,
+  sic_tb = sic_tb,
+  metadata = list(
+    sim_dir = "sim_flat_model",
+    date_analyzed = Sys.time(),
+    n_simulations = length(sim_indices)
+  )
 )
 
-saveRDS(out,paste0(path,"analysis_results.rds"))
+saveRDS(analysis_summary, paste0(path, "analysis_summary.rds"))
+print(paste("Saved analysis summary to:", paste0(path, "analysis_summary.rds")))

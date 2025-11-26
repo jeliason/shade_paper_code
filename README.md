@@ -6,26 +6,64 @@ This repository contains code for reproducing the analyses and figures from the 
 
 SHADE is a statistical method for modeling asymmetric spatial associations between cell types in tissue images using a hierarchical Bayesian framework. It captures directional spatial interactions using nonparametric spatial interaction curves (SICs) and models variation across biological levels (images, patients, cohorts).
 
--   **crc_analysis/**: Analysis of colorectal cancer tissue data
--   **sim_dummy_points/**: Parameter recovery simulations using synthetic point patterns with dummy points
--   **sim_sample_size/**: Simulations evaluating the effect of sample size on model performance
+## Directory Structure
+
+### Simulation Studies
+
+Each simulation follows a standardized 4-step workflow (`01_generate_data.R` → `02_fit_models.R` → `03_analyze_results.R` → `04_create_figures.R`):
+
+-   **sim_shade_comparison/**: Comparisons of SHADE detection power against G-cross and K-cross envelope tests
 -   **sim_flat_model/**: Comparisons between hierarchical and flat (non-hierarchical) models
--   **sim_shade_gcross/**: Comparisons of SHADE model with existing Gcross methods to evaluate recovery of true interactions
+-   **sim_timing/**: Computational scaling experiments across cell counts
+-   **sim_sample_size/**: Simulations evaluating sample size effects on model performance
+-   **sim_dummy_points/**: Parameter recovery simulations with varying quadrature densities
 
-See the README.md in each subdirectory for specific details about each simulation or analysis.
+### Real Data Analysis
 
-SLURM scripts (`*.slurm`) are provided for running computationally intensive parts on a high-performance computing cluster.
+-   **crc_analysis/**: Analysis of colorectal cancer tissue data from Schürch et al. (2020)
+-   **compartment_analysis/**: Sensitivity analysis with compartment covariates (tumor vs stroma)
 
-## Utility Files
+### Supporting Files
 
--   **utils.R**: Shared utility functions used across analyses (density smoothing)
--   **summary_figures/summary_figure_subplots.R**: Code for generating Figure 1
--   **summary_figures/other_summary_figures.R**: Script to reproduce other summary paper figures - Figure 2 and Supplementary Figures S1 and S2
+-   **scripts/**: HPC workflow automation tools (see `scripts/README.md` for detailed usage)
+-   **summary_figures/**: Scripts for generating overview figures (Figures 1, 2, S1, S2)
+-   **utils.R**: Shared utility functions (density smoothing, path handling)
+
+See the `README.md` in each subdirectory for specific details.
+
+## Running the Code
+
+### On HPC (Recommended for Simulations)
+
+The `scripts/` folder contains Python tools for automating HPC workflows. See `scripts/README.md` for setup and usage:
+
+```bash
+# Setup (one-time)
+./scripts/setup_env.sh
+# Edit .env with your HPC details
+
+# Typical workflow
+source .venv/bin/activate
+python scripts/hpc.py install              # Install R packages on HPC
+python scripts/hpc.py submit sim_timing 01_generate_data
+python scripts/hpc.py status
+python scripts/hpc.py fetch sim_timing
+```
+
+### Running Locally
+
+To run analyses on your local machine, set the environment variable before executing scripts:
+
+```r
+Sys.setenv(SYSTEM_ENV = "laptop")
+```
+
+This adjusts data paths and may reduce the scope of simulations for tractability.
 
 ## Requirements
 
--   R (\>= 4.1.0)
--   SHADE package (available at <https://github.com/jeliason/SHADE>)
+-   R (>= 4.1.0)
+-   [SHADE package](https://github.com/jeliason/SHADE)
 -   Additional R packages:
     -   **tidyverse**: Data manipulation and visualization
     -   **spatstat**: Spatial point pattern analysis
@@ -33,6 +71,11 @@ SLURM scripts (`*.slurm`) are provided for running computationally intensive par
     -   **posterior**: Working with posterior samples
     -   **cmdstanr**: Interface to Stan
     -   **ggdist**: Visualizing distributions
+    -   **patchwork**: Combining plots
+
+For HPC workflow tools:
+-   Python 3.8+
+-   See `scripts/requirements.txt`
 
 ## License
 

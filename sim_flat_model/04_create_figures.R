@@ -7,6 +7,7 @@ library(ggdist)
 library(survival)
 library(kableExtra)
 library(SHADE)
+source("../utils.R")
 
 path <- "./sim_flat_model/data/"
 
@@ -17,11 +18,12 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=5, width=8, units="in")
 }
-figures_folder <- "./sim_flat_model/sim_flat_model_figures/"
+figures_folder <- "./manuscript/images/sim_flat_model_figures/"
 
-out <- readRDS(paste0(path,"analysis_results.rds"))
-rmse_tb <- out$rmse_tb
-sic_tb <- out$sic_tb
+# Load standardized analysis summary
+analysis_summary <- readRDS(paste0(path, "analysis_summary.rds"))
+rmse_tb <- analysis_summary$rmse_tb
+sic_tb <- analysis_summary$sic_tb
 sic_tb <- sic_tb %>%
   mutate(Curve = ifelse(Curve == "Post. Mean (Hier)","Posterior Mean (Hier)",Curve),
          Curve = ifelse(Curve == "Post. Mean (No Hier)","Posterior Mean (No Hier)",Curve))
@@ -53,9 +55,11 @@ kable(rmse_table, format = "latex", booktabs = TRUE, escape = FALSE,  # Prevent 
 
 ### plot example SICs estimate vs ground truth
 
-ggplot(sic_tb, aes(x = x, y = Value,linewidth=Curve)) +
+sic_tb %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
+  ggplot(aes(x = x, y = Value,linewidth=Curve)) +
   geom_ribbon(
-    data = sic_tb %>% filter(Curve != "True"),  # Only apply ribbon to posterior means
+    data = sic_tb %>% filter(Curve != "True" & x >= MIN_INTERACTION_RADIUS),  # Only apply ribbon to posterior means
     aes(ymin = Lower, ymax = Upper, fill = Curve),
     alpha = 0.2
   ) +

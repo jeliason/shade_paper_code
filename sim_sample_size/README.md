@@ -17,11 +17,11 @@ The number of point patterns (e.g., tissue images) available for analysis can si
 2. **02_fit_models.R**  
    Fits SHADE models using MCMC and variational inference across sample sizes, with consistent settings. Saves model outputs as `.rds` files.
 
-3. **03_analyze_results.R**  
-   Assesses parameter recovery, uncertainty, and computation time across sample sizes. Summarizes results for plotting.
+3. **03_analyze_results.R**
+   Assesses parameter recovery, uncertainty, and computation time across sample sizes. Saves standardized `analysis_summary.rds` containing all processed data needed for figures.
 
-4. **04_create_figures.R**  
-   Generates figures showing effects of sample size on accuracy, uncertainty, and convergence.
+4. **04_create_figures.R**
+   Loads `analysis_summary.rds` and generates figures showing effects of sample size on accuracy, uncertainty, and convergence.
 
 ## Usage
 
@@ -39,14 +39,23 @@ source("04_create_figures.R")
 
 For HPC execution:
 ```bash
-SYSTEM_ENV="HPC"
-# Submit jobs to SLURM
-sbatch 01_generate_data.slurm
-sbatch 02_fit_models.slurm
-sbatch 03_analyze_results.slurm
+# Submit jobs
+python scripts/hpc.py submit sim_sample_size 01_generate_data
+python scripts/hpc.py submit sim_sample_size 02_fit_models
+python scripts/hpc.py submit sim_sample_size 03_analyze_results
+
+# Fetch results (only downloads analysis_summary.rds, not raw data)
+python scripts/hpc.py fetch sim_sample_size
+
+# Generate figures locally
+Rscript sim_sample_size/04_create_figures.R
 ```
 
 ## Output
 
-- **./data/**: Contains generated point patterns of varying sample sizes
-- **./sim_sample_size_figures/**: Contains visualizations showing the effect of sample size on model performance
+- **./data/** (HPC only): Raw simulation data (point patterns, model fits)
+- **./data/analysis_summary.rds**: Standardized analysis output containing:
+  - `rmse_tb`: RMSE metrics by coefficient and scale
+  - `sic_tb`: Spatial interaction curve estimates for plotting
+  - `metadata`: Analysis metadata (date, simulation count, etc.)
+- **manuscript/images/sim_sample_size_figures/**: Visualizations showing the effect of sample size on model performance

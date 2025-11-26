@@ -12,6 +12,18 @@
 *.Rproj
 .DS_Store
 
+# HPC workflow
+.env
+*.slurm
+logs/
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
 # Output directories that should not be version controlled
 */figures/*
 */data/*/*
@@ -24,12 +36,56 @@ CLAUDE.md
 *.rds
 *.csv
 *.xlsx
+
+# Manuscript exceptions - allow these files
+!manuscript/**/*.pdf
+!manuscript/**/*.png
+!manuscript/**/*.jpg
+!manuscript/**/*.jpeg
+!manuscript/**/*.svg
+!manuscript/**/.latexmkrc
+!manuscript/**/latexmkrc
+
+# But ignore compiled manuscript PDFs
+manuscript/main.pdf
+manuscript/supplement.pdf
+manuscript/responses.pdf
+manuscript/output-subdoc/*.pdf
+
+# Manuscript submission-specific files
+journal_club.tex
+cover_letter.tex
+responses.pdf
+journal_club.pdf
+cover_letter.pdf
+reviewer_response_todos.md
+manuscript/shade_submission/
+manuscript/shade_submission.zip
+manuscript/*_flattened.tex
+
 # Temporary files
 *.log
 *.out
 *.aux
 *.bak
 *.tmp
+
+# LaTeX intermediate files
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.blg
+*.bbl
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.dvi
+*.bcf
+*.run.xml
+*.xdv
 
 # OS generated files
 .DS_Store

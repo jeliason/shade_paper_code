@@ -61,7 +61,7 @@ pt_data <- readxl::read_excel(patients_xlsx_file) %>%
   slice(1:35) %>% # remove extra non-patient metadata at bottom
   select(Patient, Group, `TMA spot / region`,) %>%
   rename(Spot = `TMA spot / region`) %>%
-  mutate(Group = factor(ifelse(Group == 1, "CRC", "DII"))) %>%
+  mutate(Group = factor(ifelse(Group == 1, "CLR", "DII"))) %>%
   separate(Spot, into = c("r1","r2")) %>%
   mutate(sp11=paste0(r1,"_A"),sp12=paste0(r1,"_B"),
          sp21=paste0(r2,"_A"),sp22=paste0(r2,"_B")) %>%

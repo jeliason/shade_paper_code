@@ -3,6 +3,9 @@ library(latex2exp)
 library(spatstat)
 library(SHADE)
 
+# Load utility functions and constants
+source("utils.R")
+
 theme_set(theme_bw(base_size=14, base_family='Helvetica')+
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()))
@@ -10,7 +13,7 @@ theme_set(theme_bw(base_size=14, base_family='Helvetica')+
 fsave <- \(fname,height=5,width=8) {
   ggsave(paste0(figures_folder,fname,".pdf"),device=cairo_pdf, height=height, width=width, units="in")
 }
-figures_folder <- "./figures/demo_plots/"
+figures_folder <- "manuscript/images/demo_plots/"
 
 
 # Figure 2
@@ -19,6 +22,7 @@ weights <- c(0.8,-0.4,0.3)
 rbfs <- make_rbfs(n_basis_functions = 3, max_dist = 75, basis_function_sigma = 15)
 pot_mat <- lapply(1:length(rbfs),\(i) rbfs[[i]](x_seq)*weights[i]) %>% do.call(cbind,.) %>% rowSums()
 tibble(x=x_seq,y=pot_mat) %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   ggplot(aes(x,y)) +
   geom_line(color="red",linewidth=1.5) +
   geom_hline(yintercept=0,linetype="dashed") +
@@ -209,10 +213,11 @@ lapply(1:(num_types-1),\(j) {
   weights <- betas_local[start:stop,i]
   pot_mat <- lapply(1:length(rbfs),\(i) rbfs[[i]](x_seq)*weights[i]) %>% do.call(cbind,.) %>% rowSums()
   tibble(x=x_seq,y=pot_mat,type=j)
-  
+
 }) %>%
   bind_rows() %>%
   mutate(type=factor(type)) %>%
+  filter(x >= MIN_INTERACTION_RADIUS) %>%
   ggplot(aes(x,y)) +
   geom_line(aes(color=type,group=type),linewidth=1.5) +
   geom_hline(yintercept=0,linetype="dashed") +
