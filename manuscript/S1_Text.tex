@@ -567,7 +567,7 @@ We generated synthetic spatial point patterns with 3 cell types (2 source types,
 
 For each replicate, we measured two key computational steps:
 \begin{enumerate}
-\item \textbf{Feature construction time}: The time required to compute pairwise distances between focal and source cells and construct the interaction feature matrix $\bq_{A_k}(v)$ for all spatial locations (observed cells and dummy points). This step involves distance matrix computation via \texttt{spatstat.geom::crossdist} followed by basis function evaluation and summation.
+\item \textbf{Feature construction time}: The time required to compute pairwise distances between target and source cells and construct the interaction feature matrix $\bq_{A_k}(v)$ for all spatial locations (observed cells and dummy points). This step involves distance matrix computation via \texttt{spatstat.geom::crossdist} followed by basis function evaluation and summation.
 
 \item \textbf{Total model fitting time}: The end-to-end time from loading the prepared data to obtaining posterior draws from the fitted SHADE model. Models were fit using variational inference with 1,000 posterior draws on a single CPU core (no parallelization).
 \end{enumerate}
@@ -576,12 +576,12 @@ All timing measurements were performed on a high-performance computing cluster w
 
 \subsubsection{Results}
 
-\figref{sfig:timing_results} shows the scaling behavior of feature construction and model fitting times as a function of the total number of cells. Feature construction time exhibited near-quadratic scaling with an empirical exponent of 1.46 (95\% CI from log-log regression), consistent with the $\mathcal{O}(n_{\mathrm{focal}} \times n_{\mathrm{source}})$ complexity of computing pairwise distances. Total model fitting time scaled sublinearly with an empirical exponent of 0.85, substantially better than the naive quadratic expectation, due to the efficiency of the variational inference algorithm and reuse of the distance matrix across all basis functions and source types.
+\figref{sfig:timing_results} shows the scaling behavior of feature construction and model fitting times as a function of the total number of cells. Feature construction time exhibited near-quadratic scaling with an empirical exponent of 1.46 (95\% CI from log-log regression), consistent with the $\mathcal{O}(n_{\mathrm{target}} \times n_{\mathrm{source}})$ complexity of computing pairwise distances. Total model fitting time scaled sublinearly with an empirical exponent of 0.85, substantially better than the naive quadratic expectation, due to the efficiency of the variational inference algorithm and reuse of the distance matrix across all basis functions and source types.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{images/sim_timing/scaling_results.pdf}
-    \caption{Computational scaling of SHADE as a function of cell count. A: Feature construction time shows near-quadratic scaling ($O(n^{1.46})$) with cell count, consistent with the $\mathcal{O}(n_{\mathrm{focal}} \times n_{\mathrm{source}})$ complexity of pairwise distance computation. B: Total model fitting time scales sublinearly ($O(n^{0.85})$) due to parallelization and distance matrix reuse. Points show mean timing across 20 replicates per condition; error bars show $\pm 1$ standard deviation. Dashed and dotted reference lines indicate theoretical $O(n^2)$ and $O(n)$ scaling for comparison.}
+    \caption{Computational scaling of SHADE as a function of cell count. A: Feature construction time shows near-quadratic scaling ($O(n^{1.46})$) with cell count, consistent with the $\mathcal{O}(n_{\mathrm{target}} \times n_{\mathrm{source}})$ complexity of pairwise distance computation. B: Total model fitting time scales sublinearly ($O(n^{0.85})$) due to parallelization and distance matrix reuse. Points show mean timing across 20 replicates per condition; error bars show $\pm 1$ standard deviation. Dashed and dotted reference lines indicate theoretical $O(n^2)$ and $O(n)$ scaling for comparison.}
     \label{sfig:timing_results}
 \end{figure}
 

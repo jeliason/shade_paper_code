@@ -54,14 +54,14 @@ cp main.pdf "$OUTPUT_DIR/Manuscript.pdf"
 # Compile supplement with track changes ON
 echo ""
 echo "=== Compiling Supplement (with track changes) ==="
-compile_latex "supplement.tex" "Supplement (track changes)" 1
-cp supplement.pdf "$OUTPUT_DIR/Revised Supplement with Track Changes.pdf"
+compile_latex "S1_Text.tex" "Supplement (track changes)" 1
+cp S1_Text.pdf "$OUTPUT_DIR/Revised Supplement with Track Changes.pdf"
 
 # Compile supplement with track changes OFF
 echo ""
 echo "=== Compiling Supplement (clean version) ==="
-compile_latex "supplement.tex" "Supplement (clean)" 0
-cp supplement.pdf "$OUTPUT_DIR/Supplement.pdf"
+compile_latex "S1_Text.tex" "Supplement (clean)" 0
+cp S1_Text.pdf "$OUTPUT_DIR/S1_Text.pdf"
 
 # Compile responses (last, so references to main/supplement are current)
 echo ""
@@ -73,7 +73,7 @@ cp responses.pdf "$OUTPUT_DIR/Response to Reviewers.pdf"
 echo ""
 echo "=== Creating Flattened Source Files ==="
 python3 flatten_tex.py main.tex "$OUTPUT_DIR/main_source.tex"
-python3 flatten_tex.py supplement.tex "$OUTPUT_DIR/supplement_source.tex"
+python3 flatten_tex.py S1_Text.tex "$OUTPUT_DIR/supplement_source.tex"
 python3 flatten_tex.py responses.tex "$OUTPUT_DIR/responses_source.tex"
 
 # Disable track changes in flattened source files
@@ -158,7 +158,7 @@ PDFs:
 2. Revised Manuscript with Track Changes.pdf  - Main manuscript with revisions highlighted in blue
 3. Manuscript.pdf                             - Unmarked main manuscript without track changes
 4. Revised Supplement with Track Changes.pdf  - Supplement with revisions highlighted in blue
-5. Supplement.pdf                             - Unmarked supplement without track changes
+5. S1_Text.pdf                             - Unmarked supplement without track changes
 
 Source Files (LaTeX):
 6. main_source.tex                            - Main manuscript source with all snippets inserted and PDF image paths

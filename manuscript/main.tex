@@ -160,7 +160,9 @@
   \if1\trackchanges%
     \color{blue}%
   \fi%
+  \ignorespaces%
 }{%
+  \ignorespacesafterend%
 }
 
 % Revised command - lightweight version for inline use and captions
@@ -242,7 +244,7 @@
 
 \begin{abstract}
 \textbf{Motivation:}  
-Understanding how different cell types interact spatially within tissue microenvironments is critical for deciphering immune dynamics, tumor progression, and tissue organization. Many current spatial analysis methods assume symmetric associations or \begin{revised}\input{snippets/r2_q1_abstract}\end{revised}, limiting biological interpretability and statistical power. 
+Understanding how different cell types interact spatially within tissue microenvironments is critical for deciphering immune dynamics, tumor progression, and tissue organization. Many current spatial analysis methods assume symmetric associations or \revisedtext{\input{snippets/r2_q1_abstract}}limiting biological interpretability and statistical power. 
 
 \textbf{Results:}
 \begin{revised}We present SHADE (Spatial Hierarchical Asymmetry via Directional Estimation), a multilevel Bayesian framework for modeling asymmetric spatial interactions across scales. SHADE quantifies direction-specific cell-cell associations using smooth spatial interaction curves (SICs) and integrates data across tissue sections, patients, and cohorts. Through simulation studies, SHADE demonstrates improved accuracy, robustness, and interpretability over existing methods. Application to colorectal cancer multiplexed imaging data demonstrates SHADE’s ability to quantify
@@ -333,9 +335,7 @@ The vector \( \bq_{A_k}(v) \in \mathbb{R}^P \) encodes spatial interaction featu
 \end{equation}
 where \( \phi_p(\cdot) \) is a basis function (e.g., a B-spline or Gaussian kernel) that modulates the influence of a type \( A_k \) cell at a given distance from \( v \) and \( \bpsi_{A_k} \in \mathbb{R}^P \) are the corresponding coefficients.
 \begin{revised}
-\input{snippets/r2_q2_sic_normalization}
-\end{revised}
-\begin{revised}This captures how proximity to different cell types influences target cell density across spatial scales. The smooth basis functions allow flexible, distance-dependent associations, generalizing traditional Gibbs models that use fixed interaction radii~\citep{grabarnik_modelling_2009,baddeley_spatstat_2005}.\end{revised}
+\input{snippets/r2_q2_sic_normalization}This captures how proximity to different cell types influences target cell density across spatial scales. The smooth basis functions allow flexible, distance-dependent associations, generalizing traditional Gibbs models that use fixed interaction radii~\citep{grabarnik_modelling_2009,baddeley_spatstat_2005}.\end{revised}
 
 \begin{revised}The basis coefficients \( \bpsi_{A_k} \) from Equation~\eqref{eq:cond_int_simplified} are not directly interpretable. To understand how spatial associations change with distance, we define the \textit{spatial interaction curve} (SIC), which summarizes how proximity to source cell type \( A_k \) affects the expected density of target cell type \( B \) at each distance.\end{revised}
 
@@ -386,9 +386,9 @@ To capture biological variability across individuals and sampling levels, we imp
 
 where \( g(n) \) maps patient \( n \) to its cohort, and \( n(m) \) maps image \( m \) to its corresponding patient. Each image-level coefficient \( \delta_{A_k}^{(m,p)} \) governs the localized effect of source cell type \( A_k \) on target cell type \( B \) at distance scale \( p \), within image \( m \).
 
-\begin{revised}This hierarchical structure allows partial pooling across images, patients, and cohorts, improving estimation accuracy while capturing real biological variation in spatial interactions. The model can estimate both shared patterns across groups and context-specific effects within individual patients or images.\input{snippets/r3_q7_group_comparison}\end{revised}
+\begin{revised}This hierarchical structure allows partial pooling across images, patients, and cohorts, improving estimation accuracy while capturing real biological variation in spatial interactions. The model can estimate both shared patterns across groups and context-specific effects within individual patients or images. \input{snippets/r3_q7_group_comparison}\end{revised}
 
-Hyperpriors for the variance components \( \sigma_{\text{cohort}}^2 \), \( \sigma_{\text{patient}}^2 \), and \( \sigma_{\text{image}}^2 \) are detailed in the Supplement.
+\begin{revised}Hyperpriors for the variance components \( \sigma_{\text{cohort}}^2 \), \( \sigma_{\text{patient}}^2 \), and \( \sigma_{\text{image}}^2 \) are detailed in \secref{ssec:prior_var}.\end{revised}
 
 \begin{revised}
 \subsection{Uncertainty Quantification and Prioritization of Cell Type Pairs}
@@ -400,7 +400,7 @@ Hyperpriors for the variance components \( \sigma_{\text{cohort}}^2 \), \( \sigm
 \subsection{Logistic Regression Approximation for Computational Efficiency}
 \label{sec:logistic_approx}
 
-Direct estimation of the Poisson likelihood in spatial point process models requires numerical integration over fine spatial grids, which becomes computationally expensive and unstable. Following~\citet{baddeley_logistic_2014}, we use a logistic regression approximation that introduces dummy points sampled from a homogeneous Poisson process, reframing spatial intensity estimation as binary classification. This approach avoids computational challenges such as singular design matrices and biased uncertainty estimates that arise in direct Poisson modeling. \begin{revised}\input{snippets/r3_q3_logistic_inhomogeneity} Details of the approximation are provided in \secref{ssec:logistic_supplement}.\end{revised}
+Direct estimation of the Poisson likelihood in spatial point process models requires numerical integration over fine spatial grids, which becomes computationally expensive and unstable. Following~\citet{baddeley_logistic_2014}, we use a logistic regression approximation that introduces dummy points sampled from a homogeneous Poisson process, reframing spatial intensity estimation as binary classification. This approach avoids computational challenges such as singular design matrices and biased uncertainty estimates that arise in direct Poisson modeling. \begin{revised}\input{snippets/r3_q3_logistic_inhomogeneity}Details of the approximation are provided in \secref{ssec:logistic_supplement}.\end{revised}
 
 \subsection{Model Estimation and Computational Implementation}
 \label{sec:model_estimation}
@@ -479,19 +479,19 @@ Robustness to spatial confounding via compartments. A: Compartment structure sho
 
 \begin{revised}\subsection{SHADE characterizes multiscale spatial organization patterns}
 
-We extracted image-, patient-, and cohort-level interaction parameters and computed SICs as in Equation~\ref{eq:sic}. SHADE identified three key spatial phenomena. First, negative associations at $<$25~$\mu$m across nearly all pairs reflect physical crowding. Second, many pairs showed positive peaks at 25--75~$\mu$m consistent with active coordination. For example, \figref{fig:sic_CRC} shows CTLs in CLR patients clustering around CAFs at $\sim$75~$\mu$m (log-intensity $>$ 0), while DII patients show neutral to avoidant patterns. Third, patient-specific SICs (dashed lines, \figref{fig:sic_CRC}) reveal substantial within-group variation beyond molecular subtype classifications. Associations at $>$75~$\mu$m were generally weaker or absent.\end{revised}
+We extracted image-, patient-, and cohort-level interaction parameters and computed SICs as in Equation~\ref{eq:sic}. SHADE identified three key spatial phenomena. First, negative associations at $<$25~$\mu$m across nearly all pairs reflect physical crowding. \begin{revised}Second, many pairs showed peaks or valleys at 25--75~$\mu$m consistent with active coordination. For example, \figref{fig:sic_CRC} shows CTLs in CLR patients avoiding CAFs (log-intensity $<$ 0), while DII patients show neutral to clustering patterns\end{revised}. Third, patient-specific SICs (dashed lines, \figref{fig:sic_CRC}) reveal substantial within-group variation beyond molecular subtype classifications. Associations at $>$75~$\mu$m were generally weaker or absent.\end{revised}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_CRC.pdf}
-    \caption{SIC showing the directional association of CAFs (source) with CTLs (target), stratified by patient group. Solid lines show cohort-level estimates for CLR and DII; dashed lines show patient-level SICs{\begin{revised}, illustrating hierarchical variability across patients within each cohort\end{revised}}. CTLs in CLR patients exhibit midrange clustering around CAFs, while DII patients show neutral to avoidant patterns, indicating group-specific spatial organization.
+    \caption{SIC showing the directional association of CAFs (source) with CTLs (target), stratified by patient group. Solid lines show cohort-level estimates for CLR and DII; dashed lines show patient-level SICs{\begin{revised}, illustrating hierarchical variability across patients within each cohort. CTLs in CLR patients exhibit avoidance of CAFs, while DII patients show neutral to clustering patterns, indicating group-specific spatial organization.\end{revised}}
 }
     \label{fig:sic_CRC}
 \end{figure}
 
 \begin{revised}\subsection{Quantifying spatial heterogeneity across biological scales}
 \label{sec:how_vary}
-\input{snippets/r2_q1_how_vary} We quantified between-patient and within-patient variability using median absolute deviation (MAD) of SIC deviations (methods in \secref{ssec:mad_calc}). \input{snippets/r3_q10_mad_comparison} \figref{fig:sic_mad_examples} shows examples illustrating substantial differences in spatial organization both between patients and across tissue sections from the same patient.\end{revised}
+\input{snippets/r2_q1_how_vary}We quantified between-patient and within-patient variability using median absolute deviation (MAD) of SIC deviations (methods in \secref{ssec:mad_calc}). \input{snippets/r3_q10_mad_comparison}\figref{fig:sic_mad_examples} shows examples illustrating substantial differences in spatial organization both between patients and across tissue sections from the same patient.\end{revised}
 
 \begin{figure}[ht]
     \centering
