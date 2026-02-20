@@ -49,6 +49,7 @@ CLAUDE.md
 # But ignore compiled manuscript PDFs
 manuscript/main.pdf
 manuscript/supplement.pdf
+manuscript/S1_Text.pdf
 manuscript/responses.pdf
 manuscript/output-subdoc/*.pdf
 

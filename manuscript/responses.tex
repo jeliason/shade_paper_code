@@ -1,0 +1,513 @@
+\documentclass[12pt]{article}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{natbib}
+
+\geometry{margin=1in}
+\usepackage{xcolor}
+
+\newcommand{\bolds}[1]{\boldsymbol{#1}}
+
+
+% boldcal
+\newcommand{\bcA}{\bolds{{\cal A}}}
+\newcommand{\bcH}{\bolds{{\cal H}}}
+\newcommand{\bcR}{\bolds{{\cal R}}}
+\newcommand{\bcZ}{\bolds{{\cal Z}}}
+
+% cal
+\newcommand{\calA}{{\cal A}}
+\newcommand{\calD}{{\cal D}}
+\newcommand{\calG}{{\cal G}}
+\newcommand{\calI}{{\cal I}}
+\newcommand{\calK}{{\cal K}}
+\newcommand{\calL}{{\cal L}}
+\newcommand{\calM}{{\cal M}}
+\newcommand{\calP}{{\cal P}}
+\newcommand{\calQ}{{\cal Q}}
+\newcommand{\calS}{{\cal S}}
+\newcommand{\calT}{{\cal T}}
+\newcommand{\calU}{{\cal U}}
+\newcommand{\calV}{{\cal V}}
+\newcommand{\calX}{{\cal X}}
+\newcommand{\calW}{{\cal W}}
+\newcommand{\calY}{{\cal Y}}
+\newcommand{\Cov}{\bolds{C}}
+
+% bold
+\newcommand{\ba}{\bolds{a}}
+\newcommand{\bA}{\bolds{A}}
+\newcommand{\bb}{\bolds{b}}
+\newcommand{\bB}{\bolds{B}}
+\newcommand{\bc}{\bolds{c}}
+\newcommand{\bC}{\bolds{C}}
+\newcommand{\bd}{\bolds{d}}
+\newcommand{\bD}{\bolds{D}}
+%\newcommand{\be}{\bolds{e}}
+\newcommand{\bE}{\bolds{E}}
+\newcommand{\bbf}{\bolds{f}}
+\newcommand{\bF}{\bolds{F}}
+\newcommand{\bg}{\bolds{g}}
+\newcommand{\bG}{\bolds{G}}
+\newcommand{\bh}{\bolds{h}}
+\newcommand{\bH}{\bolds{H}}
+\newcommand{\bi}{\bolds{i}}
+\newcommand{\bI}{\bolds{I}}
+\newcommand{\bJ}{\bolds{J}}
+\newcommand{\bk}{\bolds{k}}
+\newcommand{\bK}{\bolds{K}}
+\newcommand{\bl}{\bolds{\ell}}
+\newcommand{\bL}{\bolds{L}}
+\newcommand{\bm}{\bolds{m}}
+\newcommand{\bM}{\bolds{M}}
+\newcommand{\bn}{\bolds{N}}
+\newcommand{\bN}{\bolds{N}}
+\newcommand{\bO}{\bolds{O}}
+\newcommand{\bp}{\bolds{p}}
+\newcommand{\bP}{\bolds{P}}
+\newcommand{\bQ}{\bolds{Q}}
+\newcommand{\bq}{\bolds{q}}
+\newcommand{\br}{\bolds{r}}
+\newcommand{\bR}{\bolds{R}}
+\newcommand{\bs}{\bolds{s}}
+\newcommand{\bS}{\bolds{S}}
+\newcommand{\bt}{\bolds{t}}
+\newcommand{\bT}{\bolds{T}}
+\newcommand{\bu}{\bolds{u}}
+\newcommand{\bU}{\bolds{U}}
+\newcommand{\bv}{\bolds{v}}
+\newcommand{\bV}{\bolds{V}}
+\newcommand{\bw}{\bolds{w}}
+\newcommand{\bW}{\bolds{W}}
+\newcommand{\bx}{\bolds{x}}
+\newcommand{\bX}{\bolds{X}}
+\newcommand{\by}{\bolds{y}}
+\newcommand{\bY}{\bolds{Y}}
+\newcommand{\bz}{\bolds{z}}
+\newcommand{\bZ}{\bolds{Z}}
+
+\newcommand{\bzero}{\mathbf{0}}
+
+% greek
+\newcommand{\balpha}{\bolds{\alpha}}
+\newcommand{\bbeta}{\bolds{\beta}}
+\newcommand{\bdelta}{\bolds{\delta}}
+
+\newcommand{\btau}{\bolds{\tau}}
+\newcommand{\beps}{\bolds{\varepsilon}}
+\newcommand{\btheta}{\bolds{\theta}}
+\newcommand{\bomega}{\bolds{\omega}}
+\newcommand{\brho}{\bolds{\rho}}
+\newcommand{\bphi}{\bolds{\phi}}
+\newcommand{\bpsi}{\bolds{\psi}}
+
+\newcommand{\bSigma}{\bolds{\Sigma}}
+\newcommand{\bsigma}{\bolds{\sigma}}
+\newcommand{\bgamma}{\bolds{\gamma}}
+\newcommand{\bGamma}{\bolds{\Gamma}}
+\newcommand{\bLambda}{\bolds{\Lambda}}
+\newcommand{\blambda}{\bolds{\lambda}}
+\newcommand{\bDelta}{\bolds{\Delta}}
+\newcommand{\bPsi}{\bolds{\Psi}}
+\newcommand{\bmu}{\bolds{\mu}}
+\newcommand{\bnu}{\bolds{\nu}}
+\newcommand{\bxi}{\bolds{\xi}}
+\newcommand{\boldeta}{\bolds{\eta}}
+\newcommand{\bvarphi}{\bolds{\varphi}}
+
+
+\newcommand{\joel}[1]{\textcolor{blue}{\textsf{[#1]}}}
+
+% Track changes toggle: set to 1 to show tracked changes, 0 to hide them
+\newcommand{\trackchanges}{1}
+
+% Revised text environment - colors additions blue and indents when tracking is on
+\newenvironment{revised}{%
+  \if1\trackchanges%
+    \color{blue}%
+  \fi%
+  \begin{quote}%
+}{%
+  \end{quote}%
+}
+
+\usepackage{xr}  % for cross-referencing if supplement and main manuscript are separate
+\externaldocument{main}
+\externaldocument{supplement}
+
+
+\usepackage{graphicx} % Required for inserting images
+
+\title{Responses to Reviewers for SHADE}
+\author{Joel Eliason, Michele Peruzzi, Arvind Rao}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Response to Reviewer 1}
+
+We thank the reviewer for their thoughtful comments, which we believe have greatly improved this manuscript. Your feedback helped us clarify key methodological details and expand our comparisons with existing approaches. Below we have provided point-by-point responses to each comment. For easy reference, all manuscript changes are highlighted in blue, in both the responses here as well as the revised manuscript. \textbf{The blue text in the reply is a verbatim copy of the changes appearing in the paper}. We greatly appreciate the time and care you brought to reviewing this work!
+
+\begin{enumerate}
+\item For inference, the method avoids computing the integral term of the Poisson point process likelihood and substitutes an approximate scheme based on logistic regression classification of observed cells versus homogenous Poisson noise. This is motivated at least in part by computational efficiency concerns, yet there doesn't appear to be any discussion of computational efficiency. Spatial technologies are scaling now to hundreds of thousands of cells per sample, so a natural question the authors ought to address is how this method scales. For example, Equation 3 scales quadratically with the number of cells if implemented naively, which would quickly become problematic for many thousands of cells.
+
+\textbf{Response}: We added a discussion of computational scalability to Section~\ref{sec:model_estimation}, including empirical timing experiments demonstrating tractability for large-scale datasets:
+
+\begin{revised}
+\input{snippets/r1_q1_scalability}
+\end{revised}
+
+\item What also frustrates interpretation is that every pair of cells has a negative association at very short distances due to spatial crowding (since cells are not really points, there's a limit to how close their centroids can be). Since most of the spatial associations detected appear to be pretty close range ones, it makes negative associations in particular hard to determine. It's not obvious at what distance we should interpret negative numbers as due to crowding versus due to cellular organization. It wasn't clear to me why there couldn't be a term in the regression to capture this generic crowding effect. Maybe more ambitiously, if full segmentation boundaries are available, cellular distances could be computed as boundary-to-boundary avoiding this issue.
+
+\textbf{Response}: This is an important point that we appreciate the opportunity to address. Apparent negative associations at very short distances indeed reflect geometric centroid exclusion rather than biologically meaningful repulsion. We now predefine a minimum interaction radius to avoid attributing geometric crowding to biological interactions, as detailed in Section~\ref{sec:sic}:
+
+\begin{revised}
+\input{snippets/r1_q2_crowding_sic}
+\end{revised}
+
+To address this further, we have updated the Discussion to note that future extensions could reduce crowding effects using boundary-to-boundary distances:
+
+\begin{revised}
+\input{snippets/r1_q2_crowding_discussion}
+\end{revised}
+
+\item Some of the positive interaction scores (e.g in Fig. 6 and 8) seem quite small. Since inference is done via sampling, their credible intervals should be available which might tell us what we should consider significant. Fig. 3 does appear to show some type of uncertainty region, though I don't see a description of what exactly it is. More broadly, I'd like to see some discussion of assessing the overall statistical significance of associations. I would imagine a common use case of SHADE is to test all pairs of annotated cell types in both directions. Should one then inspect plots of all $n^2$ pairs in both directions, which could be hundreds of pairs, or is there some way to compute an aggregate posterior probability of non-zero effects at some distance?
+
+\textbf{Response}: We thank the reviewer for this important point about uncertainty quantification and screening strategies. We have made three key additions to the manuscript:
+
+\textbf{Interpreting small effects:} We now explain in Section~\ref{sec:sic} how SIC values on the log scale correspond to multiplicative changes in cell density:
+
+\begin{revised}
+\input{snippets/r1_q3_log_intensity}
+\end{revised}
+
+\textbf{Simultaneous credible bands and screening strategies:} We added a new subsection (Section~\ref{sec:uncertainty}) describing uncertainty quantification and prioritization approaches for exploratory analyses with many cell type pairs:
+
+\begin{revised}
+\input{snippets/r1_q3_uncertainty}
+\end{revised}
+
+All SIC figures now display simultaneous credible bands. Statistical significance is assessed by checking whether bands exclude zero over a distance range of interest.
+
+
+\end{enumerate}
+
+Minor issues:
+
+\begin{enumerate}
+\item Some acronyms are used without being defined (e.g. CTLs, TAMs). These are common immunological terms but still should be defined to avoid ambiguity.
+
+\textbf{Response}: Thank you for catching this oversight. We have now defined all acronyms upon first use in the manuscript. CTLs (cytotoxic T lymphocytes, CD8\textsuperscript{+} T cells) and TAMs (tumor-associated macrophages, CD163\textsuperscript{+}) are now explicitly defined in the Results section.
+
+\item Figure 10 caption needs more explanation. I'm guessing the black dots are observed cells of the labeled type, but it's not clear.
+
+\textbf{Response}: Thank you for pointing this out. We have clarified the caption for Figure~\ref{fig:example_pred_supp}:
+
+\begin{revised}
+\input{snippets/r1_minor_fig_caption}
+\end{revised}
+\end{enumerate}
+
+\clearpage
+
+\section{Response to Reviewer 2}
+
+We thank the reviewer for their thoughtful comments, which we believe have greatly improved this manuscript. Your feedback helped us clarify key methodological details and expand our comparisons with existing approaches. Below we have provided point-by-point responses to each comment. For easy reference, all manuscript changes are highlighted in blue, in both the responses here as well as the revised manuscript. \textbf{The blue text in the reply is a verbatim copy of the changes appearing in the paper}. We greatly appreciate the time and care you brought to reviewing this work!
+
+\begin{enumerate}
+\item Introduction: "... yet existing spatial models typically analyze images independently, potentially overlooking heterogeneity across patients", and similarly abstract: "Many analysis methods ... treat images independently".
+
+Generally, I feel such statements should be made explicit and substantiated with references. Also, I do not quite understand the point, why would analyzing images independently automatically mean that patient heterogeneity is not studied? And is Shade not actually based on computing statistics (SIC curves) on individual images? In the current form of the ms, I do not find any follow-up on this point in the results or discussion sections, please clarify.
+
+\textbf{Response}: Thank you for this thoughtful observation. We agree that our original statement was overstated, and we appreciate the opportunity to clarify this important distinction. The Introduction now clarifies the distinction: independent analyses can descriptively characterize heterogeneity by comparing per-image summaries, but cannot formally decompose variance components or perform partial pooling within a unified framework. The revised Introduction now provides explicit references and explains this nuance:
+
+\begin{revised}
+\input{snippets/r2_q1_intro}
+\end{revised}
+
+The reviewer correctly notes that SHADE does compute image-level SICs. Results Section~\ref{sec:how_vary} now clarifies that these are estimated within a joint hierarchical framework:
+
+\begin{revised}
+\input{snippets/r2_q1_how_vary}
+\end{revised}
+
+Simulation evidence in Supplement Section~\ref{sec:sim_hier} and \ref{sec:sim_comparison} now demonstrates the benefits of this hierarchical approach:
+
+\begin{quote}
+\input{snippets/r2_q5_hierarchical_rmse}
+\end{quote}
+
+\begin{revised}
+\input{snippets/r2_q5_sparse_performance}
+\end{revised}
+
+The Discussion now further contextualizes SHADE's hierarchical approach relative to traditional spatial statistics:
+
+\begin{revised}
+\input{snippets/r2_q4_discussion}
+\end{revised}
+
+\item Methods (p. 8), "The SIC summarizes ... This curve represents the expected contribution of type $A_k$ cells to the log-intensity...".
+
+The term "log-intensity" appears for the first time at this point, and lacks a direct interpretation. What does log-intensity of a cell type physically mean, is it related to the spatial cell density? Or would it be possible to normalize it to the average cell-density in the image, or a set of images? This is critical for interpretation of the SIC curves where log-intensity appears on the y-axis throughout the paper.
+
+\textbf{Response}: We have added a detailed explanation of log-intensity in Section~\ref{sec:sic}.
+
+\begin{revised}
+\input{snippets/r1_q3_log_intensity}
+\end{revised}
+
+Additionally, we have added further clarification on the normalization term in Section~\ref{sec:model_setup}:
+
+\begin{revised}
+\input{snippets/r2_q2_sic_normalization}
+\end{revised}
+
+\item Methods (p. 9), "A strong A->B SIC indicates that the presence of A is statistically predictive ..." (and similar statements in the following).
+
+It is not clear to me what statistically predictive means here. Is it possible to construct a statistical test for SIC curves different from spatial randomness, or for SIC curves differing between different image sets? The next section about "Multilevel Bayesian Model" suggests that the authors aim for statistical analysis, but I have trouble finding any clear statistical statements, also in the following chapters where synthetic data and image data sets are analyzed. Figures 4 and 5 show confidence intervals but statements on statistical significance are missing, I suggest evaluating significance using bootstrapping procedures. In Figure 4, it seems that all sown curves are within the confidence of the null (CSR) model, does that mean that the generated synthetic data cannot be distinguished from CSR?
+
+\textbf{Response}: Thank you for highlighting the need for clearer statistical statements. We have made statistical inference much more explicit throughout the manuscript.
+
+\textbf{Bayesian inference and uncertainty quantification:} We added Section~\ref{sec:uncertainty} describing simultaneous 95\% credible bands that control family-wise error across distances:
+
+\begin{revised}
+\input{snippets/r1_q3_uncertainty}
+\end{revised}
+
+\textbf{Clarifying ``statistically predictive'':} We updated Section~\ref{sec:predictive} explaining what predictive associations mean:
+
+\begin{revised}
+\input{snippets/r2_q3_predictive}
+\end{revised}
+
+\textbf{Testing and comparison:} As mentioned previously, to test departure from spatial randomness, we now check if simultaneous bands exclude zero. To compare patient groups, we can also compute e.g. difference curves with simultaneous bands e.g. (Figure~\ref{fig:sic_CRC_diff}); if bands exclude zero over a distance range, groups differ significantly. All SIC figures now display these bands, and Results sections explicitly state when bands exclude zero.
+
+\textbf{Figure 4 and CSR:} Figure~\ref{fig:method_comparison} shows one simulation example: while $G$-cross and $L$-cross envelopes sometimes contain the observed curves, SHADE's credible bands correctly exclude zero where the ground truth exhibits non-zero interactions, demonstrating that the data can be distinguished from CSR. Panel (d) also shows that SHADE Hierarchical (red) estimates the ground truth more accurately than SHADE Flat (blue), illustrating the benefit of hierarchical pooling. Across all replicates, SHADE achieves high detection rates (Figure~\ref{fig:gx_detections}).
+
+\item In the same context, it would make sense to include more methods for comparison (in addition to G-cross), for example Ripley's K-function is mentioned in the introduction.
+
+\textbf{Response}: We have now added Ripley's cross-type $K$-function ($K_{AB}$, specifically the $L$-cross transformation) to both the simulation comparison and colorectal cancer analysis.
+
+In the simulation study (Section~\ref{sec:sim_comparison}), we added a comparison of SHADE against K-cross envelope tests:
+
+\begin{revised}
+\input{snippets/r2_q4_sim_kcross}
+\end{revised}
+
+Results (Figure~\ref{fig:gx_detections}) now show SHADE outperforms both $G$-cross and $K$-cross in detecting associations under low cell densities and limited sampling.
+
+To address this, Section~\ref{sec:gx_comparison} now presents the comparison:
+
+\begin{revised}
+\input{snippets/r2_q4_gx_comparison}
+\end{revised}
+
+We have also added Section~\ref{sec:mfpca_comparison} comparing SHADE with mFPCA analysis of $G$-cross and $L$-cross functions:
+
+\begin{revised}
+\input{snippets/r2_q4_mfpca_intro}
+\end{revised}
+
+To address this, Section~\ref{sec:mfpca_comparison} now presents:
+
+\begin{revised}
+\input{snippets/r3_q2_mfpca_examples}
+\end{revised}
+
+\item Simulation Studies (p. 12), "Spatial patterns were simulated ... with source points generated from a homogeneous Poisson process and target points influenced by spatial interaction curves ..."
+
+This sounds to me as if the synthetic data were generated under exactly the same assumptions used for deriving the SIC curves proposed for analysis, is that correct? Would that not by construction give an advantage to the method proposed by the authors when comparing different analysis methods? It would be important to test the method also using other sources of synthetic data, e.g. starting from Bridson sampling or using a Gauss filter after the Poisson process.
+
+\textbf{Response}: This is an excellent point. Our primary simulation does generate data under the same conditional Poisson framework that SHADE assumes, which is standard for initial method evaluation—it allows us to isolate the effects of hierarchical structure, cell density, and sampling variation on estimation accuracy. Even under these ideal conditions, Section~\ref{sec:sim_hier} demonstrates that hierarchical pooling substantially improves inference:
+
+\begin{quote}
+\input{snippets/r2_q5_hierarchical_rmse}
+\end{quote}
+
+Section~\ref{sec:sim_comparison} now demonstrates that SHADE's performance relative to envelope tests depends on source cell density and the availability of multiple images for hierarchical pooling:
+
+\begin{revised}
+\input{snippets/r2_q5_sparse_performance}
+\end{revised}
+
+\textbf{Robustness to spatial confounding:} To address model misspecification, we added simulations testing SHADE's performance with unmeasured spatial heterogeneity (Section~\ref{sec:compartment_robustness}):
+
+\begin{revised}
+\input{snippets/r2_q5_compartment_robustness}
+\end{revised}
+
+\end{enumerate}
+
+Minor points:
+
+\begin{enumerate}
+\item Introduction, "While our approach is not a direct extension of the multitype Gibbs points model ..., it is certainly inspired by it" (and similar statements in Methods): It would be very helpful to formally introduce these methods the paper is based on, possibly in a supplement, and then show direct comparisons on a suitable test problem. At the moment, it is not straight-forward to evaluate the extensions and modifications introduced by the authors.
+
+\textbf{Response}: This is an excellent suggestion that has substantially improved the manuscript's accessibility. We have added Supplement Section~\ref{sec:gibbs_background} ("Background: Multitype Gibbs Point Process Models and Relationship to SHADE") providing: (1) formal introduction to multitype Gibbs point process (MGPP) models and their symmetry constraint that prevents directional association modeling, (2) description of hierarchical Gibbs models with type ordering~\citep{hougmander_multitype_1999} that enable asymmetry via ordered dependencies, (3) SHADE's three key extensions (asymmetric SICs, flexible basis functions, multilevel Bayesian structure), and (4) comparison table (Table~\ref{tab:mgpp_vs_shade}) contrasting MGPPs, hierarchical Gibbs models, and SHADE. The Introduction now references this supplemental material.
+
+\item The introduction is quite long and contains sections that might be better placed in the discussion, such as specific comparison to other methods.
+
+\textbf{Response}: Thank you for this helpful organizational suggestion. The introduction has been substantially revised and streamlined. Method comparisons in the introduction establish the methodological gap and motivation, while detailed comparative analysis with results is included in the supplement (Section~\ref{sec:mfpca_comparison}).
+
+\item Methods (p. 7), "... assuming that ... follows an inhomogeneous Poisson point process": Could the authors indicate what that assumption implies in the context of typical applications of the new method (e.g., a Poisson process typically is based on a rare-events argument)? And would there be reasonable alternative choices for the probability distribution?
+
+\textbf{Response}: Thank you for this insightful question about model assumptions. We have expanded Section~\ref{sec:model_setup} to clarify what the inhomogeneous Poisson point process assumption allows and why it is the appropriate modeling choice:
+
+\begin{revised}
+\input{snippets/r2_minor_poisson_assumption}
+\end{revised}
+
+\end{enumerate}
+
+\clearpage
+
+\section{Response to Reviewer 3}
+
+We thank the reviewer for their thoughtful comments, which we believe have greatly improved this manuscript. Your feedback helped us clarify key methodological details and expand our comparisons with existing approaches. Below we have provided point-by-point responses to each comment. For easy reference, all manuscript changes are highlighted in blue, in both the responses here as well as the revised manuscript. \textbf{The blue text in the reply is a verbatim copy of the changes appearing in the paper}. We greatly appreciate the time and care you brought to reviewing this work!
+
+\begin{enumerate}
+\item How does the SIC compare to using functional data analysis (FDA) of the spatial curves that ones gets from K or G? For example, using basis functions that look similar in formulation to functional data analysis and functional principal component analysis?
+
+\textbf{Response}: Thank you for this excellent question about the relationship between SHADE and functional data analysis approaches. While both SHADE and FDA methods represent spatial relationships as smooth curves using basis function expansions, they differ fundamentally in what they model and how they leverage hierarchical structure. To address this, Supplement Section~\ref{sec:mfpca_methods} now details:
+
+\begin{revised}
+\input{snippets/r3_q1_fda_comparison}
+\end{revised}
+
+To address this comparison, Section~\ref{sec:mfpca_comparison} now discusses:
+
+\begin{revised}
+\input{snippets/r2_q4_mfpca_intro}
+\end{revised}
+
+We have also updated the Discussion to contextualize these approaches:
+
+\begin{revised}
+\input{snippets/r2_q4_discussion}
+\end{revised}
+
+\item It would be good to compare you approach to using FDA on the G or K statistics, as implemented in the R package mxfda(Wrobel et al. 2024). Additionally, should compare to not just G but also K as this has been used often in practice and has been reported to have better discrimination ability for detecting co-localization than G(Soupir et al. 2025).
+
+\textbf{Response}: Thank you for this constructive suggestion. We have added both $G$-cross and Ripley's $L$-cross function (transformation of the $K$-function) to our analysis. To address this, we implemented a comparison with mxfda~\citep{wrobelMxfdaComprehensiveToolkit2024} as described in Section~\ref{sec:mfpca_comparison} (detailed methodology in Supplement Section~\ref{sec:mfpca_methods}):
+
+\begin{revised}
+\input{snippets/r3_q2_mfpca_examples}
+\end{revised}
+
+\item In the set-up of the model and approach in section 2.1, assume a inhomogeneous Poisson process. However, in the computational approximation using logistic regression you have a homogeneous Poisson process. In the logistic regression model fitting, how do you account for inhomogeneity? That is, is the analysis done within the tumor and stroma compartments of the tissue as different cells could have different intensity within these two tissue domains. If this is not explicitly accounted for in the model, I would recommend that analysis be done by tissue domains to limit the issue of inhomogeneity.
+
+\textbf{Response}: This is a great question about the relationship between model assumptions. To address this, Section~\ref{sec:model_setup} now clarifies that the inhomogeneous Poisson point process assumption allows:
+
+\begin{revised}
+\input{snippets/r2_minor_poisson_assumption}
+\end{revised}
+
+Regarding the logistic regression approximation (now in Section~\ref{sec:logistic_approx}):
+
+\begin{revised}
+\input{snippets/r3_q3_logistic_inhomogeneity}
+\end{revised}
+
+\item In the simulation study, please state how many simulated datasets were generated for each scenario. I think you have 30 simulations per scenario but not sure. If this is the case that used only 30 simulations per scenario, why so few of simulations? Possible to have 100 per scenario to get more precise estimates of power and type I error rate to compare the 3 approaches? Also, state in the simulation set-up the range of cell abundances that assessed and why 39 simulated used to estimate envelopes for G.
+
+\textbf{Response}: Thank you for this question about study design. To address this, Section~\ref{sec:sim_comparison} now describes:
+
+\begin{revised}
+\input{snippets/r3_q4_sim_design}
+\end{revised}
+
+Each replication consists of multiple images (1--3 per patient), and hypothesis testing is performed at the image level, resulting in well over 100 image-level tests per scenario for precise power and Type I error estimates.
+
+For envelope test calibration (now in Supplement Section~\ref{sec:sim_evaluation_metrics}):
+
+\begin{revised}
+\input{snippets/r3_q4_envelope_calibration}
+\end{revised}
+
+\item Please have a "null" scenario and present the type I error rate. In Figure 5 only presenting the power which can't be interpreted without knowing the approaches control the type I error rate.
+
+\textbf{Response}: Thank you for emphasizing this important check for calibration. We evaluated Type I error rates using null scenario simulations where target cells are generated with no spatial dependence on source cells (all SIC coefficients set to zero). To address this, Section~\ref{sec:sim_comparison} now discusses:
+
+\begin{revised}
+\input{snippets/r3_q5_type1_error}
+\end{revised}
+
+Full results with figures are now presented in Supplement Section~\ref{sec:coverage_type1}.
+
+\item Please present computational time to fit the model. The colon cancer data (I believe) is based on a TMA. How would this method scale for computing on whole tissue slides with millions of cells?
+
+\textbf{Response}: Thank you for raising this important practical consideration. The colorectal cancer dataset does consist of tissue microarray (TMA) cores with hundreds to thousands of cells per image. To address computational scalability for larger datasets, we have added timing experiments (Supplement Section~\ref{sec:timing_experiments}), now discussed in Section~\ref{sec:model_estimation}:
+
+\begin{revised}
+\input{snippets/r1_q1_scalability}
+\end{revised}
+
+Extrapolating from this empirical $O(n^{0.85})$ scaling to whole slide images with 1--2 million cells, we estimate total fitting times of 5--15 minutes per image using variational inference on a single core, which remains practical for large-scale studies. For MCMC inference, runtimes would be longer but could be accelerated via within-chain parallelization or GPU acceleration.
+
+\item In the hierarchical model (section 2.2), please present where in the model you assess for differences by a factor/exposure (i.e., CLR and DII as used in the colon study).
+
+\textbf{Response}: Thank you for asking us to clarify this aspect of the model. To address this, Section~\ref{sec:multilevel_model} now describes:
+
+\begin{revised}
+\input{snippets/r3_q7_group_comparison}
+\end{revised}
+
+Specifically, for each source--target cell type pair, we compute the difference in cohort-level SICs between groups and examine whether the simultaneous credible bands around this difference exclude zero (e.g., Figure~\ref{fig:sic_CRC_diff}).
+
+\item Please provide details on the analysis of the colon cancer data how you determined if the clustering was significant taking into account random chance? I don't see any information presented on how this would be done beyond just reference to figure that shows slightly different curves (Figure 6, Figure 9). In figure 9, looks like set arbitrary level at a score of 0.05.
+
+\textbf{Response}: Thank you for this important question about statistical inference. Under the inhomogeneous Poisson process model, the null hypothesis of "no spatial association" corresponds to SIC = 0 (i.e., the target cell intensity is conditionally independent of the source cell locations). Spatial clustering or repulsion is detected when the estimated SIC is significantly different from zero. To address this, Section~\ref{sec:uncertainty} now describes:
+
+\begin{revised}
+\input{snippets/r1_q3_uncertainty}
+\end{revised}
+
+When the simultaneous credible band excludes zero over a distance range, we conclude that the spatial association is statistically significant at that range. All SIC figures display simultaneous 95\% credible bands computed using the method now detailed in Supplement Section~\ref{sec:sim_band}.
+
+Note: The 0.05 effect size threshold previously used to highlight substantive differences in log-intensity has been removed from the analysis.
+
+\item G assumes homogeneity in the point process. Please look at results for G by tissue compartment (tumor, stroma, etc) to somewhat control for difference in intensity of different cell types by tissue domain.
+
+\textbf{Response}: This is an important point about controlling for spatial heterogeneity. The \texttt{mxfda} package only supports standard $G$-cross and not \texttt{Gcross.inhom}, the inhomogeneous version of $G$-cross from \texttt{spatstat}, limiting direct comparison of compartment-adjusted analyses. However, we have added an investigation of the impact of unmeasured compartment structure through simulation (Section~\ref{sec:compartment_robustness}; Supplement Section~\ref{sec:compartment_confounder}):
+
+\begin{revised}
+\input{snippets/r2_q5_compartment_robustness}
+\end{revised}
+
+This analysis informs interpretation when compartment structure may be present, indicating that SHADE's performance depends on the density regime and suggesting caution when both cell types are abundant without explicit compartment modeling.
+\item What does the MAD presented in Figure 7 look like between CLR and DII tumors?
+
+\textbf{Response}: Thank you for this interesting follow-up question. We have added an analysis comparing MAD measures of heterogeneity between CLR and DII patient groups, now discussed in Section~\ref{sec:how_vary}:
+
+\begin{revised}
+\input{snippets/r3_q10_mad_comparison}
+\end{revised}
+\item A better literature review related to methods for co-localizations and those applied to mIF data in cancer should be in the introduction of the paper.
+
+\textbf{Response}: Thank you for this suggestion to improve the contextualization of our work. We have expanded the Introduction to include a more comprehensive review of spatial co-localization methods applied to multiplexed imaging data in cancer:
+
+\begin{revised}
+\input{snippets/r2_q1_intro}
+\end{revised}
+
+Additionally, Section~\ref{sec:mfpca_comparison} includes a detailed visual comparison with mFPCA applied to $G$-cross and $L$-cross functions, demonstrating the complementary strengths of SHADE and FDA methods for analyzing multiplexed imaging data.
+
+\end{enumerate}
+
+Minor:
+\begin{enumerate}
+    \item Figure 5: I can't seem to see the 20, 40, and 60 nm data. Also, add to caption what is hight and low levels.
+
+    \textbf{Response:} Thank you for pointing out this visualization issue. Figure~\ref{fig:gx_detections} (Detection power comparison) has been updated. The current caption is: 
+    \begin{revised}\input{snippets/fig_gx_detections_caption}\end{revised}
+\end{enumerate}
+
+\bibliographystyle{abbrvnat}
+\bibliography{references}
+
+\end{document}

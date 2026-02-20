@@ -1,0 +1,920 @@
+\documentclass{article}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bm}
+\usepackage{appendix}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{natbib}
+\usepackage{caption}
+
+\newcommand{\bq}{\bm{q}}
+\DeclareMathOperator*{\argmax}{argmax}
+
+\newcommand{\bolds}[1]{\boldsymbol{#1}}
+\newcommand{\bz}{\bolds{z}}
+\newcommand{\bdelta}{\bolds{\delta}}
+\newcommand{\bbeta}{\bolds{\beta}}
+
+
+\geometry{margin=1in}
+\doublespacing
+
+\usepackage{xr}  % for cross-referencing if supplement and main manuscript are separate
+\externaldocument{main}
+
+\captionsetup[figure]{labelformat=simple, labelsep=period, name=Fig}
+\renewcommand{\thefigure}{\Alph{figure}}
+
+\renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thesubsection}{\Alph{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\Alph{section}.\arabic{subsection}.\arabic{subsubsection}}
+
+
+\captionsetup[table]{labelformat=simple, labelsep=period, name=Table}
+\renewcommand{\thetable}{\Alph{table}}
+
+\renewcommand{\theequation}{\arabic{equation}}
+
+% Track changes toggle: set to 1 to show tracked changes, 0 to hide them
+% Use \providecommand so it can be overridden from command line
+\providecommand{\trackchanges}{1}
+
+% Revised text/section - colors additions blue when tracking is on
+% Can be used inline: {\revised text here} or as environment: \begin{revised}...\end{revised}
+\newenvironment{revised}{%
+  \if1\trackchanges%
+    \color{blue}%
+  \fi%
+}{%
+}
+
+\newcommand{\joel}[1]{\textcolor{blue}{\textsf{[#1]}}}
+
+% PLOS reference commands for supplement
+% Unified commands that detect sfig:/ssec:/stab: prefix for supplement items
+\makeatletter
+\newcommand{\@suprefprefix}[4]{%
+  \def\@temparg{#1}%
+  \def\@prefix{#2}%
+  \expandafter\@suprefcheck\@temparg\@nil{#3}{#4}%
+}
+\def\@suprefcheck#1:#2\@nil#3#4{%
+  \def\@firstpart{#1:}%
+  \ifx\@firstpart\@prefix #3\else #4\fi
+}
+\newcommand{\figref}[1]{%
+  \@suprefprefix{#1}{sfig:}{%
+    Fig~\ref{#1} in S1 Text%
+  }{%
+    Fig~\ref{#1}%
+  }%
+}
+\newcommand{\secref}[1]{%
+  \@suprefprefix{#1}{ssec:}{%
+    Section~\ref{#1} in S1 Text%
+  }{%
+    Section~\ref{#1}%
+  }%
+}
+\newcommand{\tabref}[1]{%
+  \@suprefprefix{#1}{stab:}{%
+    Table~\ref{#1} in S1 Text%
+  }{%
+    Table~\ref{#1}%
+  }%
+}
+% Override \eqref to detect seq: prefix for supplement equations
+\let\oldeqref\eqref
+\renewcommand{\eqref}[1]{%
+  \@suprefprefix{#1}{seq:}{%
+    (\ref{#1}) in S1 Text%
+  }{%
+    \oldeqref{#1}%
+  }%
+}
+\makeatother
+
+\title{S1 Text. Supporting Information}
+\author{Joel Eliason, Michele Peruzzi, Arvind Rao}
+\date{}
+\begin{document}
+
+\maketitle
+
+\begin{revised}
+\section{Background: Multitype Gibbs Point Process Models and Relationship to SHADE}
+\label{ssec:gibbs_background}
+
+\subsection{Multitype Gibbs Point Process Models}
+
+Multitype Gibbs point process (MGPP) models provide a general framework for modeling spatial patterns where interactions between points influence their configuration \citep{baddeley_spatial_2015,moller_statistical_2003}. Unlike inhomogeneous Poisson processes, Gibbs processes explicitly model dependencies between points via pairwise interaction potentials.
+
+\subsubsection{Mathematical Formulation}
+
+For a spatial point pattern $\mathbf{x} = \{x_1, \ldots, x_n\}$ with type marks $m_i \in \{1, \ldots, K\}$, a multitype Gibbs point process is characterized by its conditional intensity function:
+
+\begin{equation}
+\label{seq:gibbs_cond_int}
+\lambda_k(v \mid \mathbf{x}) = \beta_k \exp\left\{ \sum_{x_i \in \mathbf{x}} \log \gamma_{m_i,k}(\|v - x_i\|) \right\},
+\end{equation}
+
+where $\beta_k > 0$ is the baseline intensity for type $k$ and $\gamma_{j,k}(r)$ is the pairwise interaction function between types $j$ and $k$ at distance $r$. Values $\gamma_{j,k}(r) > 1$ indicate attraction, $\gamma_{j,k}(r) < 1$ indicate repulsion, and $\gamma_{j,k}(r) = 1$ indicate independence.
+
+\subsubsection{Key Limitation: Symmetry Assumption}
+
+A fundamental constraint of standard Gibbs point processes is the symmetry condition:
+
+\begin{equation}
+\label{seq:gibbs_symmetry}
+\gamma_{j,k}(r) = \gamma_{k,j}(r) \quad \text{for all types } j, k \text{ and distances } r.
+\end{equation}
+
+This requirement ensures the joint density defines a valid probability measure. 
+
+\textbf{Biological implication}: MGPPs \emph{cannot} distinguish directional spatial associations. If tumor cells cluster around blood vessels, but vessels are not preferentially located near tumors, a symmetric MGPP estimates only the average of these distinct directional effects—a severe limitation for studying directional biological processes.
+
+In practice, MGPPs also typically assume parametric interaction functions (e.g., Strauss process with $\gamma_{j,k}(r) = \gamma_{j,k} \mathbb{I}(r \leq R)$) with fixed interaction radii. Inference for Gibbs models is challenging due to intractable normalizing constants, though the Berman-Turner logistic regression approximation \citep{bermanApproximatingPointProcess1992} provides a computationally efficient alternative to MCMC over point configurations.
+
+\subsubsection{Hierarchical Gibbs Models: Asymmetry via Type Ordering}
+
+One approach to modeling asymmetric spatial interactions is to impose an ordering on cell types \citep{hougmander_multitype_1999}. In a hierarchical Gibbs model, types are indexed $1, 2, \ldots, K$ with the convention that type $k$ may depend on types $1, \ldots, k-1$ but not on types $k+1, \ldots, K$. The conditional intensity for type $k$ becomes:
+
+\begin{equation}
+\lambda_k(v \mid \mathbf{x}_{<k}) = \beta_k \exp\left\{ \sum_{j < k} \sum_{x_i \in \mathbf{x}_j} \log \gamma_{j,k}(\|v - x_i\|) \right\},
+\end{equation}
+
+where $\mathbf{x}_{<k}$ denotes the configuration of all types preceding $k$ in the ordering. This permits directional interactions: type $j$ can influence type $k$ (for $j < k$) without requiring symmetric reciprocal effects. For example, if vasculature is ordered before immune cells, the model can capture how vessel locations structure immune infiltration without requiring vessels to preferentially locate near immune cells.
+
+Hierarchical Gibbs models in the literature typically employ parametric interaction functions with fixed radii and have focused on single-image estimation rather than multilevel data structures.
+
+\subsection{How SHADE Extends the MGPP Framework}
+
+SHADE builds on the conceptual foundation of MGPPs but introduces three key innovations:
+
+\subsubsection{Asymmetric (Directional) Interactions}
+
+Unlike MGPPs, which require $\gamma_{j,k}(r) = \gamma_{k,j}(r)$, SHADE explicitly models asymmetric spatial associations via directional spatial interaction curves:
+
+\begin{equation}
+\text{SIC}_{A_k \to B}(s) = \sum_{p=1}^{P} \delta_{A_k}^{(p)} \phi_p(s),
+\end{equation}
+
+where $\text{SIC}_{A_k \to B}(s)$ quantifies how type-$A_k$ source cells at distance $s$ affect the log-intensity of type-$B$ target cells. Critically, $\text{SIC}_{A_k \to B}(s)$ and $\text{SIC}_{B \to A_k}(s)$ are estimated independently, capturing directional processes like immune recruitment by tumors or structural constraints imposed by vasculature.
+
+\subsubsection{Flexible Basis Function Expansions}
+
+Rather than parametric forms with fixed interaction radii, SHADE uses smooth radial basis functions $\phi_p(s)$ (e.g., Gaussian or B-splines) with data-driven coefficients $\delta_{A_k}^{(p)}$. This yields smooth, adaptable interaction curves avoiding restrictive parametric assumptions while hierarchical priors prevent overfitting.
+
+\subsubsection{Multilevel Bayesian Hierarchical Structure}
+
+Standard MGPPs and hierarchical Gibbs models focus on single-image estimation. SHADE instead models spatial interactions across nested levels of biological organization:
+
+\begin{align}
+\delta_{A_k}^{(m,p)} &\sim \mathcal{N}(\gamma_{A_k}^{(n(m),p)}, \sigma_{\text{image},p}^2) \quad &&\text{(image-level)} \\
+\gamma_{A_k}^{(n,p)} &\sim \mathcal{N}(\psi_{A_k}^{(g(n),p)}, \sigma_{\text{patient},p}^2) \quad &&\text{(patient-level)} \\
+\psi_{A_k}^{(g,p)} &\sim \mathcal{N}(\mu_p, \sigma_{\text{cohort},p}^2) \quad &&\text{(cohort-level)}
+\end{align}
+
+This hierarchical Bayesian framework, implemented via the logistic approximation and Hamiltonian Monte Carlo/variational inference, enables borrowing strength across images within patients and patients within cohorts, full posterior inference on derived quantities (SICs) at any hierarchical level with simultaneous credible bands, cohort-level comparisons of spatial organization patterns between biological groups, and quantification of heterogeneity via variance parameters at each level. This provides interpretable, uncertainty-aware inference on biologically meaningful spatial interaction patterns across multiple scales.
+
+\subsection{Summary of Key Differences}
+
+\tabref{stab:mgpp_vs_shade} summarizes the key methodological differences between standard MGPP models, hierarchical Gibbs models, and the SHADE framework.
+
+\begin{table}[ht]
+\centering
+\caption{Comparison of spatial point process modeling approaches}
+\label{stab:mgpp_vs_shade}
+\small
+\begin{tabular}{p{0.22\textwidth}p{0.22\textwidth}p{0.22\textwidth}p{0.22\textwidth}}
+\toprule
+\textbf{Feature} & \textbf{Symmetric MGPP} & \textbf{Hierarchical Gibbs} & \textbf{SHADE} \\
+\midrule
+\textbf{Interaction symmetry} & Symmetric: $\gamma_{j,k}(r) = \gamma_{k,j}(r)$ & Asymmetric via type ordering & Asymmetric: independent $\text{SIC}_{A \to B}(s)$ \\
+\midrule
+\textbf{Interaction function} & Parametric with fixed radii & Parametric with fixed radii & Flexible basis expansions \\
+\midrule
+\textbf{Data structure} & Single image & Single image & Multilevel: image $\subset$ patient $\subset$ cohort \\
+\midrule
+\textbf{Posterior inference} & Not typically Bayesian & Not typically Bayesian & Full posterior with credible bands, heterogeneity quantification \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Together, these innovations enable SHADE to overcome fundamental limitations of existing point process methods for analyzing spatial organization in multiplexed tissue imaging data, where directional biological processes, smooth distance-dependent interactions, and hierarchical uncertainty quantification are essential.
+
+\end{revised}
+
+\begin{revised}
+\section{Logistic Regression Approximation Details}
+\label{ssec:logistic_supplement}
+
+Direct estimation of the Poisson likelihood in spatial point process models typically requires numerical integration over a fine spatial grid, which becomes computationally expensive and unstable in high-resolution images. To address this, we follow the logistic regression approximation introduced by~\citet{baddeley_logistic_2014}, which avoids spatial gridding by introducing a set of dummy points \( D \) sampled from a homogeneous Poisson process with known intensity \( \lambda_{\text{dummy}} \).
+
+We define the combined set of points \( Y = X_B \cup D \), and assign binary labels:
+
+\begin{equation}
+\label{seq:dummy_labels}
+I(v) =
+\begin{cases}
+    1, & v \in X_B \\
+    0, & v \in D
+\end{cases}
+\end{equation}
+
+The conditional probability that a point \( v \) is a true (observed) point of type \( B \) is given by:
+
+\begin{equation}
+\label{seq:conditional_prob}
+P(I(v) = 1) = \frac{\lambda(v)}{\lambda(v) + \lambda_{\text{dummy}}},
+\end{equation}
+
+leading to the following logistic regression model:
+
+\begin{equation}
+\label{seq:logit_model}
+\log\frac{P(I(v) = 1)}{P(I(v) = 0)} = \bz^\top(v)\bbeta + \sum_{k=1}^{K} \bq_{A_k}^\top(v)\bdelta_{A_k}^{(m)} - \log \lambda_{\text{dummy}},
+\end{equation}
+
+This approximation circumvents key computational challenges of direct Poisson modeling. In Poisson models, fine spatial discretization leads to large numbers of empty pixels, often resulting in singular design matrices and unstable inference~\citep{baddeley_spatial_2015}. The Hauck-Donner effect~\citep{hauck_walds_1977} can further distort uncertainty estimates. By reframing the problem as a binary classification task over observed and dummy points, the logistic approximation enables scalable, stable inference of spatial interaction effects at the image level.
+
+\end{revised}
+
+\section{Interpreting Example Spatial Interaction Curves}
+
+\figref{sfig:example_SICs} shows two example SICs representative of those estimated from real data. Type 2 cells (cyan) exhibit a strong positive association at short distances, consistent with clustering behavior observed in immune infiltration around tumor cells. In contrast, Type 1 cells (red) show negative association at close range, suggestive of exclusion zones, as might be induced by physical barriers or competitive interactions in the tissue microenvironment.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/demo_plots/example_SICs.pdf}
+    \caption{Estimated SICs for two source cell types. Type 2 shows a strong positive association with the target population at short distances, while Type 1 exhibits negative association at short range. These contrasting patterns highlight the flexibility of the SIC framework for capturing biologically meaningful spatial structure.}
+    \label{sfig:example_SICs}
+\end{figure}
+
+\figref{sfig:example_intensity} demonstrates how these spatial interactions manifest in tissue space. Panels 1 and 2 show the spatial predictors $\bq_{A_1}(v)$ and $\bq_{A_2}(v)$ generated by the individual SICs from \figref{sfig:example_SICs}—each reflecting the localized contribution to the log-intensity of type \( B \) due to each source. Each panel is analogous to a summand from the sum on the right hand side of \eqref{eq:cond_int_simplified}. Panel 3 shows the additive combination of these effects, illustrating how multiple source cell types jointly shape a heterogeneous spatial intensity landscape. The target cells are observed to cluster in high-intensity regions and avoid areas of low expected density.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/demo_plots/example_intensity.pdf}
+    \caption{Spatial interaction fields implied by SICs from two source cell types (Panels 1 and 2) and their additive combination (Panel 3). The combined field governs the spatial distribution of target cells, which are more likely to occur in regions of elevated log-intensity.}
+    \label{sfig:example_intensity}
+\end{figure}
+
+\section{Extended Methods and Results for Simulation Studies}
+\begin{revised}
+\subsection{Simultaneous Credible Bands for Spatial Interaction Curves}
+\label{ssec:sim_band}
+
+To quantify uncertainty in estimated spatial interaction curves (SICs), we constructed \emph{simultaneous 95\% credible bands} using posterior samples from our Bayesian model~\citep{ruppertSemiparametricRegression2003,myllymakiGlobalEnvelopeTests2017}. While pointwise credible intervals can quantify uncertainty at individual distances, they do not account for multiple comparisons across the distance domain and tend to overstate confidence when evaluating the entire curve. In contrast, simultaneous credible bands provide a global probabilistic guarantee that the entire SIC lies within the band over its domain with high posterior probability.
+
+Let $\widehat{\text{SIC}}_{A_k \to B}(s)$ denote the posterior mean and $\hat{\sigma}_{A_k \to B}(s)$ the posterior standard deviation of the SIC at distance $s$, evaluated over a fixed grid of distances $s \in [r_{\min}, r_{\max}]$. For each posterior draw $j$, we computed the standardized residual
+\[
+Z^{(j)}(s) = \frac{\text{SIC}_{A_k \to B}^{(j)}(s) - \widehat{\text{SIC}}_{A_k \to B}(s)}{\hat{\sigma}_{A_k \to B}(s)},
+\]
+and then calculated the \emph{maximum absolute standardized deviation} across the distance domain:
+\[
+T^{(j)} = \sup_{s \in [r_{\min}, r_{\max}]} \left| Z^{(j)}(s) \right|.
+\]
+This statistic captures the largest fluctuation, in units of local posterior uncertainty, that the sampled SIC exhibits relative to the posterior mean. By repeating this computation over posterior draws, we obtain the empirical distribution of the supremum deviation under the posterior. The critical value $c$ for the simultaneous band is then defined as the $(1 - \alpha)$-quantile of the empirical distribution of $T^{(j)}$:
+\[
+c = \text{quantile}_{1 - \alpha} \left( \{ T^{(1)}, \dots, T^{(J)} \} \right).
+\]
+
+The resulting \emph{simultaneous credible band} is:
+\[
+\text{SIC}_{A_k \to B}(s) \in \left[ \widehat{\text{SIC}}_{A_k \to B}(s) \pm c \cdot \hat{\sigma}_{A_k \to B}(s) \right], \quad \text{for all } s \in [r_{\min}, r_{\max}].
+\]
+This construction ensures that with posterior probability $1 - \alpha$, the entire SIC remains within the band across the full distance domain. It provides a conservative yet interpretable summary of global uncertainty, correcting for the multiple comparisons that arise when interpreting the SIC across many distances.
+
+Simultaneous credible bands are particularly useful for assessing whether a spatial interaction is consistently positive, negative, or null over specific distance ranges, and for identifying features such as consistent attraction or repulsion that are unlikely to be due to noise. They also serve as a diagnostic for the informativeness of the data: wider bands reflect higher posterior uncertainty, particularly in regions where data are sparse or spatial patterns are weak.
+
+All figures in the main manuscript showing SICs display simultaneous 95\% credible bands computed via this method.
+\end{revised}
+\begin{revised}
+\subsection{Screening Strategies for Multiple Cell Type Pairs}
+\label{ssec:screening_supplement}
+
+In exploratory spatial analyses involving many cell type pairs, we often wish to prioritize pairs for further investigation based on the estimated SICs and their uncertainty. While there are many ways to summarize spatial associations for this purpose, we propose three complementary summary measures based on simultaneous credible bands that address different biological questions:
+
+\subsubsection{Peak Location and Magnitude}
+
+To identify where the strongest interaction occurs, we locate the distance at which the SIC reaches its maximum absolute value, along with the magnitude at that location. Formally, for a given source--target pair $(A_k \to B)$, define:
+\[
+s^* = \argmax_{s} |\widehat{\text{SIC}}_{A_k \to B}(s)|, \quad M = |\widehat{\text{SIC}}_{A_k \to B}(s^*)|,
+\]
+and assess statistical significance by checking whether the simultaneous credible band excludes zero at $s^*$. This identifies the distance of maximal association and its strength, and is particularly useful for identifying pairs with strong localized effects—for example, immune cells that show pronounced clustering around tumor cells at a specific distance range.
+
+\subsubsection{Persistence Over Biologically Relevant Distance Ranges}
+
+To assess whether an interaction is consistently positive or negative over a pre-specified biologically meaningful distance range $I = [s_a, s_b]$, we compute the posterior probability that the SIC maintains a consistent sign throughout the interval. For each posterior draw $j$, we evaluate the SIC at all distances within $I$ and record whether the entire curve is positive (or negative):
+\[
+\Pi_I^{(+)} = \frac{1}{J} \sum_{j=1}^{J} \mathbb{I}\left\{ \min_{s \in I} \text{SIC}_{A_k \to B}^{(j)}(s) > 0 \right\}, \quad \Pi_I^{(-)} = \frac{1}{J} \sum_{j=1}^{J} \mathbb{I}\left\{ \max_{s \in I} \text{SIC}_{A_k \to B}^{(j)}(s) < 0 \right\}.
+\]
+We then define $\Pi_I = \max(\Pi_I^{(+)}, \Pi_I^{(-)})$ as the persistence score. Values $\Pi_I \geq 0.95$ indicate strong evidence for persistent directional association throughout the interval—that is, robust associations that are unlikely to be artifacts of noise or multiple testing. For instance, in tumor immunology, one might define $I = [10, 50]~\mu\text{m}$ to capture local microenvironmental interactions.
+
+\subsubsection{Overall Strength}
+
+To quantify the cumulative magnitude of a spatial interaction across all distances where it is statistically significant, we integrate the absolute effect size over significant regions:
+\[
+\text{Strength}(A_k \to B) = \int_{I_{\text{sig}}} |\widehat{\text{SIC}}_{A_k \to B}(s)| \, ds,
+\]
+where $I_{\text{sig}}$ is the union of all intervals where the simultaneous credible band excludes zero. This captures cumulative association strength and provides a single summary of the overall importance of a spatial interaction. Cell type pairs with high strength scores exhibit either strong localized effects or more moderate effects that persist across many distances.
+
+\subsubsection{Usage in Practice}
+
+These three measures can be computed across all source--target pairs and visualized as heatmaps to facilitate systematic comparison. Peak location and magnitude would require either two separate heatmaps (one for $s^*$, one for $M$) or a combined visualization (e.g., color-coding magnitude with symbol size indicating distance). The persistence and overall strength measures each yield a single scalar value per pair and map directly to heatmap intensities. These visualizations allow pairs to be ranked and prioritized for detailed examination.
+
+The choice among these measures depends on the biological question: peak magnitude for identifying strongest interactions, persistence for testing specific distance-based hypotheses, or overall strength for comparing cumulative effects. They are complementary and can be used together to provide multiple perspectives on spatial organization patterns.
+\end{revised}
+
+\subsection{Extended Methods for Hyperparameter Studies and Study of Explicit Modeling of Multilevel Structure}
+\label{ssec:sim_full}
+
+\begin{revised}To evaluate SHADE's performance under controlled conditions and assess the effect of modeling multilevel structure, we conducted simulation studies generating synthetic spatial point patterns with known hierarchical structure and asymmetric spatial interactions. This section describes the data generation process and default parameter settings used across simulation experiments, including: (1) comparison of hierarchical vs. non-hierarchical models (\secref{ssec:sim_hier}), and (2) hyperparameter studies examining the effects of cell count, dummy point ratio, and dataset size (\secref{ssec:hyperparam_dummy} and \secref{ssec:hyperparam_dsize}).\end{revised}
+
+The simulation process consists of three steps: (1) generating hierarchical spatial interaction coefficients according to the model in Equation~\ref{eq:beta_priors}, (2) generating source cell locations from a homogeneous Poisson process, and (3) generating target cell locations from an inhomogeneous Poisson process whose intensity depends on proximity to source cells via spatial interaction features.
+
+\subsubsection{Generating Target Points}
+
+Given source cell locations and hierarchical spatial interaction coefficients, target cell locations are drawn from an inhomogeneous Poisson process with conditional intensity:
+
+\begin{equation}
+\lambda(v) = \exp \left( \sum_{k=1}^{K} \sum_{p=1}^{P}  \bm{q}_{A_k}^\top(v)\bm{\delta}_{A_k}^{(m)} + \beta_0^{(m)} \right),
+\end{equation}
+
+where \( \beta_0^{(m)} \) is a normalization offset to ensure that the expected number of target points matches \( N_{\text{points}} \) in image \( m \). It is computed as:
+
+\begin{equation}
+\beta_0^{(m)} = \log \left( \frac{N_{\text{points}}}{\int_W \exp \left( \sum_{k=1}^{K} \sum_{p=1}^{P} \bm{q}_{A_k}^\top(v)\bm{\delta}_{A_k}^{(m)} \right) dv} \right).
+\label{seq:normal_b0}
+\end{equation}
+
+\subsubsection{Default Parameter Settings}
+\label{ssec:default_params}
+
+Unless otherwise specified, the following defaults were used in simulation experiments:
+
+\begin{itemize}
+    \item \textbf{Spatial domain:} \( S = 1500 \).
+    \item \textbf{Number of source cell types:} \( K = 2 \).
+    \item \textbf{Basis functions:} \( P = 3 \) radial basis functions with bandwidth 15 and support up to 75 microns.
+    \item \textbf{Points per cell type per image:} \( N_{\text{points}} = 150 \).
+    \item \textbf{Variance parameters:}
+    \begin{itemize}
+        \item \( \sigma_{\text{cohort},p} = 0.5 \)
+        \item \( \sigma_{\text{patient},p} = 0.1 \)
+        \item \( \sigma_{\text{image},p} = 0.1 \)
+    \end{itemize}
+    \item \textbf{Number of patients and images:} variable across experiments.
+\end{itemize}
+
+\begin{revised}
+\subsection{Results: The effect of explicitly modeling multilevel structure}
+\label{ssec:sim_hier}
+
+We examined how accounting for hierarchical structure affects inference quality by comparing the full hierarchical model against a non-hierarchical alternative that estimates image-level SICs independently, without shrinkage to patient- or cohort-level structures. We simulated data from two patient groups, each with 20 patients and 4 images per patient. Each image contained 150 points of each type, with a dummy-to-real point ratio of 2. Remaining parameters followed the defaults specified in \secref{ssec:default_params}.
+
+We generated 100 simulation replicates and fit both models to each replicate. Inference quality was assessed by comparing the average RMSE of the \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients.
+
+\input{snippets/r2_q5_hierarchical_rmse}
+
+\begin{table}[ht]
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\begin{tabular}{l>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}>{\raggedright\arraybackslash}p{4cm}}
+\toprule
+\textbf{Hierarchical} & \textbf{Scale: All} & \textbf{Scale: Small} & \textbf{Scale: Medium} & \textbf{Scale: Large}\\
+\midrule
+\cellcolor[HTML]{F0F0F0}{False} & \cellcolor[HTML]{F0F0F0}{0.142 (0.097, 0.196)} & \cellcolor[HTML]{F0F0F0}{0.355 (0.230, 0.509)} & \cellcolor[HTML]{F0F0F0}{0.022 (0.016, 0.031)} & \cellcolor[HTML]{F0F0F0}{0.048 (0.034, 0.066)}\\
+True & 0.039 (0.027, 0.043) & 0.072 (0.043, 0.084) & 0.017 (0.013, 0.020) & 0.028 (0.021, 0.036)\\
+\bottomrule
+\end{tabular}}
+\caption{Average RMSE of \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients in aggregate and across spatial scales, comparing hierarchical and non-hierarchical models.}
+\label{stab:hier_rmse}
+\end{table}
+
+\figref{sfig:no_hier_est_SIC} shows several examples of image-level SICs estimated with both models. In all cases, the SIC is better estimated when hierarchical structure is accounted for, with improvements in both bias and variance. \tabref{stab:hier_rmse} quantifies this improvement: the hierarchical model achieves substantially lower RMSE across all spatial scales, with the most dramatic improvement at small scales (RMSE reduction from 0.355 to 0.072).
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_no_hier/estimated_SIC.pdf}
+    \caption{Examples of estimated image-level SICs from hierarchical modeling simulations, with simultaneous 95\% credible bands, demonstrating better estimation of SICs when accounting for multilevel structure.}
+    \label{sfig:no_hier_est_SIC}
+\end{figure}
+\end{revised}
+
+\subsection{Extended Methods for Comparison of Spatial Pattern Detection Accuracy Across Methods and Conditions}
+\label{ssec:sim_details}
+
+\begin{revised}To evaluate SHADE's detection capabilities relative to standard spatial analysis methods and assess how performance varies with data characteristics, we conducted a factorial simulation study varying cell densities and number of images per patient. All simulated datasets contained a single patient cohort with known positive spatial interactions (attraction pattern) at multiple distance scales. This section describes the data generation process, experimental design, and evaluation metrics for the method comparison study reported in Section~\ref{sec:sim_comparison} of the main text.\end{revised}
+
+\subsubsection{Hierarchical Data Generation}
+
+\begin{revised}We simulate spatial interaction coefficients $\delta^{(m,p)}$ at three hierarchical levels (for image $m$ and basis function $p \in \{1, 2, 3\}$) for a single patient cohort:
+
+\[
+\begin{aligned}
+\psi^{(p)} &= (1.5,\ 1.0,\ 0.5) \quad \text{for } p \in \{1, 2, 3\} \quad \text{(cohort-level, fixed)} \\
+\gamma^{(n,p)} &\sim \mathcal{N}(\psi^{(p)},\ \sigma_{\text{patient}}^2), \quad \sigma_{\text{patient}} = 0.1 \\
+\delta^{(m,p)} &\sim \mathcal{N}(\gamma^{(n(m),p)},\ \sigma_{\text{image}}^2), \quad \sigma_{\text{image}} = 0.1
+\end{aligned}
+\]
+
+where $n(m)$ denotes the patient corresponding to image $m$. The positive cohort-level coefficients create an attraction pattern between source and target cells across all distance scales, with the strongest effect at short range ($\psi^{(1)} = 1.5$) and decreasing effects at medium ($\psi^{(2)} = 1.0$) and long range ($\psi^{(3)} = 0.5$).\end{revised}
+
+\subsubsection{Spatial Pattern Generation}
+
+Cell patterns were generated using spatially varying intensity functions within $1500 \times 1500~\mu\text{m}^2$ observation windows. T cells and B cells were distributed as independent Poisson processes with densities $\lambda_T$ and $\lambda_B$. Tumor cell locations were generated using a spatially varying intensity surface based on T cell locations:
+
+\[
+\lambda_{\text{tumor}}(s; n) = \exp\left(\beta_0 + \sum_{p} \delta^{(n,p)} \phi_p(s)\right)
+\]
+
+where $\phi_p(s)$ represents radial basis functions with $\sigma = 15~\mu$m and centered at $\mu=(0,40,80) \mu m$. The baseline intensity $\beta_0$ was calibrated to achieve target tumor cell densities, as in~\eqref{seq:normal_b0}.
+
+\subsubsection{Experimental Design}
+
+We employed a $2 \times 2 \times 3$ factorial design varying the following factors:
+
+\begin{itemize}
+  \item \textbf{T cell (source) density:} High ($150$ cells) vs. Low ($15$ cells) per image.
+  \item \textbf{Tumor cell (target) density:} High ($150$ cells) vs. Low ($15$ cells) per image.
+  \item \textbf{Images per patient:} $1$, $2$, or $3$ tissue sections.
+  \item \textbf{Replication:} $50$ independent simulations per condition.
+\end{itemize}
+
+All simulations included $40$ patients in a single cohort and an additional B cell population (density matched to T cells) as a third cell type. This design yielded 12 experimental conditions ($2 \times 2 \times 3$) with 50 replicates each (600 total simulations), allowing systematic assessment of how detection power and calibration vary with data quantity and hierarchical structure.
+
+\subsubsection{Evaluation Metrics}
+\label{ssec:sim_evaluation_metrics}
+\begin{revised}
+\textbf{SHADE Performance:} We assessed SHADE's ability to recover true spatial interaction curves by evaluating whether $95\%$ simultaneous credible bands (\secref{ssec:sim_band}) correctly identified the known positive spatial interaction (attraction pattern). Detection success required the credible band to exclude zero at any distance in the $0$--$75~\mu$m range.
+
+\textbf{Envelope Test Comparisons:} We compared SHADE against $G$-cross and $L$-cross envelope tests implemented using the \texttt{spatstat} package. \input{snippets/r3_q4_envelope_calibration} Detection success required the observed summary function to deviate outside the simultaneous envelope at any distance, indicating rejection of the null hypothesis of complete spatial randomness.\end{revised}
+
+\textbf{Statistical Analysis:} Power was calculated as the average over all images of the proportion of correctly classified interactions at target distances. We compared both methods' sensitivity to varying cell densities and sample sizes. \begin{revised}Additionally, we evaluated coverage (the proportion of true SIC values falling within the 95\% simultaneous credible bands) and type I error rates (the proportion of null interactions incorrectly identified as significant) for all methods.\end{revised}
+
+\subsection{Hyperparameter Study 1 - The effect of cell count and dummy point ratio on inference quality}
+\label{ssec:hyperparam_dummy}
+
+We investigated how inference quality is affected by the number of observed cells per cell type (\( N_t \)) and the ratio of dummy points to real points (\( R_d \)) used for quadrature. Simulations were run for all combinations of \( N_t \in \{20, 80, 150, 300\} \) and \( R_d \in \{0.5, 1, 2, 5, 10\} \), with five replicates per setting. Each dataset contained three cell types, with the third serving as the target for spatial interaction estimation. The number of patient groups was fixed at 1, with 40 patients per group and two images per patient. All other simulation parameters were set to defaults.
+
+Average root mean squared error (RMSE) was computed for spatial interaction coefficients at the image (\( \delta_{t_1 \to t_2}^{(m,p)} \)), patient (\( \gamma_{t_1 \to t_2}^{(n,p)} \)), and cohort (\( \psi_{t_1 \to t_2}^{(g,p)} \)) levels. As shown in \figref{sfig:dummy_avg_RMSE}, RMSE for image-level coefficients decreased consistently with increasing \( R_d \), suggesting that finer quadrature grids improve inference at the image level. This trend held across all values of \( N_t \).
+
+In contrast, inference quality for patient- and cohort-level coefficients slightly worsened when \( R_d \) exceeded 2--5, particularly at very low or very high values of \( N_t \). This suggests diminishing returns—and potential instability—for higher-level parameter estimation when dummy point counts are excessively large. The magnitude of this effect was modest but visible (note the log scale on the RMSE axis).
+
+To further investigate these trends, we analyzed RMSE stratified by spatial scale (short, medium, long) at each hierarchical level (\figref{sfig:dummy_avg_rmse_scales}). Improvements in image-level inference with increasing \( R_d \) were most pronounced at longer interaction distances. For higher-level parameters, performance remained relatively stable across spatial scales but showed a slight increase in RMSE at short ranges when dummy point ratios were high.
+
+A representative cohort-level SIC estimate is shown in \figref{sfig:dummy_est_SIC}, illustrating how estimation accuracy varies with \( N_t \) and \( R_d \). Inference was notably poorer at low cell counts, with increased bias and wider credible intervals. Optimal performance—reflected in reduced bias and uncertainty—was observed at moderate \( N_t \) (80–300) and a wide range of dummy point ratios, consistent with the RMSE patterns observed in \figref{sfig:dummy_avg_RMSE}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_dummy_hier_asymm_paper/avg_rmse.pdf}
+    \caption{
+        Average RMSE for spatial interaction coefficients across hierarchical levels:
+        image-level (\(\delta_{t_1\to t_2}^{(m,p)}\)),
+        patient-level (\(\gamma_{t_1\to t_2}^{(n,p)}\)), and
+        cohort-level (\(\psi_{t_1\to t_2}^{(g,p)}\)),
+        under different numbers of cells per type and dummy-to-real point ratios.
+    }
+    \label{sfig:dummy_avg_RMSE}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_dummy_hier_asymm_paper/avg_rmse_over_scales.pdf}
+    \caption{
+        RMSE for spatial interaction coefficients across spatial scales,
+        shown separately for each hierarchical level:
+        \(\delta_{t_1\to t_2}^{(m,p)}\), \(\gamma_{t_1\to t_2}^{(n,p)}\), and \(\psi_{t_1\to t_2}^{(g,p)}\).
+        Results are shown for varying cell counts and dummy point ratios.
+    }
+    \label{sfig:dummy_avg_rmse_scales}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_dummy_hier_asymm_paper/estimated_SIC.pdf}
+    \caption{Example of estimated cohort-level SIC from dummy point simulations.}
+    \label{sfig:dummy_est_SIC}
+\end{figure}
+
+\subsection{Hyperparameter Study 2 - The effect of number of patients and images per patient on inference quality}
+\label{ssec:hyperparam_dsize}
+
+\begin{revised}Next, we examined the sensitivity of inference quality to the total number of patients as well as the number of images per patient. Here, we set the number of points per type to 150 and the ratio of dummy points to actual points to 2, while keeping the rest of the default parameters the same, as outlined in \secref{ssec:default_params}. We then simulated 15 realizations each of every combination of the number of images per patient $N_{\text{images per patient}}$ and the total number of patients $N_{\text{patients}}$, where $N_{\text{images per patient}}\in \{1,2,4\}$ and $N_{\text{patients}}\in\{10,20,40\}$, according to our simulation procedure described in \secref{ssec:sim_details}.\end{revised}
+
+We found some interesting trends in the average RMSE as the number of patients per patient group increased. For cohorts that only had one image per patient, average RMSE decreased as the number of patients increased (Figure \ref{sfig:dsize_avg_RMSE_images}). However, for patients that had 2 images, the average RMSE was highest for the highest number of patients, which we found to be a counterintuitive finding. Furthermore, for patients with 4 images, having a cohort with 40 patients was associated with the lowest RMSE, as expected, though the second-lowest was, unexpectedly, having a cohort with 10 patients, rather than 20.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_dsize/avg_rmse_over_images.pdf}
+    \caption{
+        Average RMSE for spatial interaction coefficients as a function of dataset size,
+        varying the number of patients and number of images per patient.
+        Results are shown for image-level (\(\delta_{t_1\to t_2}^{(m,p)}\)),
+        patient-level (\(\gamma_{t_1\to t_2}^{(n,p)}\)), and
+        cohort-level (\(\psi_{t_1\to t_2}^{(g,p)}\)) parameters.
+    }
+    \label{sfig:dsize_avg_RMSE_images}
+\end{figure}
+
+For \( \delta_{t_1 \to t_2}^{(m,p)} \) coefficients, longer-range coefficients seemed to have the lowest average RMSE (\figref{sfig:dsize_avg_rmse_scales_all}), while close-range coefficients had the worst quality. RMSE, however, was very close to constant across the number of patients, though it did decrease slightly as the number of images increased. RMSE for \( \gamma_{t_1 \to t_2}^{(n,p)} \) coefficients decreased as the number of images increased, though, as we noticed earlier, the RMSE in this case has a nonlinear relationship with the number of patients. The RMSE of \( \psi_{t_1 \to t_2}^{(g,p)} \) coefficients exhibited the same counterintuitive nonlinear association with number of patients, though in a more pronounced way.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_dsize/avg_rmse_over_scales_all.pdf}
+    \caption{
+        Average RMSE across spatial scales for spatial interaction coefficients at the
+        image (\(\delta_{t_1\to t_2}^{(m,p)}\)), patient (\(\gamma_{t_1\to t_2}^{(n,p)}\)), and
+        cohort (\(\psi_{t_1\to t_2}^{(g,p)}\)) levels, across varying numbers of patients
+        and images per patient.
+    }
+    \label{sfig:dsize_avg_rmse_scales_all}
+\end{figure}
+
+Finally, we demonstrate an example of an estimated global SIC from this simulation study (Figure \ref{sfig:dsize_est_SIC}). Here, we can see that the variance of the SIC estimate decreases both as the number of patients increases and the the number of images increases, which matches our expectations. However, we can also see that there is a slight amount of persistent bias at close range for simulations in which the number of patients equals 40 - this may be indicative of too much shrinkage during estimation and may be the reason for the nonlinear association of RMSE with number of patients.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/simulated_dsize/estimated_SIC.pdf}
+    \caption{
+    Example of an estimated cohort-level SIC from the dataset size simulation study, illustrating how increasing the number of patients and images per patient reduces the variance in SIC estimates.
+    }
+    \label{sfig:dsize_est_SIC}
+\end{figure}
+
+\begin{revised}
+
+\subsection{Computational Scaling: Timing Experiments}
+\label{ssec:timing_experiments}
+
+To assess the practical computational feasibility of SHADE for large-scale spatial datasets, we conducted timing experiments measuring both feature construction time and full model fitting time across simulated datasets ranging from 5,000 to 250,000 cells.
+
+\subsubsection{Methods}
+
+We generated synthetic spatial point patterns with 3 cell types (2 source types, 1 target type) across six cell count conditions: 5,000, 10,000, 25,000, 50,000, 100,000, and 250,000 total cells. To reflect realistic experimental designs, we used a hierarchical structure with 40 patients and 4 images per patient (160 total images), with total cell counts distributed across all images. For each condition, we simulated 20 independent replicates using a fixed spatial window ($1500 \times 1500$ units) per image, so that cell density increased proportionally with cell count. Each pattern was generated with spatial interactions defined by three radial basis functions, matching the setup used in our main simulations.
+
+For each replicate, we measured two key computational steps:
+\begin{enumerate}
+\item \textbf{Feature construction time}: The time required to compute pairwise distances between target and source cells and construct the interaction feature matrix $\bq_{A_k}(v)$ for all spatial locations (observed cells and dummy points). This step involves distance matrix computation via \texttt{spatstat.geom::crossdist} followed by basis function evaluation and summation.
+
+\item \textbf{Total model fitting time}: The end-to-end time from loading the prepared data to obtaining posterior draws from the fitted SHADE model. Models were fit using variational inference with 1,000 posterior draws on a single CPU core (no parallelization).
+\end{enumerate}
+
+All timing measurements were performed on a high-performance computing cluster with consistent hardware specifications to ensure comparability across conditions. Timing was recorded using the \texttt{tictoc} R package.
+
+\subsubsection{Results}
+
+\figref{sfig:timing_results} shows the scaling behavior of feature construction and model fitting times as a function of the total number of cells. Feature construction time exhibited near-quadratic scaling with an empirical exponent of 1.46 (95\% CI from log-log regression), consistent with the $\mathcal{O}(n_{\mathrm{target}} \times n_{\mathrm{source}})$ complexity of computing pairwise distances. Total model fitting time scaled sublinearly with an empirical exponent of 0.85, substantially better than the naive quadratic expectation, due to the efficiency of the variational inference algorithm and reuse of the distance matrix across all basis functions and source types.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/sim_timing/scaling_results.pdf}
+    \caption{Computational scaling of SHADE as a function of cell count. A: Feature construction time shows near-quadratic scaling ($O(n^{1.46})$) with cell count, consistent with the $\mathcal{O}(n_{\mathrm{target}} \times n_{\mathrm{source}})$ complexity of pairwise distance computation. B: Total model fitting time scales sublinearly ($O(n^{0.85})$) due to parallelization and distance matrix reuse. Points show mean timing across 20 replicates per condition; error bars show $\pm 1$ standard deviation. Dashed and dotted reference lines indicate theoretical $O(n^2)$ and $O(n)$ scaling for comparison.}
+    \label{sfig:timing_results}
+\end{figure}
+
+These results demonstrate that SHADE remains computationally tractable even for large-scale datasets. At 100,000 cells—substantially larger than most contemporary spatial profiling datasets—mean total fitting time was 36.4 seconds ($\pm 4.1$ SD). Even at 250,000 cells, mean fitting time remained 133.1 seconds ($\pm 46.2$ SD), on the order of minutes rather than hours, making SHADE practical for routine application to large-scale tissue imaging data. Feature construction accounted for approximately 9.1 seconds (100K cells) and 37.3 seconds (250K cells), representing roughly 25--28\% of total runtime.
+\end{revised}
+
+\begin{revised}
+\subsection{Coverage and Type I Error Performance}
+\label{ssec:coverage_type1}
+
+Beyond detection power (\figref{fig:gx_detections} in the main text), we evaluated coverage (do 95\% credible bands contain the true SIC?) and Type I error control (false positive rates under the null) across all simulation conditions (\figref{sfig:coverage_performance}--\figref{sfig:type1_error}).
+
+\textbf{Note on coverage interpretation:} Our coverage metric assesses whether hierarchically-shrunk image-level credible bands contain true unshrunk image-level parameters. Hierarchical models intentionally shrink image-level estimates toward patient means to borrow strength across images, producing narrower credible bands centered closer to patient means than true image-specific values. This results in lower-than-nominal coverage (53--100\% vs. 95\%) but reflects the intended precision-accuracy tradeoff of hierarchical shrinkage, not miscalibration. Coverage is lowest when source density is high (strong signal enables aggressive shrinkage) and highest when source density is low (weak signal produces conservative estimates).
+
+SHADE Hierarchical with 2--3 images per patient maintains well-controlled median Type I error (0.8--7.5\%, comparable to envelope tests). With only 1 image per patient, SHADE exhibits extreme behavior (either overly conservative or poorly calibrated), requiring multiple images for stable performance. SHADE Flat shows severe miscalibration (Type I error: 27--29\%, coverage: 53--86\%) regardless of conditions, demonstrating hierarchical pooling's critical importance.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/comparison_figures/coverage_by_regime.pdf}
+    \caption{Coverage performance of SHADE Hierarchical and SHADE Flat models across simulation conditions. Boxplots show the proportion of images in which 95\% simultaneous credible bands fully contain the true SIC across the entire 0--75~$\mu$m range, stratified by source cell density (rows: conditioning cell type) and target cell density (columns: modeled cell type), with number of images per patient (1, 2, or 3) shown on the x-axis. The red dashed line indicates the nominal 95\% level. Median coverage ranges from 53--100\%, with adaptive calibration: highest coverage (up to 100\%) when source density is low, lowest coverage (53--59\%) when source density is high and target density is low, precisely where detection power is highest. Coverage for SHADE Hierarchical improves substantially with multiple images per patient when both densities are low (1 image: 73\%; 2--3 images: 94\%).}
+    \label{sfig:coverage_performance}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/comparison_figures/type_i_error_by_regime.pdf}
+    \caption{Type I error rates across simulation conditions. Boxplots show the proportion of null simulations (true SIC $= 0$) in which methods incorrectly detect non-zero spatial interactions, for SHADE Hierarchical, SHADE Flat, $G$-cross, and $K$-cross methods. Results are stratified by source cell density (rows: conditioning cell type) and target cell density (columns: modeled cell type), with number of images per patient (1, 2, or 3) shown on the x-axis. The red dashed line indicates the nominal 5\% level. SHADE Hierarchical with 2--3 images per patient exhibits well-controlled median type I error rates (0.8--7.5\%) comparable to envelope tests (G-cross: 2.5--8.8\%; K-cross: 1.3--6.7\%), though with greater variability. With only 1 image per patient, SHADE Hierarchical shows extreme behavior (0\% or high variability). SHADE Flat shows severe inflation (median 27--29\%) regardless of number of images.}
+    \label{sfig:type1_error}
+\end{figure}
+
+\subsubsection{Practical Recommendations}
+
+SHADE Hierarchical requires at least 2 images per patient for stable performance. With multiple images and at least one cell type at moderate-to-high density, SHADE offers superior power with acceptable error control (0.8--7.5\%, comparable to envelope tests), making it suitable for exploratory hypothesis generation. For confirmatory studies requiring uniform error control, or when only 1 image per patient is available, envelope tests provide more stable though conservative performance.
+
+\end{revised}
+\subsection{Robustness to Spatial Confounding}
+\label{ssec:compartment_confounder}
+
+\begin{revised}We tested SHADE's robustness to unmeasured spatial compartments (e.g., tumor islands, stromal regions) that create baseline density differences independent of cell-cell interactions. We simulated patterns with true source-target interactions plus compartment effects (multiplicative baseline intensity: 0.8, 1.2, or 1.5) across 3 spatial regions, then fit SHADE models ignoring compartment structure. All simulations used 3 images per patient and 3 compartments defined by Voronoi tessellation. We assessed detection power, coverage (do 95\% credible bands contain the true SIC?), and Type I error (false detection when only compartment effects exist).
+
+\subsubsection{Key Findings}
+
+SHADE's performance under spatial confounding depends critically on cell densities (\figref{sfig:compartment_power}--\figref{sfig:compartment_overall_type1}). When both source and target densities are high, SHADE achieves perfect power (100\%) but severely undercovers (43--52\% vs. nominal 95\%) and exhibits elevated Type I error (11.7--17.1\%) that worsens with compartment strength. The method confidently estimates interactions but conflates true spatial associations with compartment-induced heterogeneity. When target density is low, wider uncertainty bands provide partial robustness: coverage improves (82--93\%) and Type I error drops (1.7--5.8\%), though at the cost of reduced power. When both densities are sparse, SHADE becomes appropriately conservative (92--93\% coverage, 1.3--2.9\% Type I error) but loses detection sensitivity (27--30\% power). SHADE Flat consistently exhibits higher false positive rates (26--40\%) than SHADE Hierarchical across all regimes, demonstrating hierarchical pooling's protective effect even under model misspecification.
+
+\subsubsection{Implications for Practice}
+
+These results demonstrate that unmeasured spatial heterogeneity—compartments, regional density differences, or tissue architecture effects—can produce substantial bias in estimated spatial interactions. When such structure is suspected, analysts should: (1) explicitly model compartments if boundaries can be identified (e.g., tumor/stroma annotations), (2) interpret strong positive findings with caution in high-density scenarios where confounding bias is most severe, or (3) conduct sensitivity analyses by comparing SHADE estimates with and without suspected confounders included. The regime-dependent nature of the bias suggests that data characteristics (target/source densities, number of images) interact with model misspecification to determine whether SHADE maintains calibration or produces biased inference.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/comparison_figures/compartment_power_by_effect.pdf}
+    \caption{Detection power for SHADE and envelope test methods in the presence of compartment confounding. Boxplots show the proportion of datasets in which methods correctly identify non-zero spatial interactions despite the presence of unmeasured compartment structure. Results are stratified by source cell density (rows: conditioning cell type) and target cell density (columns: modeled cell type), with compartment effect strength (0.8, 1.2, 1.5) shown on the x-axis. All simulations used 3 images per patient and 3 spatial compartments. SHADE Hierarchical maintains perfect power (100\% median) when either source or target density is high, but power drops to 27--30\% when both densities are low.}
+    \label{sfig:compartment_power}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/comparison_figures/compartment_coverage_by_effect.pdf}
+    \caption{Coverage performance in the presence of compartment confounding. Boxplots show the proportion of images in which 95\% simultaneous credible bands fully contain the true source-target SIC. Results are stratified by source and target cell densities, with compartment effect strength on the x-axis. The red dashed line indicates the nominal 95\% level. When target density is high and source density is high, SHADE severely undercovers (43--52\% coverage), incorrectly attributing compartment effects to source-target interactions. When target density is low, coverage improves substantially (82--93\%) as wider credible bands encompass confounding bias. When both densities are low, excellent coverage (92--93\%) reflects appropriate conservatism.}
+    \label{sfig:compartment_coverage}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/comparison_figures/compartment_type_i_error_by_effect.pdf}
+    \caption{Type I error rates when only compartment effects exist (no true source-target interaction). Boxplots show the proportion of null simulations in which methods incorrectly detect non-zero spatial interactions due to unmeasured compartment structure. The red dashed line indicates the nominal 5\% level. When both target and source densities are high, SHADE Hierarchical exhibits elevated false positive rates that increase with compartment strength (11.7--17.1\%). When target density is low, Type I error is well-controlled (1.7--5.8\%). SHADE Flat shows consistently inflated Type I error rates (26--40\%) across all conditions, while envelope tests maintain more stable control (G-cross: 2.1--47.1\%; K-cross: 1.7--10\%).}
+    \label{sfig:compartment_type1}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/comparison_figures/compartment_overall_type_i_error.pdf}
+    \caption{Overall Type I error rates by compartment effect strength, aggregated across all density regimes. Line plot shows median Type I error (points) with IQR error bars. All methods exhibit increasing false positive rates as compartment effect strength increases, with SHADE Flat consistently showing the highest rates (26--33\%). SHADE Hierarchical maintains the best control (6.2--9.6\% median) but still exceeds the nominal 5\% level. This demonstrates that unmeasured spatial confounding produces systematic bias that worsens with confounder strength.}
+    \label{sfig:compartment_overall_type1}
+\end{figure}
+
+\end{revised}
+
+\section{Extended results for colorectal cancer analysis}
+\subsection{Detailed description of colorectal cancer dataset and model preparation}
+\label{ssec:crc_data_prep}
+
+The colorectal cancer (CRC) dataset used in this study is a publicly available collection of multiplexed tumor tissue images from 35 patients \citep{schurch_coordinated_2020}. Each patient contributed four images, each derived from separate biopsies, yielding a total of 140 images. Images were annotated with single-cell resolution across 16 cell types and 56 protein markers, resulting in a multilevel structure: images nested within patients, patients nested within two immune phenotype groups—Crohn’s-like reaction (CLR) and diffuse inflammatory infiltration (DII).
+
+The dataset contains approximately 200,000 cells. For analysis, we focused on the eight most abundant cell types. Cell labels were refined to better reflect marker-based characterization: “stroma” cells were reclassified as hybrid epithelial-mesenchymal (E/M) cells based on co-expression of cytokeratin and vimentin \citep{kuburich_cancer_2024}, while “smooth muscle” cells were relabeled as cancer-associated fibroblasts (CAFs) due to expression of $\alpha$-SMA and vimentin \citep{cao_cancer-associated_2025}. Additional cell types included CD163\textsuperscript{+} macrophages (TAMs), CD8\textsuperscript{+} T cells, granulocytes, memory CD4\textsuperscript{+} T cells, tumor cells, and vasculature.
+
+We selected target populations (CD8\textsuperscript{+} T cells, memory CD4\textsuperscript{+} T cells, and granulocytes) based on their functional relevance to anti-tumor immunity, and source populations (vasculature, tumor cells, CAFs, TAMs, hybrid E/M cells) based on their roles in tissue architecture and immune modulation. Vasculature structures infiltration pathways, tumor cells and CAFs contribute to immune exclusion, TAMs modulate local inflammation and immune suppression, and hybrid E/M cells may influence spatial dynamics through motility and stromal interactions.
+
+For each target cell type, we constructed a quadrature scheme by generating 1,000 dummy points per image per cell type. To capture distance-dependent spatial interactions, we constructed interaction features $\bq_{A_k}(v)$ using a set of three radial basis functions $\phi_p$. Data preprocessing included normalization of coordinates and preparation of covariates and interaction features. 
+
+Model fitting was performed using variational inference with 1,000 posterior draws after fitting. SICs were estimated jointly for all source cell types with respect to each target, providing interpretable, distance-resolved summaries of spatial associations. We set $r_{\min}$ to the dataset's mean cell radius (8--12~$\mu$m depending on cohort) and restricted visualization to $r\ge r_{\min}$.
+
+\begin{revised}
+\subsection{Compartment-adjusted models}
+\label{ssec:compartment_models}
+
+To test robustness to spatial confounding from tissue architecture, we fit compartment-adjusted models incorporating a binary compartment covariate. Compartments were defined based on local tumor cell density: regions with high tumor cell density ($>$ 50th percentile) were classified as tumor-enriched, while remaining regions were classified as stromal. This binary compartment indicator was added as a covariate $z_{\text{comp}}(v) \in \{0,1\}$ to the conditional intensity function (Equation 2 in main text), with coefficient $\beta_{\text{comp}}$ capturing the effect of compartment on target cell density independent of spatial interactions with source cell types.
+
+Models were fit identically to the primary analysis with the addition of this covariate term. The compartment coefficient was estimated separately for CLR and DII patient groups to allow for potential group-specific compartment effects. \tabref{stab:compartment_effects} shows the estimated compartment effects for each target cell type and patient group.
+
+\begin{table}[ht]
+\centering
+\caption{Compartment covariate effects on target cell densities. Values represent posterior mean log-intensity effects (95\% credible intervals) of tumor-enriched compartments relative to stromal regions. Negative values indicate depletion in tumor compartments.}
+\label{stab:compartment_effects}
+\begin{tabular}{lccc}
+\toprule
+Target Cell Type & Group & Mean Effect & 95\% CI \\
+\midrule
+CTLs (CD8+ T cells) & CLR & 0.01 & (-0.04, 0.05) \\
+CTLs (CD8+ T cells) & DII & 0.00 & (-0.04, 0.05) \\
+Memory CD4+ T cells & CLR & 0.03 & (-0.02, 0.08) \\
+Memory CD4+ T cells & DII & 0.02 & (-0.04, 0.07) \\
+Granulocytes & CLR & -0.15 & (-0.22, -0.08) \\
+Granulocytes & DII & -0.06 & (-0.13, 0.02) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Granulocytes showed significant depletion in tumor-enriched regions, particularly in CLR patients (mean effect = -0.15, 95\% CI: -0.22 to -0.08), while CTLs and memory CD4+ T cells showed minimal compartment effects with credible intervals overlapping zero. Despite these compartment effects, spatial interaction patterns remained largely unchanged after adjustment (\figref{sfig:compartment_comparison}), validating that the null CLR vs DII differences observed in the main analysis are not artifacts of tissue architecture confounding.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{../compartment_analysis/manuscript_figures/compartment_comparison_supplement.pdf}
+\caption{Comparison of original and compartment-adjusted spatial interaction curves for selected source-target pairs showing the largest changes. Spatial interaction patterns remain similar after compartment adjustment, demonstrating that CLR vs DII comparisons are robust to architectural confounding. Shown are the nine interactions with largest absolute changes in SIC estimates; all other pairs show similar concordance.}
+\label{sfig:compartment_comparison}
+\end{figure}
+\end{revised}
+
+\subsection{Detailed biological interpretation of CLR vs DII spatial patterns}
+\label{ssec:detailed_spatial_interpretation}
+
+The cohort-level spatial interaction curves shown in \figref{fig:sic_crc_all} of the main text reveal several notable differences between CLR (immune-infiltrated) and DII (immune-excluded) patient groups. While these differences do not reach statistical significance and require validation in independent cohorts, we provide here a detailed mechanistic interpretation of the observed patterns in the context of known tumor microenvironment biology.
+
+\subsubsection{DII-enriched spatial patterns}
+
+DII patients exhibited greater clustering of CTLs around tumor cells across all spatial ranges. While this might initially suggest immune recognition, it may alternatively indicate ineffective or exhausted T cell responses that fail to clear tumor cells. Persistent CTL-tumor colocalization without effective cytolysis has been associated with immune dysfunction and tumor immune escape \citep{dolina_cd8_2021,raskov_cytotoxic_2021}. The sustained spatial proximity despite poor tumor control could reflect T cells trapped in a dysfunctional state, unable to eliminate their targets despite close contact.
+
+Similarly, DII patients showed greater attraction of granulocytes to tumor-associated macrophages (TAMs) at all distances, suggesting enhanced myeloid-myeloid interactions that may contribute to immunosuppressive networks. TAMs and granulocytes can form mutually reinforcing suppressive circuits in the tumor microenvironment, with TAMs recruiting and activating immunosuppressive neutrophils, and neutrophils in turn supporting M2-like macrophage polarization. The enhanced spatial co-localization in DII tumors may reflect the establishment of such suppressive myeloid networks that exclude effective adaptive immunity.
+
+\subsubsection{CLR-enriched spatial patterns}
+
+In contrast, CLR patients demonstrated distinct spatial patterns suggesting different modes of immune-tumor-stroma organization. Hybrid epithelial-mesenchymal (E/M) cells showed stronger attraction of CTLs at short ranges in CLR compared to DII patients. CD4+ T cells have been implicated in modulating epithelial-mesenchymal transition (EMT) processes \citep{xie_epithelial-mesenchymal_2025,milosevic_interactions_2024}, and the proximity of CTLs to hybrid E/M cells in CLR tumors may reflect active immune engagement with tumor cells undergoing phenotypic plasticity. Cells in hybrid E/M states may present altered antigen profiles or adhesion molecules that promote CTL infiltration and recognition.
+
+Additionally, CLR patients exhibited greater repulsion of CTLs from cancer-associated fibroblasts (CAFs) at medium-to-long ranges compared to DII, and greater repulsion of memory CD4+ T cells from hybrid E/M cells at these distances. CAFs are known to mediate immune suppression via multiple mechanisms including direct inhibition of T cell function and establishment of physical barriers through extracellular matrix remodeling \citep{jenkins_cancer-associated_2022,freeman_cancer-associated_2020}. The stronger repulsion in CLR tumors may indicate more effective spatial segregation of immune and suppressive stromal compartments, potentially reflecting physical barriers that constrain the spatial distribution of immune cells while still permitting local infiltration. In contrast, the reduced repulsion in DII could reflect barrier disruption or alternative exclusionary mechanisms that globally constrain immune cell access to tumor regions rather than creating localized segregation patterns.
+
+\subsubsection{Caveats and validation requirements}
+
+These interpretations remain speculative in the absence of functional validation. The dataset lacks direct measurements of T cell exhaustion, cytolytic activity, CAF activation states, or other functional markers that would support these mechanistic hypotheses. The patterns observed may also reflect technical factors such as unmeasured spatial compartments (tumor islands vs. stroma) that confound apparent cell-cell interactions, as demonstrated in our compartment robustness simulations (\secref{ssec:compartment_confounder}).
+
+Future studies should validate these exploratory findings using: (1) independent colorectal cancer cohorts with multiplexed imaging, (2) functional measurements such as proliferation markers (Ki67), exhaustion markers (PD-1, TIM-3, LAG-3), activation markers (granzyme B, perforin), and CAF phenotyping (FAP, $\alpha$-SMA, podoplanin), (3) orthogonal clinical outcomes such as survival and treatment response, and (4) explicit modeling of tissue compartment boundaries if available.
+
+\subsection{Comparison with traditional $G$-cross-based spatial clustering analysis}
+\label{ssec:gx_comparison}
+
+To contextualize our SHADE results, we performed an alternative analysis using the $G$-cross function \citep{baddeley_spatial_2015}, a nonparametric estimator of cross-type clustering commonly used in spatial point pattern analysis. This comparison highlights how SHADE differs from traditional methods in its modeling framework and interpretability of results.
+
+For each tissue section, we computed $G$-cross estimates at distances from 0 to 80 microns and extracted values at key distances (20, 40, 60 microns) for comparison. To quantify whether differences in clustering could predict patient group (CLR vs DII), we fitted logistic regression models with $G$-cross as the predictor and used FDR-adjusted p-values to identify significant associations. The resulting estimates are visualized as a heatmap of log-odds ratios (log-ORs), indicating the strength and direction of group differences in clustering at each distance.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{images/CRC_analysis_paper/gx_comparison.pdf}
+\caption{Heatmap of log-odds ratios (log-ORs) from logistic regression models comparing $G$-cross clustering metrics between CLR and DII patient groups, stratified by distance (20, 40, 60 microns). Tiles represent the estimated log-OR for each source–target pair at a given distance, with asterisks indicating significant differences ($p<0.05$, FDR-adjusted). Green indicates stronger clustering in DII, purple indicates stronger clustering in CLR.}
+\label{sfig:gx_comparison}
+\end{figure}
+
+\input{snippets/r2_q4_gx_comparison}
+
+\begin{revised}
+\subsection{Predictive performance: Spatial interactions and target cell organization}
+\label{ssec:predictions_supplement}
+
+Beyond estimating SICs, SHADE predicts the spatial distribution of each target cell type conditional on the source cells, allowing us to assess how well spatial interactions explain observed patterns. This reveals which cell types are more spatially constrained and how predictability varies across images, patients, and tumor subtypes.
+
+For example, in image 47\_B from the dataset, we can produce the following predictions of each target cell type, conditional on the source cell types (\figref{sfig:example_pred_supp}). We can see that the target cell types are quite well predicted, especially CTLs. Likely due to their relative paucity, granulocytes are not quite as well predicted in this image (regions of localization are not as distinct).
+
+We calculated AUCs per cell type and per group (\figref{sfig:auc_crc_boxplots}). All three target cell types were better predicted in CLR patients than in DII patients, though there was a relatively large amount of variability in image-level AUCs.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/example_pred.pdf}
+    \caption{Predicted spatial distributions for target cell types in a representative image (47\_B), based on the estimated conditional intensity functions. Heat maps show predicted log-intensity; black dots indicate observed cell locations for each target cell type.}
+    \label{sfig:example_pred_supp}
+\end{figure}
+\end{revised}
+
+\subsection{Additional Figures}
+\label{ssec:crc_supp_figs}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/pots.pdf}
+    \caption{
+        Radial basis functions \(\phi_p(s)\) used to compute distance-based interaction
+        features \(\bm{q}_{A_k}(v)\) in the CRC analysis. These basis functions define the spatial
+        resolution of the SICs.
+    }
+    \label{sfig:crc_pots}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/CRC_analysis_paper/sic_CRC_diff.pdf}
+    \caption{The difference in SICs between the two patient groups, with simultaneous 95\% credible bands. Curves above 0 (in the blue area) indicate that the log-intensity is greater in CLR patients than DII patients; curves in the red area show the reverse.}
+    \label{sfig:sic_CRC_diff}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/auc_boxplot_groups.pdf}
+    \caption{
+        Distribution of AUCs by cell type and patient group, evaluating prediction performance
+        of SHADE's conditional intensity model when predicting the spatial organization of each
+        target cell type based on the spatial distribution of all other types.
+    }
+    \label{sfig:auc_crc_boxplots}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/mad_comparison_clr_dii.pdf}
+    \caption{Heatmaps show median absolute deviation (MAD) of spatial interaction curve deviations as a measure of heterogeneity for 15 source-target cell type pairs. Top row: between-patient heterogeneity (MAD of patient-level deviations from cohort mean). Bottom row: within-patient heterogeneity (MAD of image-level deviations from patient mean). Left column: CLR tumors. Right column: DII tumors.}
+    \label{sfig:mad_clr_dii}
+\end{figure}
+
+\begin{revised}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/CRC_analysis_paper/sic_mad.pdf}
+    \caption{Heatmaps show the median absolute deviation (MAD) of SICs across spatial distances, summarizing two sources of variability: between patients (within cohort) and between images (within patient). Higher values indicate greater heterogeneity in spatial structure.}
+    \label{sfig:sic_mad}
+\end{figure}
+
+\subsection{Multilevel Functional PCA Comparison Methodology}
+\label{ssec:mfpca_methods}
+
+To contextualize SHADE's results within the broader landscape of spatial analysis methods, we compared our findings with multilevel functional principal component analysis (mFPCA) applied to classical spatial summary statistics. This comparison provides insight into how SHADE's conditional modeling framework relates to marginal pairwise analyses commonly used in multiplexed imaging.
+
+\subsubsection{mFPCA Approach}
+
+We used the \texttt{mxfda} R package~\citep{wrobelMxfdaComprehensiveToolkit2024} to perform multilevel functional PCA on $G$-cross and $L$-cross functions. For each of the 15 source-target cell type pairs, we computed spatial summary functions separately for CLR and DII patient groups as follows:
+
+\begin{enumerate}
+\item \textbf{Summary function extraction:} For each tissue section, we computed $G$-cross and $L$-cross functions at distances $r \in [0, 75]~\mu$m with 1~$\mu$m increments using the \texttt{spatstat} package. $G$-cross uses Kaplan-Meier edge correction; $L$-cross uses isotropic edge correction.
+
+\item \textbf{Multilevel decomposition:} mFPCA decomposes functional variation across hierarchical levels (images nested within patients) without imposing a parametric model on the underlying point process. We specified proportion of variance explained (pve) = 0.99 to retain principal components explaining 99\% of total variability.
+
+\item \textbf{Group-level summaries:} For each group (CLR, DII), we extracted the population mean function $\mu(r)$ and uncertainty bands constructed as $\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$, where $\lambda_1$ and $\phi_1(r)$ denote the first eigenvalue and eigenfunction. These bands represent $\pm 1$ SD from the first principal component.
+\end{enumerate}
+
+\subsubsection{Key Methodological Differences}
+
+\begin{revised}SHADE and mFPCA address complementary questions: \input{snippets/r3_q1_fda_comparison} SHADE provides a generative probabilistic model estimating conditional effects with multivariate adjustment, while mFPCA performs dimension reduction on marginal pairwise summary statistics without modeling the data-generating process.\end{revised}
+
+\subsubsection{Results: Comparison of SHADE with mFPCA}
+\label{ssec:mfpca_comparison}
+
+\input{snippets/r2_q4_mfpca_intro}
+
+\input{snippets/r3_q2_mfpca_methods}
+
+\input{snippets/r3_q2_mfpca_examples}
+
+Complete mFPCA results for all 15 cell type pairs are provided in \figref{sfig:mfpca_gcross_grid} ($G$-cross) and \figref{sfig:mfpca_lcross_grid} ($L$-cross). Each figure displays group-level mean curves with $\pm 1$ SD bands for CLR (blue) and DII (orange) patients, facilitating visual comparison of marginal spatial associations across patient groups.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/gcross_mfpca_grid_supplement.pdf}
+    \caption{Multilevel functional PCA of $G$-cross functions for all source-target pairs. For each of 15 cell type pairs, group-level mean $G$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$).}
+    \label{sfig:mfpca_gcross_grid}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/CRC_analysis_paper/lcross_mfpca_grid_supplement.pdf}
+    \caption{Multilevel functional PCA of $L$-cross functions for all source-target pairs. For each of 15 cell type pairs, group-level mean $L$-cross curves are shown for CLR (blue) and DII (orange) patient groups. Ribbons represent $\pm 1$ SD uncertainty bands from the first functional principal component ($\mu(r) \pm \sqrt{\lambda_1}\phi_1(r)$). The $L$-cross function provides a variance-stabilized alternative to $G$-cross, facilitating comparison across different spatial scales and cell type combinations.}
+    \label{sfig:mfpca_lcross_grid}
+\end{figure}
+
+\end{revised}
+
+\clearpage
+\section{Priors for Variance Parameters}
+\label{ssec:prior_var}
+
+We place half-normal priors on the standard deviations of the spatial interaction coefficients at each level of the hierarchy:
+
+\begin{align}
+    \sigma_{\text{cohort},p} &\sim \text{Half-Normal}(\xi_p,\xi_p), \\
+    \sigma_{\text{patient},p} &\sim \text{Half-Normal}(1.5,10), \\
+    \sigma_{\text{image},p} &\sim \text{Half-Normal}(1,10).
+\end{align}
+
+where is a user-specified location/scale (in our CRC analysis, we used $\xi_p\in\{5,3,1\}$).
+
+\section{Quantifying Variability in Spatial Interactions}
+\label{ssec:mad_calc}
+We define SICs hierarchically across cohort, patient, and image levels. For a given source--target cell type pair \( (A, B) \), to capture hierarchical variation, we define \emph{patient-level} and \emph{image-level} SICs as:
+\begin{equation}
+\label{seq:sic-patient}
+    \text{SIC}_{A_k \to B}^{(n)}(s) = \sum_{p=1}^{P} \gamma_{A_k}^{(n,p)} \phi_p(s)
+\end{equation}
+\begin{equation}
+\label{seq:sic-image}
+        \text{SIC}_{A_k \to B}^{(m,n(m)}(s) = \sum_{p=1}^{P} \delta_{A_k}^{(m,p)} \phi_p(s)
+\end{equation}
+where \( \phi_p(s) \) are spline basis functions, and \( \gamma_{A,B}^{(n,p)} \) and \( \delta_{A,B}^{(m,p)} \) are patient- and image-level coefficients, respectively.
+To quantify heterogeneity in SICs across patients and images, we compute robust measures of variability at each spatial distance \( s \), and summarize them by taking the median across all distances. Specifically:
+\paragraph{Between-patient (within-cohort) variability.}
+Let \( \mathcal{C} \) index cohorts, and let \( \mathcal{N}_c \) denote the set of patients belonging to cohort \( c \in \mathcal{C} \). For each spatial distance \( s \), we compute the cohort-level median SIC as:
+\[
+    \overline{\text{SIC}}_{A_k \to B}^{(c)}(s) = \text{median}_{n \in \mathcal{N}_c} \left( \text{SIC}_{A_k \to B}^{(n)}(s) \right)
+\]
+The between-patient (within-cohort) variability for a given cell type pair \( (A, B) \) is then defined as:
+\begin{equation}
+\label{seq:mad-patient}
+    \text{MAD}_{\text{patient}}(A, B) = \text{median}_s \left\{ \text{MAD}_{n} \left[ \text{SIC}_{A_k \to B}^{(n)}(s) - \overline{\text{SIC}}_{A_k \to B}^{(c(n))}(s) \right] \right\}
+\end{equation}
+\paragraph{Between-image (within-patient) variability.}
+Similarly, for each patient \( n \), we compute the patient-level median SIC:
+\[
+    \overline{\text{SIC}}_{A_k \to B}^{(n)}(s) = \text{median}_{m : n(m) = n} \left( \text{SIC}_{A_k \to B}^{(m,n)}(s) \right)
+\]
+The between-image variability is defined as the MAD of image-level SICs from the patient median:
+\begin{equation}
+\label{seq:mad-image}
+    \text{MAD}_{\text{image}}(A, B) = \text{median}_s \left\{ \text{MAD}_{m} \left[ \text{SIC}_{A_k \to B}^{(m,n(m))}(s) - \overline{\text{SIC}}_{A_k \to B}^{(n(m))}(s) \right] \right\}
+\end{equation}
+
+These robust statistics provide interpretable summaries of spatial heterogeneity at each level of the hierarchy while mitigating sensitivity to outliers and small-sample variability. We report these values for each cell type pair and visualize them using heatmaps (\figref{sfig:sic_mad}).
+
+\bibliographystyle{abbrvnat}
+\bibliography{references}
+
+\end{document}
