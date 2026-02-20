@@ -22,6 +22,9 @@
 \geometry{margin=1in}
 \doublespacing
 
+% PLOS format: use "Fig" instead of "Figure" for figure captions
+\renewcommand{\figurename}{Fig}
+
 \usepackage{xr}
 \externaldocument{S1_Text}
 
@@ -251,9 +254,6 @@ Understanding how different cell types interact spatially within tissue microenv
 directional spatial patterns while controlling for tissue architecture confounders and
 capturing substantial patient-level heterogeneity. The framework successfully identifies
 biologically interpretable spatial organization patterns, revealing that local microenvironmental structure varies considerably across patients within molecular subtypes\end{revised}
-
-\textbf{Availability and Implementation:}
-Open-source implementation is available at \url{https://github.com/jeliason/SHADE} and \url{https://github.com/jeliason/shade_paper_code}, developed in R and Stan.
 
 \textbf{Keywords:}
 spatial statistics, cell-cell interactions, Bayesian modeling, tissue microenvironment, multiplex imaging, colorectal cancer, tumor microenvironment, multiscale modeling, multilevel modeling

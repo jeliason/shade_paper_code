@@ -1,6 +1,6 @@
 # SHADE Paper Code
 
-This repository contains code for reproducing the analyses and figures from the [SHADE (Spatial Hierarchical Asymmetry via Directional Estimation) manuscript](https://doi.org/10.1101/2025.06.24.661393). The codebase includes simulation studies and real data analyses that demonstrate the capabilities of the SHADE method.
+This repository contains code for reproducing the analyses and figures from the [SHADE (Spatial Hierarchical Asymmetry via Directional Estimation) paper](https://doi.org/10.1371/journal.pcbi.1013930), published in *PLOS Computational Biology*. The codebase includes simulation studies and real data analyses that demonstrate the capabilities of the SHADE method.
 
 ## Overview
 
